@@ -1,0 +1,27 @@
+# K3d cluster configuration for tesing Kubernetes deployments.
+#
+# For more information, visit https://k3d.io/v5.3.0/usage/configfile/.
+
+---
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: acronyms
+servers: 1
+agents: 2
+kubeAPI:
+  host: 127-0-0-1.nip.io
+  hostIP: 127.0.0.1
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+# Used for Tilt development.
+registries:
+  create:
+    host: "0.0.0.0"
+    hostPort: "5000"
+    name: registry.localhost

@@ -1,0 +1,19 @@
+# Git configuration file for ignoring untracked paths.
+#
+# For more information, visit https://git-scm.com/docs/gitignore.
+
+.cache/
+.DS_Store
+.env
+.vscode/settings.json
+*.swp
+*.tar.gz
+*.whl
+/tmp/
+certs/
+dist/
+node_modules/
+nohup.out
+package-lock.json
+public/
+site/
