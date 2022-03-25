@@ -1,13 +1,12 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "acronyms.fullname" . }}
+  name: {{ include "acronyms.fullname" . }}-backend
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "acronyms.selectorLabels" . | nindent 6 }}
@@ -20,42 +19,60 @@ spec:
       labels:
         {{- include "acronyms.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "acronyms.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        - name: {{ include "acronyms.fullname" . }}-backend
+          env:
+            - name: ACRONYMS_POSTGRES_DB
+              value: boops
+            - name: ACRONYMS_POSTGRES_HOST
+              value: {{ include "acronyms.fullname" . }}-database
+            - name: ACRONYMS_POSTGRES_PASSWORD
+              value: oodriebum
+            - name: ACRONYMS_POSTGRES_PORT
+              value: "5432"
+            - name: ACRONYMS_POSTGRES_USER
+              value: scruffaluff
+          image: "registry.localhost:5000/scruffaluff/acronyms-backend:0.1.0"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8000
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+    {{- with .Values.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "acronyms.fullname" . }}-database
+  labels:
+    {{- include "acronyms.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # Associates each pod with an "app: postgres" label to the deployment.
+      app: {{ include "acronyms.fullname" . }}-database
+  # Template is a nested Kubernetes object since it has its own metadata and
+  # specification.
+  template:
+    metadata:
+      labels:
+        # Adds the "app: postgres" label to each pod.
+        app: {{ include "acronyms.fullname" . }}-database
+    spec:
+      containers:
+        - name: {{ include "acronyms.fullname" . }}-database
+          env:
+            - name: POSTGRES_DB
+              value: boops
+            - name: POSTGRES_PASSWORD
+              value: oodriebum
+            - name: POSTGRES_USER
+              value: scruffaluff
+          image: "postgres:14.1"
+          ports:
+            - containerPort: 5432

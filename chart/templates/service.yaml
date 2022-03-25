@@ -1,15 +1,33 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "acronyms.fullname" . }}
+  name: {{ include "acronyms.fullname" . }}-backend
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - name: http
+      port: {{ .Values.service.port }}
       protocol: TCP
-      name: http
+      targetPort: 8000
   selector:
     {{- include "acronyms.selectorLabels" . | nindent 4 }}
+  type: {{ .Values.service.type }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "acronyms.fullname" . }}-database
+  labels:
+    {{- include "acronyms.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: {{ include "acronyms.fullname" . }}-database
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: {{ include "acronyms.fullname" . }}-database
+  type: {{ .Values.service.type }}

@@ -34,7 +34,6 @@ homepage = "https://gitlab.com/scruffaluff/acronyms"
 keywords = []
 license = "MIT"
 name = "acronyms"
-readme = "README.md"
 version = "0.1.0"
 
 [tool.poetry.dependencies]
@@ -71,7 +70,7 @@ toml = "^0.10.0"
 tox = "^3.0.0"
 
 [tool.poetry.scripts]
-acronyms = "acronyms.__main__:app"
+acronyms = "acronyms.__main__:main"
 
 [tool.pytest.ini_options]
 addopts = "-sv"
