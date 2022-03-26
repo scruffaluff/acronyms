@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "acronyms.fullname" . }}-test-backend"
+  labels:
+    {{- include "acronyms.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: home
+      image: "curlimages/curl:7.82.0"
+      command: ['curl']
+      args: ['{{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}']
+  restartPolicy: Never
