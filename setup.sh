@@ -34,5 +34,5 @@ if [[ ! "$(kubectl -n acronyms get secret acronyms)" ]]; then
   kubectl --namespace acronyms \
     create secret generic acronyms \
     --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
-    --from-literal database-username="${ACRONYMS_POSTGRES_USER?}"
+    --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
 fi

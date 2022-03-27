@@ -23,7 +23,7 @@ spec:
         - name: {{ include "acronyms.fullname" . }}-backend
           env:
             - name: ACRONYMS_POSTGRES_DB
-              value: boops
+              value: acronyms
             - name: ACRONYMS_POSTGRES_HOST
               value: {{ include "acronyms.fullname" . }}-database
             - name: ACRONYMS_POSTGRES_PASSWORD
@@ -34,7 +34,10 @@ spec:
             - name: ACRONYMS_POSTGRES_PORT
               value: "5432"
             - name: ACRONYMS_POSTGRES_USER
-              value: scruffaluff
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "acronyms.fullname" . }}
+                  key: database-user
           image: "scruffaluff/acronyms-backend:0.1.0"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -71,14 +74,17 @@ spec:
         - name: {{ include "acronyms.fullname" . }}-database
           env:
             - name: POSTGRES_DB
-              value: boops
+              value: acronyms
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "acronyms.fullname" . }}
                   key: database-password
             - name: POSTGRES_USER
-              value: scruffaluff
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "acronyms.fullname" . }}
+                  key: database-user
           image: "postgres:14.1"
           ports:
             - containerPort: 5432
