@@ -11,9 +11,4 @@
 *.whl
 /tmp/
 certs/
-dist/
-node_modules/
 nohup.out
-package-lock.json
-public/
-site/

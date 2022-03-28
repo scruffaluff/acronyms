@@ -2,8 +2,9 @@
 #
 # For more information, visit https://docs.tilt.dev.
 
-local_resource("setup", "./setup.sh")
+local_resource("setup", "./dev.sh")
 docker_build("scruffaluff/acronyms-backend", "./backend")
+docker_build("scruffaluff/acronyms-frontend", "./frontend")
 
 yaml = helm(
   "./chart",

@@ -28,6 +28,13 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: 80
+          - path: {{ .path }}api
+            pathType: {{ .pathType }}
+            backend:
+              service:
                 name: {{ $fullName }}-backend
                 port:
                   number: {{ $svcPort }}

@@ -10,4 +10,5 @@ RUN pip install /repo \
 USER server
 WORKDIR /home/server
 
+EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]

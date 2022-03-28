@@ -5,8 +5,7 @@ named __main__.py.
 """
 
 
-import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel

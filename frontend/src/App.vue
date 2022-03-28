@@ -1,10 +1,12 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 import HelloWorld from './components/HelloWorld.vue'
+
+// const response = await fetch('https://acronyms-127-0-0-1.nip.io/api');
+// const data = await response.json();
 </script>
 
 <template>
+  <h1>Acronyms</h1>
   <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
 </template>
 

@@ -2,14 +2,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "acronyms.fullname" . }}-backend
+  name: {{ include "acronyms.fullname" . }}-frontend
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "acronyms.selectorLabels" . | nindent 6 }}
+      {{- include "acronyms.selectorLabels" . | nindent 6 }}-frontend
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -17,7 +17,41 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "acronyms.selectorLabels" . | nindent 8 }}
+        {{- include "acronyms.selectorLabels" . | nindent 8 }}-frontend
+    spec:
+      containers:
+        - name: {{ include "acronyms.fullname" . }}-frontend
+          image: "scruffaluff/acronyms-frontend:0.1.0"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+    {{- with .Values.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "acronyms.fullname" . }}-backend
+  labels:
+    {{- include "acronyms.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "acronyms.selectorLabels" . | nindent 6 }}-backend
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "acronyms.selectorLabels" . | nindent 8 }}-backend
     spec:
       containers:
         - name: {{ include "acronyms.fullname" . }}-backend
