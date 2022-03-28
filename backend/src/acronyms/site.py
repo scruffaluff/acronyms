@@ -26,20 +26,22 @@ class AcronymBody(BaseModel):
     expansion: str
 
 
-@app.get("/")
-async def root() -> Dict[str, Any]:
-    """Greet user."""
-    logging.debug("root path accessed")
-    return {"message": "Hello World"}
+@app.delete("/api")
+async def delete_acronym(
+    id: int, session: Session = Depends(models.get_db)
+) -> None:
+    """Insert an acronym to database."""
+    session.query(Acronym).filter(Acronym.id == id).delete()
+    session.commit()
 
 
-@app.get("/acronyms")
+@app.get("/api")
 async def get_acronym(
     abbreviation: Optional[str] = None,
     session: Session = Depends(models.get_db),
 ) -> Optional[Any]:
     """Get all matching acronyms."""
-    query = session.query(Acronym.abbreviation, Acronym.expansion)
+    query = session.query(Acronym.id, Acronym.abbreviation, Acronym.expansion)
 
     if abbreviation is not None:
         query = query.filter(Acronym.abbreviation == abbreviation)
@@ -47,7 +49,7 @@ async def get_acronym(
     return query.all()
 
 
-@app.post("/acronyms")
+@app.post("/api")
 async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
 ) -> None:
