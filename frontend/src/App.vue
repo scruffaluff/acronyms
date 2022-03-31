@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from "./components/HelloWorld.vue";
 
 // const response = await fetch('https://acronyms-127-0-0-1.nip.io/api');
 // const data = await response.json();

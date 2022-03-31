@@ -1,0 +1,84 @@
+# GitHub Actions workflow file.
+#
+# For more information, visit
+# https://docs.github.com/actions/learn-github-actions.
+
+---
+name: build
+
+# Trigger workflow on any push or pull request.
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - "**"
+
+jobs:
+  lint-backend:
+    name: Check backend code with formatter and linter
+    defaults:
+      run:
+        working-directory: backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Install Python interpreter
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Cache Python packages
+        uses: actions/cache@v2
+        with:
+          path: backend/.venv
+          key: python-3.10_poetry-${{ hashFiles('backend/poetry.lock') }}
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip poetry setuptools wheel
+          poetry config virtualenvs.in-project true
+          poetry install -v
+      - name: Lint code
+        run: |
+          poetry run black --check .
+          poetry run flake8 .
+          poetry run mypy --install-types --non-interactive .
+
+  lint-chart:
+    name: Check chart code with formatter and linter
+    defaults:
+      run:
+        working-directory: chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+      - name: Lint code
+        run: |
+          helm lint
+
+  lint-frontend:
+    name: Check frontend code with formatter and linter
+    defaults:
+      run:
+        working-directory: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Install Node interpreter
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Cache Node packages
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: node-16_npm-${{ hashFiles('frontend/package-lock.json') }}
+      - name: Install Node packages
+        run: npm install
+      - name: Lint code
+        run: npm run lint:test

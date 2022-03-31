@@ -18,6 +18,7 @@ acronyms
 ## Getting Started
 
 ### Installation
+
 ```
 
 ## Contributing
@@ -29,3 +30,4 @@ to acronyms, see the [contributing guide](CONTRIBUTING.md).
 
 Distributed under the terms of the [MIT license](LICENSE.md), acronyms is free
 and open source software.
+```
