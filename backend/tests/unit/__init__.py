@@ -12,26 +12,26 @@ from acronyms.models import Acronym
 def test_get_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     expected = [
-        {"abbreviation": "DM", "expansion": "Data Mining"},
-        {"abbreviation": "DM", "expansion": "Direct Message"},
+        {"id": 2, "abbreviation": "DM", "expansion": "Data Mining"},
+        {"id": 3, "abbreviation": "DM", "expansion": "Direct Message"},
     ]
 
-    response = client.get("/acronyms?abbreviation=DM")
+    response = client.get("/api?abbreviation=DM")
     assert response.status_code == 200
     assert response.json() == expected
 
 
 def test_post_acronym(client: TestClient) -> None:
     """Add a new acronym to database."""
-    pre_response = client.get("/acronyms")
+    pre_response = client.get("/api")
     assert pre_response.status_code == 200
     records = len(pre_response.json())
 
     body = {"abbreviation": "ROI", "expansion": "Return On Investment"}
-    post_response = client.post("/acronyms", json=body)
+    post_response = client.post("/api", json=body)
     assert post_response.status_code == 200
 
-    get_response = client.get("/acronyms")
+    get_response = client.get("/api")
     assert get_response.status_code == 200
     assert len(get_response.json()) == records + 1
 

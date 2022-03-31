@@ -10,8 +10,8 @@ import sqlalchemy
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
-from acronyms.__main__ import app
 from acronyms.models import Acronym, Base, get_db
+from acronyms.site import app
 
 
 @pytest.fixture
