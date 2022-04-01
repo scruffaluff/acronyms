@@ -57,4 +57,5 @@ async def post_acronym(
         abbreviation=acronym.abbreviation, expansion=acronym.expansion
     )
     session.add(acronym_)
+    session.commit()
     return acronym_.id

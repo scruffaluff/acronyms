@@ -3,7 +3,15 @@
 # For more information, visit https://docs.tilt.dev.
 
 local_resource("setup", "./dev.sh")
-docker_build("scruffaluff/acronyms-backend", "./backend")
+
+docker_build(
+    "scruffaluff/acronyms-backend",
+    "./backend",
+    dockerfile="backend/Dockerfile.dev",
+    live_update=[
+        sync("./backend/src", "/repo/src")
+    ],
+)
 docker_build(
     "scruffaluff/acronyms-frontend",
     "./frontend",
