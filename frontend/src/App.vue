@@ -1,30 +1,53 @@
 <template>
-  <div class="mt-6 container is-max-desktop">
-    <div class="field">
-      <div class="control has-icons-left has-icons-right">
-        <input
-          class="input"
-          placeholder="Search"
-          type="text"
-          v-model="search"
-        />
+  <div class="mt-4 container is-max-desktop">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item title is-4 has-text-primary">Acronyms</a>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-primary">
+                <strong>Sign up</strong>
+              </a>
+              <a class="button is-light"> Log in </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="mt-6 mx-6 container is-max-desktop">
+      <div class="field">
+        <div class="control has-icons-left has-icons-right">
+          <input
+            class="input"
+            placeholder="Search"
+            type="text"
+            v-model="search"
+          />
+        </div>
       </div>
     </div>
+
+    <table
+      class="mt-6 container table is-fullwidth is-bordered is-hoverable has-text-left"
+    >
+      <thead>
+        <tr>
+          <th>Abbreviation</th>
+          <th>Expansion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="acronym in acronymsFiltered">
+          <td>{{ acronym.abbreviation }}</td>
+          <td>{{ acronym.expansion }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <table class="container table mt-6 has-text-left">
-    <thead>
-      <tr>
-        <th>Abbreviation</th>
-        <th>Expansion</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="acronym in acronymsFiltered">
-        <td>{{ acronym.abbreviation }}</td>
-        <td>{{ acronym.expansion }}</td>
-      </tr>
-    </tbody>
-  </table>
 </template>
 
 <script lang="ts">
