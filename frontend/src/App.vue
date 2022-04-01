@@ -50,20 +50,22 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, ref } from "vue";
+<script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
 
-const acronyms = [
-  { id: 1, abbreviation: "ROI", expansion: "Return On Investment" },
-  { id: 2, abbreviation: "DM", expansion: "Data Mining" },
-  { id: 3, abbreviation: "DM", expansion: "Direct Message" },
-];
+interface Acronym {
+  id: number;
+  abbreviation: string;
+  expansion: string;
+}
+
+let acronyms: Array<Acronym> = [];
 const search = ref("");
 
 const acronymsFiltered = computed(() => {
   const text = search.value.toLowerCase();
 
-  if (text === "") {
+  if (!text) {
     return acronyms;
   } else if (text.includes(" ")) {
     return acronyms.filter((acronym) =>
@@ -76,9 +78,8 @@ const acronymsFiltered = computed(() => {
   }
 });
 
-export default {
-  data() {
-    return { acronymsFiltered, search };
-  },
-};
+onMounted(async () => {
+  const response = await fetch("/api");
+  acronyms = await response.json();
+});
 </script>

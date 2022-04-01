@@ -51,10 +51,10 @@ async def get_acronym(
 @app.post("/api")
 async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
-) -> None:
+) -> int:
     """Insert an acronym to database."""
     acronym_ = Acronym(
         abbreviation=acronym.abbreviation, expansion=acronym.expansion
     )
     session.add(acronym_)
-    session.commit()
+    return acronym_.id
