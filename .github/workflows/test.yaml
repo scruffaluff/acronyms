@@ -54,6 +54,9 @@ jobs:
 
   test-chart:
     name: Run Helm test suite
+    env:
+      ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}
+      ACRONYMS_POSTGRES_USER: ${{ secrets.ACRONYMS_POSTGRES_USER }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -64,28 +67,30 @@ jobs:
         run: >-
           curl -LSfs
           https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-      - name: Create K3 Kubernetes cluster
+      - name: Create K3d Kubernetes cluster
         run: k3d cluster create --config chart/k3d.yaml
+      - name: Configure K3d Kubernetes cluster
+        run: bash dev.sh
       - name: Build backend Docker image
         uses: docker/build-push-action@v2
         with:
           context: backend
           file: backend/Dockerfile
-          push: false
+          push: true
           tags: "registry.localhost:5001/scruffaluff/acronyms-backend:latest"
       - name: Build frontend Docker image
         uses: docker/build-push-action@v2
         with:
           context: frontend
           file: frontend/Dockerfile
-          push: false
+          push: true
           tags: "registry.localhost:5001/scruffaluff/acronyms-frontend:latest"
       - name: Install Helm
         uses: azure/setup-helm@v1
       - name: Deploy Helm release
-        run: helm install --values chart/values_dev.yaml ./chart
+        run: helm install --values chart/values_dev.yaml acronyms ./chart
       - name: Run test suite
-        run: helm test
+        run: helm test acronyms
 
   test-frontend:
     name: Run frontend test suite for Node ${{ matrix.node }}
