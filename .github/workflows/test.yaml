@@ -52,6 +52,44 @@ jobs:
       - name: Run test suite
         run: poetry run pytest
 
+  test-chart:
+    name: Run Helm test suite
+    defaults:
+      run:
+        working-directory: chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Install K3d
+        run: >-
+          curl -LSfs
+          https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+      - name: Create K3 Kubernetes cluster
+        run: k3d cluster create --config chart/k3d.yaml
+      - name: Build backend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: false
+          tags: "registry.localhost:5001/scruffaluff/acronyms-backend:latest"
+      - name: Build frontend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: false
+          tags: "registry.localhost:5001/scruffaluff/acronyms-frontend:latest"
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+      - name: Deploy Helm release
+        run: helm install --values chart/values_dev.yaml ./chart
+      - name: Run test suite
+        run: helm test
+
   test-frontend:
     name: Run frontend test suite for Node ${{ matrix.node }}
     defaults:
@@ -60,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["16", "17"]
+        node: ["16", "17"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -68,7 +106,7 @@ jobs:
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
       - name: Cache Node packages
         uses: actions/cache@v2
         with:
