@@ -1,22 +1,41 @@
-<script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
-
-// const response = await fetch('https://acronyms-127-0-0-1.nip.io/api');
-// const data = await response.json();
-</script>
-
 <template>
   <h1>Acronyms</h1>
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <table>
+    <tr>
+      <th>Abbreviation</th>
+      <th>Expansion</th>
+    </tr>
+    <tr v-for="acronym in acronyms">
+      <td>{{ acronym.abbreviation }}</td>
+      <td>{{ acronym.expansion }}</td>
+    </tr>
+  </table>
 </template>
+
+<script lang="ts">
+const acronyms = [
+  { id: 1, abbreviation: "ROI", expansion: "Return On Investment" },
+  { id: 2, abbreviation: "DM", expansion: "Data Mining"},
+  { id: 3, abbreviation: "DM", expansion: "Direct Message"},
+];
+
+export default {
+  data() {
+    return { acronyms, count: 0 };
+  }
+}
+</script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  -webkit-font-smoothing: antialiased;
   color: #2c3e50;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
   margin-top: 60px;
+  text-align: center;
+}
+table {
+  text-align: left;
 }
 </style>
