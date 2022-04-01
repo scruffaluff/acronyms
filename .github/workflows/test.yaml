@@ -54,9 +54,6 @@ jobs:
 
   test-chart:
     name: Run Helm test suite
-    defaults:
-      run:
-        working-directory: chart
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
