@@ -17,22 +17,30 @@ mkcert \
   '*.nip.io'
 mkcert -install
 
-if [[ ! "$(kubectl -n kube-system get secret default-tls-certs)" ]]; then
-  kubectl --namespace kube-system \
-    create secret tls default-tls-certs  \
+kubectl config set-context --current --namespace=kube-system
+
+if [[ ! "$(kubectl get secret default-tls-certs 2> /dev/null)" ]]; then
+  kubectl create secret tls default-tls-certs  \
     --cert certs/star_nip_io.crt \
     --key certs/star_nip_io.key
 fi
 
-kubectl apply -f chart/dev.yaml
+# Kubectl wait does not work if the resource has not yet been created. Visit
+# https://github.com/kubernetes/kubernetes/issues/83242 for more information.
+while [[ ! "$(kubectl get deployment traefik 2> /dev/null)" ]]; do 
+  sleep 1; 
+done
 
-if [[ ! "$(kubectl get namespace acronyms)" ]]; then
+kubectl apply -f chart/dev/traefik.yaml
+
+if [[ ! "$(kubectl get namespace acronyms 2> /dev/null)" ]]; then
   kubectl create namespace acronyms
 fi
 
-if [[ ! "$(kubectl -n acronyms get secret acronyms)" ]]; then
-  kubectl --namespace acronyms \
-    create secret generic acronyms \
+kubectl config set-context --current --namespace=acronyms
+
+if [[ ! "$(kubectl get secret acronyms 2> /dev/null)" ]]; then
+  kubectl create secret generic acronyms \
     --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
     --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
 fi

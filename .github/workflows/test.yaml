@@ -63,14 +63,24 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      - name: Install Kubectl
+        run: |
+          version="$(curl -LSs https://dl.k8s.io/release/stable.txt)"
+          curl -LOSs "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl"
+          sudo install kubectl /usr/local/bin/kubectl
       - name: Install K3d
         run: >-
           curl -LSfs
           https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+      - name: Install Helm
+        uses: azure/setup-helm@v1
       - name: Create K3d Kubernetes cluster
         run: k3d cluster create --config chart/k3d.yaml
       - name: Configure K3d Kubernetes cluster
-        run: bash dev.sh
+        run: |
+          kubectl create secret generic acronyms \
+            --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
+            --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
       - name: Build backend Docker image
         uses: docker/build-push-action@v2
         with:
@@ -85,10 +95,8 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: "registry.localhost:5001/scruffaluff/acronyms-frontend:latest"
-      - name: Install Helm
-        uses: azure/setup-helm@v1
       - name: Deploy Helm release
-        run: helm install --values chart/values_dev.yaml acronyms ./chart
+        run: helm install --values chart/ci/values.yaml acronyms ./chart
       - name: Run test suite
         run: helm test acronyms
 
