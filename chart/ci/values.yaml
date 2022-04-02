@@ -1,7 +1,7 @@
 ---
 image:
   repository:
-    backend: registry.localhost:5001/scruffaluff/acronyms-backend
-    frontend: registry.localhost:5001/scruffaluff/acronyms-frontend
+    backend: localhost:5001/scruffaluff/acronyms-backend
+    frontend: localhost:5001/scruffaluff/acronyms-frontend
   pullPolicy: IfNotPresent
   tag: latest
