@@ -81,8 +81,6 @@ jobs:
           kubectl create secret generic acronyms \
             --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
             --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build backend Docker image
         uses: docker/build-push-action@v2
         with:
