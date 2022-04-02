@@ -33,19 +33,23 @@
     </div>
   </div>
 
-  <table
-    class="container table is-fullwidth is-bordered is-hoverable has-text-left"
-  >
+  <table class="container table is-fullwidth is-hoverable has-text-left">
     <thead>
       <tr>
         <th>Abbreviation</th>
         <th>Expansion</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="acronym in acronymsFiltered">
         <td>{{ acronym.abbreviation }}</td>
         <td>{{ acronym.expansion }}</td>
+        <td>
+          <span class="icon is-left is-small" @click="remove(acronym.id)">
+            <i class="fas fa-trash-can"></i>
+          </span>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -58,6 +62,24 @@ interface Acronym {
   id: number;
   abbreviation: string;
   expansion: string;
+}
+
+async function remove(id: number): Promise<void> {
+  const response = await fetch(`/api/${id}`, {
+    method: "DELETE",
+  });
+  await fetchData();
+
+  search.value = " ";
+  search.value = "";
+}
+
+async function fetchData(): Promise<void> {
+  const response = await fetch("/api");
+  acronyms = await response.json();
+
+  search.value = " ";
+  search.value = "";
 }
 
 let acronyms: Array<Acronym> = [];
@@ -79,8 +101,5 @@ const acronymsFiltered = computed(() => {
   }
 });
 
-onMounted(async () => {
-  const response = await fetch("/api");
-  acronyms = await response.json();
-});
+onMounted(fetchData);
 </script>

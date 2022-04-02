@@ -25,13 +25,14 @@ class AcronymBody(BaseModel):
     expansion: str
 
 
-@app.delete("/api")
+@app.delete("/api/{id}")
 async def delete_acronym(
     id: int, session: Session = Depends(models.get_db)
 ) -> None:
     """Insert an acronym to database."""
     session.query(Acronym).filter(Acronym.id == id).delete()
     session.commit()
+    return {"ok": True}
 
 
 @app.get("/api")
