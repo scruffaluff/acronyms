@@ -5,7 +5,7 @@ named __main__.py.
 """
 
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
@@ -28,7 +28,7 @@ class AcronymBody(BaseModel):
 @app.delete("/api/{id}")
 async def delete_acronym(
     id: int, session: Session = Depends(models.get_db)
-) -> None:
+) -> Dict[str, bool]:
     """Insert an acronym to database."""
     session.query(Acronym).filter(Acronym.id == id).delete()
     session.commit()

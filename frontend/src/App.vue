@@ -36,9 +36,13 @@
   <table class="container table is-fullwidth is-hoverable has-text-left">
     <thead>
       <tr>
-        <th>Abbreviation</th>
-        <th>Expansion</th>
-        <th></th>
+        <th v-for="column in columns">
+          {{ column.name }}
+          <span class="icon is-small" @click="switchSort(column.name)">
+            <i class="fas" :class="column.icon"></i>
+          </span>
+        </th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
@@ -46,7 +50,7 @@
         <td>{{ acronym.abbreviation }}</td>
         <td>{{ acronym.expansion }}</td>
         <td>
-          <span class="icon is-left is-small" @click="remove(acronym.id)">
+          <span class="icon is-right" @click="remove(acronym.id)">
             <i class="fas fa-trash-can"></i>
           </span>
         </td>
@@ -56,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 
 interface Acronym {
   id: number;
@@ -65,10 +69,8 @@ interface Acronym {
 }
 
 async function remove(id: number): Promise<void> {
-  const response = await fetch(`/api/${id}`, {
-    method: "DELETE",
-  });
-  await fetchData();
+  await fetch(`/api/${id}`, { method: "DELETE" });
+  acronyms = acronyms.filter((acronym) => acronym.id !== id);
 
   search.value = " ";
   search.value = "";
@@ -78,11 +80,45 @@ async function fetchData(): Promise<void> {
   const response = await fetch("/api");
   acronyms = await response.json();
 
+  updateSearch();
+}
+
+function sort(column: { name: string; ascending: boolean }): void {
+  const name = column.name as keyof Acronym;
+
+  if (column.ascending) {
+    acronyms.sort((left, right) => (left[name] > right[name] ? 1 : -1));
+  } else {
+    acronyms.sort((left, right) => (left[name] < right[name] ? 1 : -1));
+  }
+
+  updateSearch();
+}
+
+function switchSort(name: string): void {
+  const column = columns.filter((order) => order.name == name)[0];
+
+  if (column.ascending) {
+    column.icon = "fa-arrow-down";
+    column.ascending = false;
+  } else {
+    column.icon = "fa-arrow-up";
+    column.ascending = true;
+  }
+
+  sort(column);
+}
+
+function updateSearch(): void {
   search.value = " ";
   search.value = "";
 }
 
 let acronyms: Array<Acronym> = [];
+let columns = reactive([
+  { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
+  { name: "expansion", ascending: true, icon: "fa-arrow-up" },
+]);
 const search = ref("");
 
 const acronymsFiltered = computed(() => {
@@ -103,3 +139,9 @@ const acronymsFiltered = computed(() => {
 
 onMounted(fetchData);
 </script>
+
+<style>
+th {
+  text-transform: capitalize;
+}
+</style>

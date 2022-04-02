@@ -90,6 +90,8 @@ jobs:
           docker push "${prefix}-frontend:latest"
       - name: Deploy Helm release
         run: helm install --values chart/ci/values.yaml acronyms ./chart
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Run test suite
         run: |
           sleep 10
