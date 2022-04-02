@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-menu" style="margin-right: 0px;">
+    <div class="navbar-menu" style="margin-right: 0px">
       <div class="navbar-start">
         <a class="navbar-item title is-4 has-text-primary">Acronyms</a>
       </div>
@@ -26,6 +26,9 @@
           type="text"
           v-model="search"
         />
+        <span class="icon is-left is-small">
+          <i class="fas fa-search"></i>
+        </span>
       </div>
     </div>
   </div>

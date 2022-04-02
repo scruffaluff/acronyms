@@ -54,9 +54,6 @@ jobs:
 
   test-chart:
     name: Run Helm test suite
-    env:
-      ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}
-      ACRONYMS_POSTGRES_USER: ${{ secrets.ACRONYMS_POSTGRES_USER }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -77,6 +74,9 @@ jobs:
       - name: Create K3d Kubernetes cluster
         run: k3d cluster create --config chart/k3d.yaml
       - name: Configure K3d Kubernetes cluster
+        env:
+          ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}
+          ACRONYMS_POSTGRES_USER: ${{ secrets.ACRONYMS_POSTGRES_USER }}
         run: |
           kubectl create secret generic acronyms \
             --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
