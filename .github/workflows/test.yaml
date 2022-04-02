@@ -91,7 +91,9 @@ jobs:
       - name: Deploy Helm release
         run: helm install --values chart/ci/values.yaml acronyms ./chart
       - name: Run test suite
-        run: helm test acronyms
+        run: |
+          sleep 10
+          helm test acronyms
 
   test-frontend:
     name: Run frontend test suite for Node ${{ matrix.node }}
