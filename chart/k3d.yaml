@@ -22,7 +22,7 @@ ports:
 # Used for Tilt development.
 registries:
   create:
-    name: localhost
+    name: registry.localhost
     host: "0.0.0.0"
     # Avoid port 5000, since MacOS control center uses that port.
     hostPort: "5001"

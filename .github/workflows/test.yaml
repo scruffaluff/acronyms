@@ -81,20 +81,22 @@ jobs:
           kubectl create secret generic acronyms \
             --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
             --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Build backend Docker image
         uses: docker/build-push-action@v2
         with:
           context: backend
           file: backend/Dockerfile
           push: true
-          tags: "localhost:5001/scruffaluff/acronyms-backend:latest"
+          tags: "registry.localhost:5001/scruffaluff/acronyms-backend:latest"
       - name: Build frontend Docker image
         uses: docker/build-push-action@v2
         with:
           context: frontend
           file: frontend/Dockerfile
           push: true
-          tags: "localhost:5001/scruffaluff/acronyms-frontend:latest"
+          tags: "registry.localhost:5001/scruffaluff/acronyms-frontend:latest"
       - name: Deploy Helm release
         run: helm install --values chart/ci/values.yaml acronyms ./chart
       - name: Run test suite
