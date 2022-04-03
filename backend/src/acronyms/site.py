@@ -38,11 +38,15 @@ async def delete_acronym(
 @app.get("/api")
 async def get_acronym(
     abbreviation: Optional[str] = None,
+    expansion: Optional[str] = None,
+    id: Optional[int] = None,
     session: Session = Depends(models.get_db),
 ) -> Optional[Any]:
     """Get all matching acronyms."""
-    query = session.query(Acronym.id, Acronym.abbreviation, Acronym.expansion)
+    query = session.query(Acronym)
 
+    if id is not None:
+        return query.get(id)
     if abbreviation is not None:
         query = query.filter(Acronym.abbreviation == abbreviation)
 
@@ -60,3 +64,17 @@ async def post_acronym(
     session.add(acronym_)
     session.commit()
     return acronym_.id
+
+
+@app.put("/api/{id}")
+async def put_acronym(
+    id: int,
+    body: AcronymBody,
+    session: Session = Depends(models.get_db),
+) -> Dict[str, bool]:
+    """Get all matching acronyms."""
+    acronym = session.query(Acronym).filter(Acronym.id == id)
+    acronym.update(body.dict())
+
+    session.commit()
+    return {"ok": True}

@@ -9,6 +9,20 @@ from sqlalchemy.orm import Session
 from acronyms.models import Acronym
 
 
+def test_delete_acronym(client: TestClient) -> None:
+    """Fetch acronym from database by abbreviation."""
+    response = client.get("/api")
+    assert response.status_code == 200
+    assert 1 in [acronym["id"] for acronym in response.json()]
+
+    response = client.delete("/api/1")
+    assert response.status_code == 200
+
+    response = client.get("/api")
+    assert response.status_code == 200
+    assert 1 not in [acronym["id"] for acronym in response.json()]
+
+
 def test_get_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     expected = [
@@ -43,3 +57,18 @@ def test_query_acronym(database: Session) -> None:
         database.query(Acronym).filter(Acronym.abbreviation == "AM").first(),
     )
     assert result.expansion == "Ante Meridiem"
+
+
+def test_put_acronym(client: TestClient) -> None:
+    """Fetch acronym from database by abbreviation."""
+    response = client.get("/api?id=1")
+    assert response.status_code == 200
+    assert response.json()["expansion"] == "Ante Meridiem"
+
+    body = {"abbreviation": "AM", "expansion": "Amplitude Modulation"}
+    response = client.put("/api/1", json=body)
+    assert response.status_code == 200
+
+    response = client.get("/api?id=1")
+    assert response.status_code == 200
+    assert response.json()["expansion"] == "Amplitude Modulation"
