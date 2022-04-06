@@ -1,18 +1,29 @@
 FROM python:3.9.11
 
-ENV POETRY_VIRTUALENVS_IN_PROJECT=1 PATH="/home/server/.local/bin:$PATH"
+ARG TARGETARCH
 
-RUN adduser server
+ENV POETRY_VIRTUALENVS_IN_PROJECT=1 PATH="/home/backend/.local/bin:$PATH"
 
-USER server
+RUN adduser backend
+
+USER backend
 
 RUN pip install poetry
 
-COPY --chown=server . /repo
+COPY --chown=backend . /repo
 
 WORKDIR /repo
 
 RUN poetry install
+
+# Set Bash as default shell.
+SHELL ["/bin/bash", "-c"]
+
+# Required on ARM images due to psycopg2-binary bug.
+RUN if [[ "$TARGETARCH" == "arm64" ]]; then \
+        poetry run pip uninstall psycopg2-binary; \
+        poetry run pip install psycopg2==2.9.3; \
+    fi
 
 EXPOSE 8000
 
