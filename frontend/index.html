@@ -14,12 +14,17 @@
     <!-- Uncomment the following line to debug CSS layout. -->
     <!-- <link rel="stylesheet" href="/styles/debug.css"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      #app {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+    </style>
     <title>Acronyms</title>
   </head>
   <body>
-    <section class="section">
-      <div class="container is-max-desktop" id="app"></div>
-    </section>
+    <div class="container" id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
