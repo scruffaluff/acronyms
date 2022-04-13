@@ -9,14 +9,6 @@ COPY . /repo
 RUN pip install /repo \
     && rm -fr /repo
 
-# Set Bash as default shell.
-SHELL ["/bin/bash", "-c"]
-
-# Required on ARM images due to psycopg2-binary bug.
-RUN if [[ "$TARGETARCH" == "arm64" ]]; then \
-        pip uninstall psycopg2-binary && pip install psycopg2==2.9.3; \
-    fi
-
 USER backend
 WORKDIR /home/backend
 
