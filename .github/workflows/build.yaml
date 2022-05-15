@@ -44,7 +44,7 @@ jobs:
           poetry run black --check .
           poetry run flake8 .
           poetry run mypy --install-types --non-interactive .
-      - uses: hadolint/hadolint-action@v2
+      - uses: hadolint/hadolint-action@v2.1.0
         with:
           dockerfile: Dockerfile
           failure-threshold: ignore
@@ -86,7 +86,7 @@ jobs:
         run: npm install
       - name: Lint code
         run: npm run lint:test
-      - uses: hadolint/hadolint-action@v2
+      - uses: hadolint/hadolint-action@v2.1.0
         with:
           dockerfile: Dockerfile
           failure-threshold: ignore
