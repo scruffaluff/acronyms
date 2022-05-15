@@ -38,7 +38,7 @@ version = "0.1.0"
 
 [tool.poetry.dependencies]
 fastapi = "^0.75.0"
-psycopg = {extras = ["pool"], version = "^3.0.0"}
+psycopg2 = "^2.9.3"
 pydantic = "^1.9.0"
 python = "^3.9.0"
 SQLAlchemy = "^1.0.0"
@@ -56,6 +56,9 @@ flake8-import-order = "^0.18.0"
 mccabe = "^0.6.0"
 mypy = "^0.942"
 pdbpp = "^0.10.0"
+# pytest-postgresql requires psycopg, a.k.a. psycopg2 version 3, but sqlalchemy
+# won't support psycopg until sqlalchemy 2.0.0.
+psycopg = {extras = ["pool"], version = "^3.0.0"}
 py-spy = "^0.3.0"
 pytest = "^7.1.0"
 pytest-cov = "^3.0.0"

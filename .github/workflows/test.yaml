@@ -72,7 +72,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v1
       - name: Create K3d Kubernetes cluster
-        run: k3d cluster create --config chart/k3d.yaml
+        run: k3d cluster create --config scripts/k3d.yaml
       - name: Configure K3d Kubernetes cluster
         env:
           ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}

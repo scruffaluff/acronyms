@@ -4,7 +4,7 @@
 from typing import Iterator
 
 from fastapi.testclient import TestClient
-from psycopg2.extensions import connection as Connection
+from psycopg import Connection
 import pytest
 import sqlalchemy
 from sqlalchemy.engine.base import Engine
@@ -48,7 +48,7 @@ def database(session: Session) -> Session:
 
 
 @pytest.fixture
-def engine(connection: Connection) -> Engine:
+def engine(connection: str) -> Engine:
     """Engine for temporary PostgreSQL database."""
     return sqlalchemy.create_engine(connection)
 
