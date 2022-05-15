@@ -1,4 +1,4 @@
-FROM node:17.8.0 as build
+FROM node:18.1.0 as build
 
 WORKDIR /repo
 

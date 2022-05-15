@@ -11,8 +11,10 @@ spec:
   containers:
     - name: curl
       image: "curlimages/curl:7.82.0"
-      command: ['curl']
-      args: ['{{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}/api']
+      command:
+        - curl
+      args:
+        - '{{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}/api'
   restartPolicy: Never
 
 ---
@@ -28,13 +30,14 @@ spec:
   containers:
     - name: curl
       image: "curlimages/curl:7.82.0"
-      command: ['curl']
+      command:
+        - curl
       args:
         - -X
         - POST
         - --data
         - '{"abbreviation": "ANOVA", "expansion": "Analysis Of Variance"}'
         - --header 
-        - 'Content-Type: application/json'
+        - "Content-Type: application/json"
         - {{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}/api
   restartPolicy: Never

@@ -1,0 +1,6 @@
+# Hadolint configuration file.
+#
+# For more information, visit https://github.com/hadolint/hadolint#configure.
+
+---
+failure-threshold: none
