@@ -44,6 +44,10 @@ jobs:
           poetry run black --check .
           poetry run flake8 .
           poetry run mypy --install-types --non-interactive .
+      - uses: hadolint/hadolint-action@v2
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: ignore
 
   lint-chart:
     name: Check chart code with formatter and linter
@@ -82,3 +86,7 @@ jobs:
         run: npm install
       - name: Lint code
         run: npm run lint:test
+      - uses: hadolint/hadolint-action@v2
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: ignore

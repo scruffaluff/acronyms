@@ -1,4 +1,4 @@
-FROM python:3.9.11
+FROM python:3.9.12
 
 ARG TARGETARCH
 
@@ -6,7 +6,8 @@ RUN adduser backend
 
 COPY . /repo
 
-RUN pip install /repo \
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir /repo \
     && rm -fr /repo
 
 USER backend
