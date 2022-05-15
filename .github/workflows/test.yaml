@@ -89,7 +89,7 @@ jobs:
           docker build -t "${prefix}-frontend:latest" frontend
           docker push "${prefix}-frontend:latest"
       - name: Deploy Helm release
-        run: helm install --values chart/ci/values.yaml acronyms ./chart
+        run: helm install --values chart/values_ci.yaml acronyms ./chart
       - name: Run test suite
         run: |
           sleep 60

@@ -2,7 +2,7 @@
 #
 # For more information, visit https://docs.tilt.dev.
 
-local_resource("setup", "./chart/dev/setup.sh")
+local_resource("setup", "./scripts/setup.sh")
 
 docker_build(
     "scruffaluff/acronyms-backend",
@@ -25,6 +25,6 @@ yaml = helm(
     "./chart",
     name="acronyms",
     namespace="acronyms",
-    values=["./chart/dev/values.yaml"],
+    values=["./chart/values_local.yaml"],
 )
 k8s_yaml(yaml)

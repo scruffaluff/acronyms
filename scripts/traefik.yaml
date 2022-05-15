@@ -19,7 +19,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`traefik-127-0-0-1.nip.io`)
+    - match: Host(`traefik.127-0-0-1.nip.io`)
       kind: Rule
       services:
         - name: api@internal

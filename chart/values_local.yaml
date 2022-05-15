@@ -10,10 +10,10 @@ service:
 ingress:
   enabled: true
   hosts:
-    - host: acronyms-127-0-0-1.nip.io
+    - host: acronyms.127-0-0-1.nip.io
       paths:
         - path: /
           pathType: Prefix
   tls:
     - hosts:
-        - acronyms-127-0-0-1.nip.io
+        - acronyms.127-0-0-1.nip.io
