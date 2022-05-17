@@ -54,15 +54,27 @@ jobs:
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v2
+      - name: Install Node interpreter
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Install Prettier formatter
+        run: npm install -g prettier
+      - name: Check configuration file formatting
+        run: prettier --check .
       - name: Lint Dockerfiles
         uses: hadolint/hadolint-action@v2.1.0
         with:
           recursive: true
       - name: Install Helm
         uses: azure/setup-helm@v1
+      - name: Install Helm plugins
+        run: |
+          helm plugin install https://github.com/datreeio/helm-datree
       - name: Lint code
         run: |
-          helm lint
+          helm lint --strict
+          helm datree test --verbose .
 
   lint-frontend:
     name: Check frontend code with formatter and linter
