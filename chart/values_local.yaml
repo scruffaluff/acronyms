@@ -4,6 +4,7 @@
 
 ---
 ingress:
+  className: ""
   enabled: true
   hosts:
     - host: acronyms.127-0-0-1.nip.io
@@ -18,11 +19,11 @@ replicaCount: 2
 
 resources:
   limits:
-    cpu: 0.25
-    memory: 1G
-  requests:
     cpu: 0.5
     memory: 4G
+  requests:
+    cpu: 0.25
+    memory: 1G
 
 service:
   type: ClusterIP

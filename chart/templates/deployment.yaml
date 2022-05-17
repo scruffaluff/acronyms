@@ -48,10 +48,18 @@ spec:
                   key: database-user
           image: "{{ .Values.image.repository.backend }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 8000
           ports:
             - name: http
               containerPort: 8000
               protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 8000
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
@@ -100,8 +108,14 @@ spec:
                   name: {{ template "acronyms.fullname" . }}
                   key: database-user
           image: "postgres:14.1"
+          livenessProbe:
+            tcpSocket:
+              port: 5432
           ports:
             - containerPort: 5432
+          readinessProbe:
+            tcpSocket:
+              port: 5432
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -146,10 +160,18 @@ spec:
         - name: {{ include "acronyms.fullname" . }}-frontend
           image: "{{ .Values.image.repository.frontend }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
