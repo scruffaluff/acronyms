@@ -2,7 +2,7 @@ FROM python:3.9.12
 
 ARG TARGETARCH
 
-RUN adduser backend
+RUN adduser --uid 1000 backend
 
 COPY . /repo
 
@@ -10,7 +10,7 @@ COPY . /repo
 RUN pip install --no-cache-dir /repo \
     && rm -fr /repo
 
-USER backend
+USER 1000
 WORKDIR /home/backend
 
 EXPOSE 8000

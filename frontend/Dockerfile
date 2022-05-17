@@ -10,8 +10,6 @@ COPY . .
 
 RUN npm run build
 
-FROM nginx:1.21.6
+FROM nginxinc/nginx-unprivileged:1.21.6
 
 COPY --from=build /repo/dist /usr/share/nginx/html
-
-EXPOSE 80

@@ -64,6 +64,8 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
+      securityContext:
+        runAsNonRoot: true
 
 ---
 apiVersion: apps/v1
@@ -126,6 +128,9 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
@@ -167,15 +172,15 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 8080
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           readinessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 8080
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
@@ -184,6 +189,9 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
