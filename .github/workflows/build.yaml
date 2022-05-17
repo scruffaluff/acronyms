@@ -74,7 +74,7 @@ jobs:
       - name: Lint code
         run: |
           helm lint --strict
-          helm datree test --verbose .
+          helm datree test --verbose . -- --values values_local.yaml
 
   lint-frontend:
     name: Check frontend code with formatter and linter

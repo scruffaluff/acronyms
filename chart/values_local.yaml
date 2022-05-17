@@ -3,10 +3,6 @@
 # Declare variables to be passed into your templates.
 
 ---
-replicaCount: 1
-service:
-  type: ClusterIP
-  port: 8000
 ingress:
   enabled: true
   hosts:
@@ -17,3 +13,17 @@ ingress:
   tls:
     - hosts:
         - acronyms.127-0-0-1.nip.io
+
+replicaCount: 2
+
+resources:
+  limits:
+    cpu: 0.25
+    memory: 1G
+  requests:
+    cpu: 0.5
+    memory: 4G
+
+service:
+  type: ClusterIP
+  port: 8000

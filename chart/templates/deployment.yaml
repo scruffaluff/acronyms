@@ -11,6 +11,10 @@ spec:
     matchLabels:
       {{- include "acronyms.selectorLabels" . | nindent 6 }}-backend
   template:
+    {{- with .Values.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
@@ -19,6 +23,10 @@ spec:
       labels:
         {{- include "acronyms.selectorLabels" . | nindent 8 }}-backend
     spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "acronyms.fullname" . }}-backend
           env:
@@ -44,10 +52,8 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
 
 ---
 apiVersion: apps/v1
@@ -57,7 +63,7 @@ metadata:
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       # Associates each pod with an "app: postgres" label to the deployment.
@@ -65,11 +71,19 @@ spec:
   # Template is a nested Kubernetes object since it has its own metadata and
   # specification.
   template:
+    {{- with .Values.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
     metadata:
       labels:
         # Adds the "app: postgres" label to each pod.
         app: {{ include "acronyms.fullname" . }}-database
     spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "acronyms.fullname" . }}-database
           env:
@@ -88,6 +102,16 @@ spec:
           image: "postgres:14.1"
           ports:
             - containerPort: 5432
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
 ---
 apiVersion: apps/v1
@@ -102,6 +126,10 @@ spec:
     matchLabels:
       {{- include "acronyms.selectorLabels" . | nindent 6 }}-frontend
   template:
+    {{- with .Values.imagePullSecrets }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
@@ -110,6 +138,10 @@ spec:
       labels:
         {{- include "acronyms.selectorLabels" . | nindent 8 }}-frontend
     spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "acronyms.fullname" . }}-frontend
           image: "{{ .Values.image.repository.frontend }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -118,7 +150,13 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

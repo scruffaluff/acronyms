@@ -2,36 +2,35 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "acronyms.fullname" . }}-test-backend-connection"
   annotations:
     "helm.sh/hook": test
+  name: "{{ include "acronyms.fullname" . }}-test-backend-connection"
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
   containers:
     - name: curl
-      image: "curlimages/curl:7.82.0"
-      command:
-        - curl
       args:
         - '{{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}/api'
+      command:
+        - curl
+      image: "curlimages/curl:7.82.0"
+      resources:
+        {{- toYaml .Values.resources | nindent 8 }}
   restartPolicy: Never
 
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "acronyms.fullname" . }}-test-backend-post"
   annotations:
     "helm.sh/hook": test
+  name: "{{ include "acronyms.fullname" . }}-test-backend-post"
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
   containers:
     - name: curl
-      image: "curlimages/curl:7.82.0"
-      command:
-        - curl
       args:
         - -X
         - POST
@@ -40,4 +39,9 @@ spec:
         - --header 
         - "Content-Type: application/json"
         - {{ include "acronyms.fullname" . }}-backend:{{ .Values.service.port }}/api
+      command:
+        - curl
+      image: "curlimages/curl:7.82.0"
+      resources:
+        {{- toYaml .Values.resources | nindent 8 }}
   restartPolicy: Never
