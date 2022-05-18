@@ -10,7 +10,7 @@ COPY . /repo
 RUN pip install --no-cache-dir /repo \
     && rm -fr /repo
 
-USER 1000
+USER backend
 WORKDIR /home/backend
 
 EXPOSE 8000

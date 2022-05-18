@@ -65,7 +65,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
       securityContext:
-        runAsNonRoot: true
+        readOnlyRootFilesystem: true
 
 ---
 apiVersion: apps/v1
@@ -128,9 +128,6 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      securityContext:
-        readOnlyRootFilesystem: true
-        runAsNonRoot: true
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
@@ -191,7 +188,6 @@ spec:
       {{- end }}
       securityContext:
         readOnlyRootFilesystem: true
-        runAsNonRoot: true
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

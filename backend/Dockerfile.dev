@@ -4,8 +4,7 @@ ARG TARGETARCH
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1 PATH="/home/backend/.local/bin:$PATH"
 
-RUN adduser backend
-
+RUN adduser --uid 1000 backend
 USER backend
 
 RUN pip install poetry
