@@ -28,6 +28,8 @@
 **/.ipynb_checkpoints/
 **/*.egg-info/
 dist/
+Dockerfile
+Dockerfile.dev
 environment.yml
 f1
 flit.ini
