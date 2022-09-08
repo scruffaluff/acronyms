@@ -1,22 +1,18 @@
-FROM node:18.1.0 as frontend
+FROM node:18.8.0 as frontend
 
 WORKDIR /repo
 
-COPY frontend/package*.json ./
+COPY . .
 
-RUN npm install
+RUN npm install && npm run build
 
-COPY frontend .
-
-RUN npm run build
-
-FROM python:3.9.12
+FROM python:3.10.7
 
 ARG TARGETARCH
 
 RUN adduser --uid 1000 acronyms
 
-COPY backend /repo
+COPY . /repo
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir /repo \
@@ -25,7 +21,7 @@ RUN pip install --no-cache-dir /repo \
 USER acronyms
 WORKDIR /app
 
-COPY --chown=acronyms --from=frontend /repo/dist /app
+COPY --chown=acronyms --from=frontend /repo/dist /app/dist
 
 EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]

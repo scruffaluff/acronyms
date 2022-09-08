@@ -9,7 +9,7 @@ import acronyms
 from tests import util
 
 
-REPO_PATH = pathlib.Path(__file__).parents[1]
+REPO_PATH = pathlib.Path(__file__).parents[2]
 
 
 def test_matching_structure() -> None:

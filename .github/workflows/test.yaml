@@ -22,9 +22,6 @@ on:
 jobs:
   test-backend:
     name: Run backend test suite for Python ${{ matrix.python }}
-    defaults:
-      run:
-        working-directory: backend
     strategy:
       fail-fast: false
       matrix:
@@ -40,10 +37,9 @@ jobs:
       - name: Cache Python packages
         uses: actions/cache@v2
         with:
-          path: backend/.venv
+          path: .venv
           key: >-
-            python-${{ matrix.python }}_poetry-${{
-            hashFiles('backend/poetry.lock') }}
+            python-${{ matrix.python }}_poetry-${{ hashFiles('poetry.lock') }}
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip poetry setuptools wheel
@@ -97,13 +93,10 @@ jobs:
 
   test-frontend:
     name: Run frontend test suite for Node ${{ matrix.node }}
-    defaults:
-      run:
-        working-directory: frontend
     strategy:
       fail-fast: false
       matrix:
-        node: ["16", "17"]
+        node: ["16", "18"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -117,8 +110,7 @@ jobs:
         with:
           path: node_modules
           key: >-
-            node-${{ matrix.node }}_npm-${{
-            hashFiles('frontend/package-lock.json') }}
+            node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm install
       - name: Run test suite

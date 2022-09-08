@@ -18,7 +18,7 @@ from acronyms.models import Acronym
 
 
 app = FastAPI()
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 
 
 class AcronymBody(BaseModel):
@@ -31,13 +31,13 @@ class AcronymBody(BaseModel):
 @app.get("/")
 def read_index() -> FileResponse:
     """Fetch frontend Vue entrypoint as site root."""
-    return FileResponse("index.html")
+    return FileResponse("dist/index.html")
 
 
 @app.get("/favicon.ico")
 def read_favicon() -> FileResponse:
     """Fetch site favicon."""
-    return FileResponse("favicon.ico")
+    return FileResponse("dist/favicon.ico")
 
 
 @app.delete("/api/{id}")
