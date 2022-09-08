@@ -34,6 +34,9 @@ homepage = "https://gitlab.com/scruffaluff/acronyms"
 keywords = []
 license = "MIT"
 name = "acronyms"
+packages = [
+    { include = "backend/src" },
+]
 version = "0.1.0"
 
 [tool.poetry.dependencies]

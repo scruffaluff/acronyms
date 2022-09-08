@@ -2,13 +2,37 @@
 #
 # For more information, visit https://git-scm.com/docs/gitignore.
 
+.benchmarks/
 .cache/
+.coverage
 .DS_Store
 .env
+.hypothesis/
+.mypy_cache/
+.pdbrc
+.pytest_cache/
+.python-version
+.tox/
+.venv/
 .vscode/settings.json
+*.ipynb
+*.pyc
 *.swp
 *.tar.gz
 *.whl
+**/__pycache__/
+**/.ipynb_checkpoints/
+**/*.egg-info/
 /tmp/
 certs/
+dist/
+environment.yml
+f1
+flit.ini
+node_modules/
 nohup.out
+Pipfile
+Pipfile.lock
+requirements.lock
+requirements.txt
+setup.py
