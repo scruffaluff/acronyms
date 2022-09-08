@@ -36,7 +36,6 @@ main() {
   fi
 
   mkdir -p "${repo_path}/certs"
-  mkcert -install
   mkcert \
     -cert-file "${repo_path}/certs/star_nip_io.crt" \
     -key-file "${repo_path}/certs/star_nip_io.key" \
@@ -73,9 +72,4 @@ main() {
   printf "\n\033[1;32m%s\033[0m\n" "${message}"
 }
 
-# Bash versions 3 and lower handle trap incorrectly for subshells. For more
-# information, visit https://unix.stackexchange.com/a/501669.
-if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-  trap 'handle_panic $? ${BASH_LINENO[@]}' ERR
-fi
 main

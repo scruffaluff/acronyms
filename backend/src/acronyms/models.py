@@ -14,15 +14,26 @@ Base = declarative_base()
 
 
 def get_db() -> Iterator[Session]:
-    """Engine and session for PostgreSQL database."""
-    database = os.environ["ACRONYMS_POSTGRES_DB"]
-    host = os.environ["ACRONYMS_POSTGRES_HOST"]
-    password = os.environ["ACRONYMS_POSTGRES_PASSWORD"]
-    port = os.environ["ACRONYMS_POSTGRES_PORT"]
-    user = os.environ["ACRONYMS_POSTGRES_USER"]
-    database_url = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+    """Create engine and session for database."""
+    type_ = os.environ.get("ACRONYMS_DATABASE_TYPE", "sqlite")
+    database = os.environ.get("ACRONYMS_DATABASE_NAME", "acronyms")
 
-    engine = sqlalchemy.create_engine(database_url)
+    if type_ == "postgresql":
+        host = os.environ["ACRONYMS_DATABASE_HOST"]
+        password = os.environ["ACRONYMS_DATABASE_PASSWORD"]
+        port = os.environ.get("ACRONYMS_DATABASE_PORT", "5432")
+        user = os.environ["ACRONYMS_DATABASE_USER"]
+
+        uri = f"{type_}://{user}:{password}@{host}:{port}/{database}"
+        engine = sqlalchemy.create_engine(uri)
+    elif type_ == "sqlite":
+        uri = f"sqlite:///./{database}.db"
+        engine = sqlalchemy.create_engine(
+            uri, connect_args={"check_same_thread": False}
+        )
+    else:
+        raise ValueError(f"Unsupported database type {type_}")
+
     Base.metadata.create_all(engine)
     with Session(engine) as session:  # type: ignore
         yield session

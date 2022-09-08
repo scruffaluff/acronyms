@@ -8,6 +8,8 @@ named __main__.py.
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -16,6 +18,7 @@ from acronyms.models import Acronym
 
 
 app = FastAPI()
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 
 class AcronymBody(BaseModel):
@@ -23,6 +26,18 @@ class AcronymBody(BaseModel):
 
     abbreviation: str
     expansion: str
+
+
+@app.get("/")
+def read_index() -> FileResponse:
+    """Fetch frontend Vue entrypoint as site root."""
+    return FileResponse("index.html")
+
+
+@app.get("/favicon.ico")
+def read_favicon() -> FileResponse:
+    """Fetch site favicon."""
+    return FileResponse("favicon.ico")
 
 
 @app.delete("/api/{id}")
