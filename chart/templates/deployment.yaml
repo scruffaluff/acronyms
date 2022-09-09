@@ -2,14 +2,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "acronyms.fullname" . }}-backend
+  name: {{ include "acronyms.fullname" . }}
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "acronyms.selectorLabels" . | nindent 6 }}-backend
+      {{- include "acronyms.selectorLabels" . | nindent 6 }}
   template:
     {{- with .Values.imagePullSecrets }}
     imagePullSecrets:
@@ -21,32 +21,15 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "acronyms.selectorLabels" . | nindent 8 }}-backend
+        {{- include "acronyms.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ include "acronyms.fullname" . }}-backend
-          env:
-            - name: ACRONYMS_POSTGRES_DB
-              value: acronyms
-            - name: ACRONYMS_POSTGRES_HOST
-              value: {{ include "acronyms.fullname" . }}-database
-            - name: ACRONYMS_POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "acronyms.fullname" . }}
-                  key: database-password
-            - name: ACRONYMS_POSTGRES_PORT
-              value: "5432"
-            - name: ACRONYMS_POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "acronyms.fullname" . }}
-                  key: database-user
-          image: "{{ .Values.image.repository.backend }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        - name: {{ include "acronyms.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
             httpGet:
@@ -64,131 +47,3 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
-      securityContext:
-        readOnlyRootFilesystem: true
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "acronyms.fullname" . }}-database
-  labels:
-    {{- include "acronyms.labels" . | nindent 4 }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      # Associates each pod with an "app: postgres" label to the deployment.
-      app: {{ include "acronyms.fullname" . }}-database
-  # Template is a nested Kubernetes object since it has its own metadata and
-  # specification.
-  template:
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
-    metadata:
-      labels:
-        # Adds the "app: postgres" label to each pod.
-        app: {{ include "acronyms.fullname" . }}-database
-    spec:
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      containers:
-        - name: {{ include "acronyms.fullname" . }}-database
-          env:
-            - name: POSTGRES_DB
-              value: acronyms
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "acronyms.fullname" . }}
-                  key: database-password
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "acronyms.fullname" . }}
-                  key: database-user
-          image: "postgres:14.1"
-          livenessProbe:
-            tcpSocket:
-              port: 5432
-          ports:
-            - containerPort: 5432
-          readinessProbe:
-            tcpSocket:
-              port: 5432
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          securityContext:
-            allowPrivilegeEscalation: false
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "acronyms.fullname" . }}-frontend
-  labels:
-    {{- include "acronyms.labels" . | nindent 4 }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      {{- include "acronyms.selectorLabels" . | nindent 6 }}-frontend
-  template:
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "acronyms.selectorLabels" . | nindent 8 }}-frontend
-    spec:
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      containers:
-        - name: {{ include "acronyms.fullname" . }}-frontend
-          image: "{{ .Values.image.repository.frontend }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8080
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8080
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          securityContext:
-            allowPrivilegeEscalation: false
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      securityContext:
-        readOnlyRootFilesystem: true
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}

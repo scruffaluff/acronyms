@@ -8,5 +8,5 @@ from playwright.sync_api import expect, Page
 
 def test_site_available(page: Page) -> None:
     """Website is available for external traffic."""
-    page.goto("http://localhost:8000")
+    page.goto("https://acronyms.127-0-0-1.nip.io")
     expect(page).to_have_title(re.compile("Acronyms"))

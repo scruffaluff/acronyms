@@ -15,19 +15,17 @@ autoscaling:
 fullnameOverride: ""
 
 image:
-  repository:
-    backend: scruffaluff/acronyms-backend
-    frontend: scruffaluff/acronyms-frontend
   pullPolicy: IfNotPresent
+  repository: scruffaluff/acronyms
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
 imagePullSecrets: []
 
 ingress:
-  enabled: false
-  className: ""
   annotations: {}
+  className: ""
+  enabled: false
   hosts:
     - host: chart-example.local
       paths:
@@ -50,8 +48,8 @@ resources: {}
 securityContext: {}
 
 service:
-  type: ClusterIP
   port: 80
+  type: ClusterIP
 
 serviceAccount:
   # Annotations to add to the service account

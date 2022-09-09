@@ -46,7 +46,7 @@ main() {
     kubectl --namespace kube-system create secret  \
       --cert "${repo_path}/certs/star_nip_io.crt" \
       --key "${repo_path}/certs/star_nip_io.key" \
-      tls default-tls-certs
+      tls ingress-tls-certs
   fi
 
   # Kubectl wait does not work if the resource has not yet been created. Visit
@@ -57,16 +57,6 @@ main() {
   done
 
   kubectl apply -f scripts/traefik.yaml
-
-  if ! kubectl get namespace acronyms 2> /dev/null; then
-    kubectl create namespace acronyms
-  fi
-
-  if ! kubectl --namespace acronyms get secret acronyms 2> /dev/null; then
-    kubectl --namespace acronyms create secret generic acronyms \
-      --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
-      --from-literal database-user="${ACRONYMS_POSTGRES_USERNAME?}"
-  fi
 
   message='Development environment is ready'
   printf "\n\033[1;32m%s\033[0m\n" "${message}"
