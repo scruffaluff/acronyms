@@ -12,40 +12,28 @@
 set -Eeou pipefail
 
 #######################################
-# Notify user if unexpected error with diagnostic information.
-#
-# Line number reporting will only be highest calling function for earlier
-# versions of Bash.
-#######################################
-handle_panic() {
-  local bold_red="\033[1;31m"
-  local default="\033[0m"
-
-  message="$0 panicked on line $2 with exit code $1"
-  printf "${bold_red}error${default}: %s\n" "${message}" >&2
-}
-
-#######################################
 # Script entrypoint.
 #######################################
 main() {
-  repo_path="$(dirname "$(dirname "$(realpath "$0")")")"
+  # Switch current directory to repository root.
+  cd "$(dirname "$(dirname "$(realpath "$0")")")"
+
 
   if ! k3d cluster list acronyms &> /dev/null; then
-    k3d cluster create --wait --config "${repo_path}/scripts/k3d.yaml"
+    k3d cluster create --wait --config scripts/k3d.yaml
   fi
 
-  mkdir -p "${repo_path}/certs"
+  mkdir -p certs
   mkcert \
-    -cert-file "${repo_path}/certs/star_nip_io.crt" \
-    -key-file "${repo_path}/certs/star_nip_io.key" \
+    -cert-file certs/wildcard_nip_io.crt \
+    -key-file certs/wildcard_nip_io.key \
     '*.127-0-0-1.nip.io'
 
-  if ! kubectl --namespace kube-system get secret default-tls-certs &> /dev/null 
+  if ! kubectl --namespace kube-system get secret ingress-tls-certs &> /dev/null 
   then
     kubectl --namespace kube-system create secret  \
-      --cert "${repo_path}/certs/star_nip_io.crt" \
-      --key "${repo_path}/certs/star_nip_io.key" \
+      --cert certs/wildcard_nip_io.crt \
+      --key certs/wildcard_nip_io.key \
       tls ingress-tls-certs
   fi
 
@@ -58,7 +46,11 @@ main() {
 
   kubectl apply -f scripts/traefik.yaml
 
-  message='Development environment is ready'
+  if ! kubectl get namespace acronyms 2> /dev/null; then
+    kubectl create namespace acronyms
+  fi
+
+  message='Local Kubernetes cluster is ready'
   printf "\n\033[1;32m%s\033[0m\n" "${message}"
 }
 
