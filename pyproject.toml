@@ -35,7 +35,7 @@ keywords = []
 license = "MIT"
 name = "acronyms"
 packages = [
-    { include = "acronyms", from = "backend/src" },
+    { from = "backend", include = "acronyms" }
 ]
 version = "0.1.0"
 
