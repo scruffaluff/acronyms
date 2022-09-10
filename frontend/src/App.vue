@@ -31,36 +31,21 @@
   </nav>
 
   <main class="main section">
-    <div class="mx-6 my-6 container level">
+    <div class="mx-6 my-6 container">
       <div class="field">
-        <h4 class="title is-5">Abbreviation</h4>
         <div class="control has-icons-left">
           <input
             class="input"
             placeholder="Search"
             type="text"
-            v-model="abbreviationInput"
+            v-model="search"
           />
           <span class="icon is-left is-small">
             <i class="fas fa-search"></i>
           </span>
         </div>
       </div>
-      <div class="field">
-        <h4 class="title is-5">Expansion</h4>
-        <div class="control has-icons-left">
-          <input
-            class="input"
-            placeholder="Search"
-            type="text"
-            v-model="expansionInput"
-          />
-          <span class="icon is-left is-small">
-            <i class="fas fa-search"></i>
-          </span>
-        </div>
-      </div>
-      <a class="button is-primary" v-on:click="post()">
+      <a class="button is-primary" v-on:click="beginPost()">
         <strong>Add</strong>
       </a>
     </div>
@@ -78,9 +63,26 @@
         </tr>
       </thead>
       <tbody>
+        <tr v-show="insert.enable">
+          <td>
+            <input
+              placeholder="Abbreviation"
+              type="text"
+              v-model="insert.abbreviation"
+            />
+          </td>
+          <td>
+            <input placeholder="Phrase" type="text" v-model="insert.phrase" />
+          </td>
+          <td>
+            <a class="button is-primary" v-on:click="post()">
+              <strong>Add</strong>
+            </a>
+          </td>
+        </tr>
         <tr v-for="acronym in acronymsFiltered" v-bind:key="acronym.id">
           <td>{{ acronym.abbreviation }}</td>
-          <td>{{ acronym.expansion }}</td>
+          <td>{{ acronym.phrase }}</td>
           <td>
             <span class="icon mx-1 is-right" @click="put(acronym.id)">
               <i class="fas fa-pencil"></i>
@@ -110,7 +112,17 @@ import { computed, onMounted, reactive, ref } from "vue";
 interface Acronym {
   id: number;
   abbreviation: string;
-  expansion: string;
+  phrase: string;
+}
+
+function beginPost(): void {
+  insert.enable = true;
+
+  if (search.value.includes(" ")) {
+    insert.phrase = search.value;
+  } else {
+    insert.abbreviation = search.value;
+  }
 }
 
 async function fetchData(): Promise<void> {
@@ -121,21 +133,23 @@ async function fetchData(): Promise<void> {
 async function post(): Promise<void> {
   await fetch(`/api`, {
     body: JSON.stringify({
-      abbreviation: abbreviationInput.value,
-      expansion: expansionInput.value,
+      abbreviation: insert.abbreviation,
+      phrase: insert.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
 
-  abbreviationInput.value = "";
-  expansionInput.value = "";
+  insert.abbreviation = "";
+  insert.phrase = "";
+  insert.enable = false;
+  search.value = "";
   await fetchData();
 }
 
 async function put(id: number): Promise<void> {
   await fetch(`/api/${id}`, {
-    body: JSON.stringify({ abbreviation: "BB", expansion: "Boop Bopping" }),
+    body: JSON.stringify({ abbreviation: "BB", phrase: "Boop Bopping" }),
     headers: { "Content-Type": "application/json" },
     method: "PUT",
   });
@@ -171,25 +185,28 @@ function switchSort(name: string): void {
   sort(column);
 }
 
-const abbreviationInput = ref("");
 let acronyms: { data: Array<Acronym> } = reactive({ data: [] });
 let columns = reactive([
   { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
-  { name: "expansion", ascending: true, icon: "fa-arrow-up" },
+  { name: "phrase", ascending: true, icon: "fa-arrow-up" },
 ]);
-const expansionInput = ref("");
+let insert = reactive({
+  abbreviation: "",
+  enable: false,
+  phrase: "",
+});
 const navBarBurger = ref(false);
+const search = ref("");
 
 const acronymsFiltered = computed(() => {
-  const abbreviation = abbreviationInput.value.toLowerCase();
-  const expansion = expansionInput.value.toLowerCase();
+  const text = search.value.toLowerCase();
 
-  const matches = acronyms.data.filter((acronym) =>
-    acronym.abbreviation.toLowerCase().includes(abbreviation)
-  );
-  return matches.filter((acronym) =>
-    acronym.expansion.toLowerCase().includes(expansion)
-  );
+  return acronyms.data.filter((acronym) => {
+    const abbreviation = acronym.abbreviation.toLowerCase();
+    const phrase = acronym.phrase.toLowerCase();
+
+    return abbreviation.includes(text) || phrase.includes(text);
+  });
 });
 
 onMounted(fetchData);

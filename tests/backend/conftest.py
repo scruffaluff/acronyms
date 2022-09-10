@@ -34,11 +34,11 @@ def connection(postgresql: Connection) -> str:
 def database(session: Session) -> Session:
     """Connection URI for temporary PostgreSQL database."""
     acronyms = [
-        Acronym(abbreviation="AM", expansion="Ante Meridiem"),
-        Acronym(abbreviation="DM", expansion="Data Mining"),
-        Acronym(abbreviation="DM", expansion="Direct Message"),
-        Acronym(abbreviation="RIP", expansion="Rest In Peace"),
-        Acronym(abbreviation="JSON", expansion="JavaScript Object Notation"),
+        Acronym(abbreviation="AM", phrase="Ante Meridiem"),
+        Acronym(abbreviation="DM", phrase="Data Mining"),
+        Acronym(abbreviation="DM", phrase="Direct Message"),
+        Acronym(abbreviation="RIP", phrase="Rest In Peace"),
+        Acronym(abbreviation="JSON", phrase="JavaScript Object Notation"),
     ]
 
     for acronym in acronyms:

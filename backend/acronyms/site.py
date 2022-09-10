@@ -25,7 +25,7 @@ class AcronymBody(BaseModel):
     """Post request validator for Acronym type."""
 
     abbreviation: str
-    expansion: str
+    phrase: str
 
 
 @app.get("/")
@@ -53,7 +53,7 @@ async def delete_acronym(
 @app.get("/api")
 async def get_acronym(
     abbreviation: Optional[str] = None,
-    expansion: Optional[str] = None,
+    phrase: Optional[str] = None,
     id: Optional[int] = None,
     session: Session = Depends(models.get_db),
 ) -> Optional[Any]:
@@ -73,9 +73,7 @@ async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
 ) -> int:
     """Insert an acronym to database."""
-    acronym_ = Acronym(
-        abbreviation=acronym.abbreviation, expansion=acronym.expansion
-    )
+    acronym_ = Acronym(abbreviation=acronym.abbreviation, phrase=acronym.phrase)
     session.add(acronym_)
     session.commit()
     return acronym_.id

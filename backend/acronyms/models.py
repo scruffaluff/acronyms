@@ -45,4 +45,4 @@ class Acronym(Base):
     __tablename__ = "acronyms"
     id = Column(Integer, primary_key=True, index=True)
     abbreviation = Column(String)
-    expansion = Column(String)
+    phrase = Column(String)

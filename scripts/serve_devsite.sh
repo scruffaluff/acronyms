@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Create local Kubernetes cluster for development.
+# Spawns development server with reloading on file changes.
 
 # Exit immediately if a command exits or pipes a non-zero return code.
 #
@@ -22,20 +22,22 @@ main() {
     mkcert \
       -cert-file certs/wildcard_nip_io.crt \
       -key-file certs/wildcard_nip_io.key \
-      '*.127-0-0-1.nip.io'
+      127-0-0-1.nip.io
   fi
 
-  npx vite build --watch --mode development &
-
-  acronyms \
-    --host acronyms.127-0-0-1.nip.io \
-    --port 8443 \
+  # Build once so that files are guaranteed to exist before backend starts.
+  npm run build
+  poetry run acronyms \
+    --host 127-0-0-1.nip.io \
     --reload \
-    --reload-delay 1.0 \
     --reload-dir backend/acronyms \
-    --reload-dir dist \
     --ssl-certfile certs/wildcard_nip_io.crt \
-    --ssl-keyfile certs/wildcard_nip_io.key
+    --ssl-keyfile certs/wildcard_nip_io.key &
+
+  # Sleeping for 1 second prevents vite from making folder "dist/assets"
+  # temporarily unavailable to the backend server.
+  sleep 1
+  npx vite build --watch --mode development
 }
 
 main
