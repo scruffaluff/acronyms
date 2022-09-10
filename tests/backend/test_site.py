@@ -1,9 +1,12 @@
 """Unit tests for acronyms."""
 
 
+import re
 from typing import cast
 
 from fastapi.testclient import TestClient
+from playwright.sync_api import expect, Page
+import pytest
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym
@@ -33,6 +36,12 @@ def test_get_acronym(client: TestClient) -> None:
     response = client.get("/api?abbreviation=DM")
     assert response.status_code == 200
     assert response.json() == expected
+
+
+def test_get_home(client: TestClient) -> None:
+    """Fetch acronym from database by abbreviation."""
+    response = client.get("/")
+    assert response.status_code == 200
 
 
 def test_post_acronym(client: TestClient) -> None:
@@ -72,3 +81,10 @@ def test_put_acronym(client: TestClient) -> None:
     response = client.get("/api?id=1")
     assert response.status_code == 200
     assert response.json()["expansion"] == "Amplitude Modulation"
+
+
+@pytest.mark.e2e
+def test_site_available(page: Page) -> None:
+    """Website is available for external traffic."""
+    page.goto("https://acronyms.127-0-0-1.nip.io")
+    expect(page).to_have_title(re.compile("Acronyms"))

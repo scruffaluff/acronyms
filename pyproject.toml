@@ -79,11 +79,9 @@ types-toml = "^0.10.0"
 acronyms = "acronyms.__main__:main"
 
 [tool.pytest.ini_options]
-addopts = "-sv"
+addopts = "--verbose --capture no -m 'not e2e'"
 markers = [
-    "functional: mark as functional test.",
-    "integration: mark as integration test.",
-    "unit: mark as unit test.",
+    "e2e: End to end tests"
 ]
 python_classes = "Test*"
 python_files = [
