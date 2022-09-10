@@ -31,26 +31,44 @@
   </nav>
 
   <main class="main section">
-    <div class="mx-6 my-6 container">
+    <div class="mx-6 my-6 container level">
       <div class="field">
-        <div class="control has-icons-left has-icons-right">
+        <h4 class="title is-5">Abbreviation</h4>
+        <div class="control has-icons-left">
           <input
             class="input"
             placeholder="Search"
             type="text"
-            v-model="search"
+            v-model="abbreviationInput"
           />
           <span class="icon is-left is-small">
             <i class="fas fa-search"></i>
           </span>
         </div>
       </div>
+      <div class="field">
+        <h4 class="title is-5">Expansion</h4>
+        <div class="control has-icons-left">
+          <input
+            class="input"
+            placeholder="Search"
+            type="text"
+            v-model="expansionInput"
+          />
+          <span class="icon is-left is-small">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+      <a class="button is-primary" v-on:click="post()">
+        <strong>Add</strong>
+      </a>
     </div>
 
     <table class="container table is-fullwidth is-hoverable has-text-left">
       <thead>
         <tr>
-          <th v-for="column in columns">
+          <th v-for="column in columns" v-bind:key="column.name">
             {{ column.name }}
             <span class="icon is-small" @click="switchSort(column.name)">
               <i class="fas" :class="column.icon"></i>
@@ -60,7 +78,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="acronym in acronymsFiltered">
+        <tr v-for="acronym in acronymsFiltered" v-bind:key="acronym.id">
           <td>{{ acronym.abbreviation }}</td>
           <td>{{ acronym.expansion }}</td>
           <td>
@@ -98,6 +116,21 @@ interface Acronym {
 async function fetchData(): Promise<void> {
   const response = await fetch("/api");
   acronyms.data = await response.json();
+}
+
+async function post(): Promise<void> {
+  await fetch(`/api`, {
+    body: JSON.stringify({
+      abbreviation: abbreviationInput.value,
+      expansion: expansionInput.value,
+    }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+
+  abbreviationInput.value = "";
+  expansionInput.value = "";
+  await fetchData();
 }
 
 async function put(id: number): Promise<void> {
@@ -138,28 +171,25 @@ function switchSort(name: string): void {
   sort(column);
 }
 
+const abbreviationInput = ref("");
 let acronyms: { data: Array<Acronym> } = reactive({ data: [] });
 let columns = reactive([
   { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
   { name: "expansion", ascending: true, icon: "fa-arrow-up" },
 ]);
+const expansionInput = ref("");
 const navBarBurger = ref(false);
-const search = ref("");
 
 const acronymsFiltered = computed(() => {
-  const text = search.value.toLowerCase();
+  const abbreviation = abbreviationInput.value.toLowerCase();
+  const expansion = expansionInput.value.toLowerCase();
 
-  if (!text) {
-    return acronyms.data;
-  } else if (text.includes(" ")) {
-    return acronyms.data.filter((acronym) =>
-      acronym.expansion.toLowerCase().includes(text)
-    );
-  } else {
-    return acronyms.data.filter((acronym) =>
-      acronym.abbreviation.toLowerCase().includes(text)
-    );
-  }
+  const matches = acronyms.data.filter((acronym) =>
+    acronym.abbreviation.toLowerCase().includes(abbreviation)
+  );
+  return matches.filter((acronym) =>
+    acronym.expansion.toLowerCase().includes(expansion)
+  );
 });
 
 onMounted(fetchData);

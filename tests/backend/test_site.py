@@ -69,7 +69,7 @@ def test_query_acronym(database: Session) -> None:
 
 
 def test_put_acronym(client: TestClient) -> None:
-    """Fetch acronym from database by abbreviation."""
+    """Update acronym values."""
     response = client.get("/api?id=1")
     assert response.status_code == 200
     assert response.json()["expansion"] == "Ante Meridiem"

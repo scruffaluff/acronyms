@@ -15,6 +15,7 @@
 .tox/
 .venv/
 .vscode/settings.json
+*.db
 *.ipynb
 *.pyc
 *.swp

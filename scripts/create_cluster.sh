@@ -5,11 +5,10 @@
 # Exit immediately if a command exits or pipes a non-zero return code.
 #
 # Flags:
-#   -E: Inheret trap on ERR signal for all functions and sub shells.
 #   -e: Exit immediately when a command pipeline fails.
 #   -o: Persist nonzero exit codes through a Bash pipe.
 #   -u: Throw an error when an unset variable is encountered.
-set -Eeou pipefail
+set -eou pipefail
 
 #######################################
 # Script entrypoint.
@@ -24,10 +23,12 @@ main() {
   fi
 
   mkdir -p certs
-  mkcert \
-    -cert-file certs/wildcard_nip_io.crt \
-    -key-file certs/wildcard_nip_io.key \
-    '*.127-0-0-1.nip.io'
+  if [[ ! (-f certs/wildcard_nip_io.crt && -f certs/wildcard_nip_io.key) ]]; then
+    mkcert \
+      -cert-file certs/wildcard_nip_io.crt \
+      -key-file certs/wildcard_nip_io.key \
+      '*.127-0-0-1.nip.io'
+  fi
 
   if ! kubectl --namespace kube-system get secret ingress-tls-certs &> /dev/null 
   then
