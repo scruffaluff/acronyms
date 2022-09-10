@@ -5,7 +5,7 @@ import os
 from typing import Iterator
 
 import sqlalchemy
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
@@ -43,6 +43,7 @@ class Acronym(Base):
     """SQL model for acronyms table."""
 
     __tablename__ = "acronyms"
+    __table_args__ = (UniqueConstraint("abbreviation", "phrase"),)
     id = Column(Integer, primary_key=True, index=True)
     abbreviation = Column(String)
     phrase = Column(String)

@@ -31,8 +31,8 @@
   </nav>
 
   <main class="main section">
-    <div class="mx-6 my-6 container">
-      <div class="field">
+    <div class="columns mx-6 my-6">
+      <div class="column field is-four-fifths mb-0">
         <div class="control has-icons-left">
           <input
             class="input"
@@ -45,9 +45,11 @@
           </span>
         </div>
       </div>
-      <a class="button is-primary" v-on:click="beginPost()">
-        <strong>Add</strong>
-      </a>
+      <div class="container column">
+        <a class="button is-primary" v-on:click="beginAdd()">
+          <strong>Add</strong>
+        </a>
+      </div>
     </div>
 
     <table class="container table is-fullwidth is-hoverable has-text-left">
@@ -66,31 +68,62 @@
         <tr v-show="insert.enable">
           <td>
             <input
+              class="input"
               placeholder="Abbreviation"
               type="text"
               v-model="insert.abbreviation"
             />
           </td>
           <td>
-            <input placeholder="Phrase" type="text" v-model="insert.phrase" />
+            <input
+              class="input"
+              placeholder="Phrase"
+              type="text"
+              v-model="insert.phrase"
+            />
           </td>
           <td>
-            <a class="button is-primary" v-on:click="post()">
-              <strong>Add</strong>
+            <a class="button is-primary" v-on:click="submitAdd()">
+              <strong>Submit</strong>
             </a>
           </td>
         </tr>
         <tr v-for="acronym in acronymsFiltered" v-bind:key="acronym.id">
-          <td>{{ acronym.abbreviation }}</td>
-          <td>{{ acronym.phrase }}</td>
-          <td>
-            <span class="icon mx-1 is-right" @click="put(acronym.id)">
-              <i class="fas fa-pencil"></i>
-            </span>
-            <span class="icon mx-1 is-right" @click="remove(acronym.id)">
-              <i class="fas fa-trash-can"></i>
-            </span>
-          </td>
+          <template v-if="acronym.edit">
+            <td>
+              <input
+                class="input"
+                placeholder="Abbreviation"
+                type="text"
+                v-model="acronym.abbreviation"
+              />
+            </td>
+            <td>
+              <input
+                class="input"
+                placeholder="Phrase"
+                type="text"
+                v-model="acronym.phrase"
+              />
+            </td>
+            <td>
+              <a class="button is-primary" v-on:click="submitEdit(acronym.id)">
+                <strong>Submit</strong>
+              </a>
+            </td>
+          </template>
+          <template v-else>
+            <td>{{ acronym.abbreviation }}</td>
+            <td>{{ acronym.phrase }}</td>
+            <td>
+              <span class="icon mx-1 is-right" @click="beginEdit(acronym.id)">
+                <i class="fas fa-pencil"></i>
+              </span>
+              <span class="icon mx-1 is-right" @click="remove(acronym.id)">
+                <i class="fas fa-trash-can"></i>
+              </span>
+            </td>
+          </template>
         </tr>
       </tbody>
     </table>
@@ -112,10 +145,11 @@ import { computed, onMounted, reactive, ref } from "vue";
 interface Acronym {
   id: number;
   abbreviation: string;
+  edit: boolean;
   phrase: string;
 }
 
-function beginPost(): void {
+function beginAdd(): void {
   insert.enable = true;
 
   if (search.value.includes(" ")) {
@@ -125,12 +159,35 @@ function beginPost(): void {
   }
 }
 
-async function fetchData(): Promise<void> {
-  const response = await fetch("/api");
-  acronyms.data = await response.json();
+function beginEdit(id: number): void {
+  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+  acronym.edit = true;
 }
 
-async function post(): Promise<void> {
+async function fetchData(): Promise<void> {
+  const response = await fetch("/api");
+  acronyms.data = (await response.json()).map((acronym: any) => ({
+    ...acronym,
+    edit: false,
+  }));
+}
+
+async function remove(id: number): Promise<void> {
+  await fetch(`/api/${id}`, { method: "DELETE" });
+  await fetchData();
+}
+
+function sort(column: { name: string; ascending: boolean }): void {
+  const name = column.name as keyof Acronym;
+
+  if (column.ascending) {
+    acronyms.data.sort((left, right) => (left[name] > right[name] ? 1 : -1));
+  } else {
+    acronyms.data.sort((left, right) => (left[name] < right[name] ? 1 : -1));
+  }
+}
+
+async function submitAdd(): Promise<void> {
   await fetch(`/api`, {
     body: JSON.stringify({
       abbreviation: insert.abbreviation,
@@ -147,28 +204,20 @@ async function post(): Promise<void> {
   await fetchData();
 }
 
-async function put(id: number): Promise<void> {
+async function submitEdit(id: number): Promise<void> {
+  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+
   await fetch(`/api/${id}`, {
-    body: JSON.stringify({ abbreviation: "BB", phrase: "Boop Bopping" }),
+    body: JSON.stringify({
+      abbreviation: acronym.abbreviation,
+      phrase: acronym.phrase,
+    }),
     headers: { "Content-Type": "application/json" },
     method: "PUT",
   });
+
+  acronym.edit = false;
   await fetchData();
-}
-
-async function remove(id: number): Promise<void> {
-  await fetch(`/api/${id}`, { method: "DELETE" });
-  await fetchData();
-}
-
-function sort(column: { name: string; ascending: boolean }): void {
-  const name = column.name as keyof Acronym;
-
-  if (column.ascending) {
-    acronyms.data.sort((left, right) => (left[name] > right[name] ? 1 : -1));
-  } else {
-    acronyms.data.sort((left, right) => (left[name] < right[name] ? 1 : -1));
-  }
 }
 
 function switchSort(name: string): void {
@@ -197,6 +246,7 @@ let insert = reactive({
 });
 const navBarBurger = ref(false);
 const search = ref("");
+let updates: { data: Array<Acronym> } = reactive({ data: [] });
 
 const acronymsFiltered = computed(() => {
   const text = search.value.toLowerCase();
