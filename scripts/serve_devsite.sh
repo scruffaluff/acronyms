@@ -26,7 +26,7 @@ main() {
   fi
 
   # Build once so that files are guaranteed to exist before backend starts.
-  npm run build
+  npm run build -- --mode development
   poetry run acronyms \
     --host 127-0-0-1.nip.io \
     --reload \
@@ -37,7 +37,7 @@ main() {
   # Sleeping for 1 second prevents vite from making folder "dist/assets"
   # temporarily unavailable to the backend server.
   sleep 1
-  npx vite build --watch --mode development
+  npm run build -- --watch --mode development
 }
 
 main

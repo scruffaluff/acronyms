@@ -5,8 +5,8 @@
   "scripts": {
     "build": "vue-tsc --noEmit && vite build",
     "dev": "vite",
-    "lint:fix": "eslint --fix",
-    "lint:test": "eslint --no-fix --max-warnings 0",
+    "lint:fix": "eslint --fix --ext js,ts,vue frontend tests/frontend",
+    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 frontend tests/frontend",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -17,7 +17,11 @@
   },
   "devDependencies": {
     "@babel/types": "^7.19.0",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
     "@vitejs/plugin-vue": "^3.1.0",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/eslint-config-typescript": "^11.0.1",
     "eslint": "^8.23.0",
     "eslint-plugin-prettier": "^4.2.0",
     "eslint-plugin-vue": "^9.4.0",

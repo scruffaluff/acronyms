@@ -16,15 +16,15 @@
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div class="navbar-menu" id="login" :class="{ 'is-active': navBarBurger }">
+    <div id="login" class="navbar-menu" :class="{ 'is-active': navBarBurger }">
       <div class="navbar-end">
         <div class="navbar-item">
-          <a class="button is-primary">
+          <button class="button is-primary">
             <strong>Sign up</strong>
-          </a>
+          </button>
         </div>
         <div class="navbar-item">
-          <a class="button is-light">Log in</a>
+          <button class="button is-light">Log in</button>
         </div>
       </div>
     </div>
@@ -35,12 +35,12 @@
       <div class="column field is-four-fifths mb-0">
         <div class="control has-icons-left">
           <input
+            ref="inputSearch"
+            v-model="search"
             class="input"
             placeholder="Search"
-            ref="inputSearch"
             type="text"
-            v-model="search"
-            v-on:keyup.enter="beginAdd()"
+            @keydown.tab="addButton?.focus()"
           />
           <span class="icon is-left is-small">
             <i class="fas fa-search"></i>
@@ -48,7 +48,7 @@
         </div>
       </div>
       <div class="container column">
-        <a class="button is-primary" v-on:click="beginAdd()">
+        <a class="button is-primary" @click="beginAdd()">
           <strong>Add</strong>
         </a>
       </div>
@@ -57,9 +57,13 @@
     <table class="container table is-fullwidth is-hoverable has-text-left">
       <thead>
         <tr>
-          <th v-for="column in columns" v-bind:key="column.name">
+          <th v-for="column in columns" :key="column.name">
             {{ column.name }}
-            <span class="icon is-small" @click="switchSort(column.name)">
+            <span
+              class="icon is-clickable is-small"
+              :class="{ 'has-text-primary': recentSort == column.name }"
+              @click="switchSort(column.name)"
+            >
               <i class="fas" :class="column.icon"></i>
             </span>
           </th>
@@ -67,55 +71,74 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-show="insert.enable">
+        <tr v-show="insert.active">
           <td>
             <input
+              ref="inputAddAbbreviation"
+              v-model="insert.abbreviation"
               class="input"
               placeholder="Abbreviation"
-              ref="inputAddAbbreviation"
               type="text"
-              v-model="insert.abbreviation"
-              v-on:keyup.enter="submitAdd()"
+              @keyup.enter="submitAdd()"
             />
           </td>
           <td>
             <input
+              ref="inputAddPhrase"
+              v-model="insert.phrase"
               class="input"
               placeholder="Phrase"
-              ref="inputAddPhrase"
               type="text"
-              v-model="insert.phrase"
-              v-on:keyup.enter="submitAdd()"
+              @keyup.enter="submitAdd()"
             />
           </td>
           <td>
-            <a class="button is-primary" v-on:click="submitAdd()">
+            <button
+              class="button is-primary is-light mx-1"
+              @click="submitAdd()"
+            >
               <strong>Submit</strong>
-            </a>
+            </button>
+            <button
+              class="button is-danger is-light mx-1"
+              @click="insert.active = false"
+            >
+              <strong>Cancel</strong>
+            </button>
           </td>
         </tr>
-        <tr v-for="acronym in acronymsFiltered" v-bind:key="acronym.id">
+        <tr v-for="acronym in acronymsFiltered" :key="acronym.id">
           <template v-if="acronym.edit">
             <td>
               <input
+                ref="inputEditAbbreviation"
+                v-model="acronym.abbreviation"
                 class="input"
                 placeholder="Abbreviation"
                 type="text"
-                v-model="acronym.abbreviation"
               />
             </td>
             <td>
               <input
+                v-model="acronym.phrase"
                 class="input"
                 placeholder="Phrase"
                 type="text"
-                v-model="acronym.phrase"
               />
             </td>
             <td>
-              <a class="button is-primary" v-on:click="submitEdit(acronym.id)">
+              <button
+                class="button is-light is-primary"
+                @click="submitEdit(acronym.id)"
+              >
                 <strong>Submit</strong>
-              </a>
+              </button>
+              <button
+                class="button is-danger is-light mx-1"
+                @click="acronym.edit = false"
+              >
+                <strong>Cancel</strong>
+              </button>
             </td>
           </template>
           <template v-else>
@@ -150,11 +173,7 @@
     </div>
   </footer>
 
-  <div
-    id="error-modal"
-    class="modal"
-    v-bind:class="{ 'is-active': error.active }"
-  >
+  <div id="error-modal" class="modal" :class="{ 'is-active': error.active }">
     <div class="modal-background"></div>
     <div class="modal-content">
       <article class="message is-danger">
@@ -163,7 +182,7 @@
           <button
             aria-label="delete"
             class="delete"
-            v-on:click="error.active = false"
+            @click="error.active = false"
           ></button>
         </div>
         <div class="message-body">
@@ -184,18 +203,22 @@ interface Acronym {
   phrase: string;
 }
 
-function beginAdd(): void {
-  insert.enable = true;
+interface AcronymResponse {
+  id: number;
+  abbreviation: string;
+  phrase: string;
+}
 
+function beginAdd(): void {
+  insert.active = true;
+
+  // nextTick is required since a v-show element is not available until the next
+  // Vue update.
   if (search.value.includes(" ")) {
     insert.phrase = search.value;
-    // nextTick is required since a v-show element is not available until the
-    // next Vue update.
     nextTick(() => inputAddAbbreviation.value?.focus());
   } else {
     insert.abbreviation = search.value;
-    // nextTick is required since a v-show element is not available until the
-    // next Vue update.
     nextTick(() => inputAddPhrase.value?.focus());
   }
 }
@@ -203,18 +226,30 @@ function beginAdd(): void {
 function beginEdit(id: number): void {
   const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
   acronym.edit = true;
+
+  nextTick(() => inputEditAbbreviation.value[0].focus());
 }
 
 async function fetchData(): Promise<void> {
   const response = await fetch("/api");
-  acronyms.data = (await response.json()).map((acronym: any) => ({
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
+
+  acronyms.data = (await response.json()).map((acronym: AcronymResponse) => ({
     ...acronym,
     edit: false,
   }));
 }
 
 async function remove(id: number): Promise<void> {
-  await fetch(`/api/${id}`, { method: "DELETE" });
+  const response = await fetch(`/api/${id}`, { method: "DELETE" });
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
+
   await fetchData();
 }
 
@@ -245,7 +280,7 @@ async function submitAdd(): Promise<void> {
 
   insert.abbreviation = "";
   insert.phrase = "";
-  insert.enable = false;
+  insert.active = false;
 
   search.value = "";
   inputSearch.value?.focus();
@@ -255,7 +290,7 @@ async function submitAdd(): Promise<void> {
 async function submitEdit(id: number): Promise<void> {
   const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
 
-  await fetch(`/api/${id}`, {
+  const response = await fetch(`/api/${id}`, {
     body: JSON.stringify({
       abbreviation: acronym.abbreviation,
       phrase: acronym.phrase,
@@ -263,6 +298,10 @@ async function submitEdit(id: number): Promise<void> {
     headers: { "Content-Type": "application/json" },
     method: "PUT",
   });
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
 
   acronym.edit = false;
   await fetchData();
@@ -280,10 +319,12 @@ function switchSort(name: string): void {
   }
 
   sort(column);
+  recentSort.value = name;
 }
 
-let acronyms: { data: Array<Acronym> } = reactive({ data: [] });
-let columns = reactive([
+const acronyms: { data: Array<Acronym> } = reactive({ data: [] });
+const addButton = ref<HTMLElement | null>(null);
+const columns = reactive([
   { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
   { name: "phrase", ascending: true, icon: "fa-arrow-up" },
 ]);
@@ -291,15 +332,17 @@ const error = reactive({
   active: false,
   message: "",
 });
-let insert = reactive({
+const insert = reactive({
   abbreviation: "",
-  enable: false,
+  active: false,
   phrase: "",
 });
 const inputAddAbbreviation = ref<HTMLElement | null>(null);
 const inputAddPhrase = ref<HTMLElement | null>(null);
+const inputEditAbbreviation = ref<Array<HTMLElement>>([]);
 const inputSearch = ref<HTMLElement | null>(null);
 const navBarBurger = ref(false);
+const recentSort = ref("");
 const search = ref("");
 
 const acronymsFiltered = computed(() => {
