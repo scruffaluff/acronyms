@@ -7,10 +7,11 @@ named __main__.py.
 
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from acronyms import models
@@ -75,7 +76,11 @@ async def post_acronym(
     """Insert an acronym to database."""
     acronym_ = Acronym(abbreviation=acronym.abbreviation, phrase=acronym.phrase)
     session.add(acronym_)
-    session.commit()
+
+    try:
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Duplicate acronym request")
     return acronym_.id
 
 
@@ -89,5 +94,8 @@ async def put_acronym(
     acronym = session.query(Acronym).filter(Acronym.id == id)
     acronym.update(body.dict())
 
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Duplicate acronym request")
     return {"ok": True}

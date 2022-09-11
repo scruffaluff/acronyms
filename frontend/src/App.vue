@@ -37,8 +37,10 @@
           <input
             class="input"
             placeholder="Search"
+            ref="inputSearch"
             type="text"
             v-model="search"
+            v-on:keyup.enter="beginAdd()"
           />
           <span class="icon is-left is-small">
             <i class="fas fa-search"></i>
@@ -70,16 +72,20 @@
             <input
               class="input"
               placeholder="Abbreviation"
+              ref="inputAddAbbreviation"
               type="text"
               v-model="insert.abbreviation"
+              v-on:keyup.enter="submitAdd()"
             />
           </td>
           <td>
             <input
               class="input"
               placeholder="Phrase"
+              ref="inputAddPhrase"
               type="text"
               v-model="insert.phrase"
+              v-on:keyup.enter="submitAdd()"
             />
           </td>
           <td>
@@ -116,10 +122,16 @@
             <td>{{ acronym.abbreviation }}</td>
             <td>{{ acronym.phrase }}</td>
             <td>
-              <span class="icon mx-1 is-right" @click="beginEdit(acronym.id)">
+              <span
+                class="icon mx-1 is-clickable is-right"
+                @click="beginEdit(acronym.id)"
+              >
                 <i class="fas fa-pencil"></i>
               </span>
-              <span class="icon mx-1 is-right" @click="remove(acronym.id)">
+              <span
+                class="icon mx-1 is-clickable is-right"
+                @click="remove(acronym.id)"
+              >
                 <i class="fas fa-trash-can"></i>
               </span>
             </td>
@@ -137,10 +149,33 @@
       </h4>
     </div>
   </footer>
+
+  <div
+    id="error-modal"
+    class="modal"
+    v-bind:class="{ 'is-active': error.active }"
+  >
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <article class="message is-danger">
+        <div class="message-header">
+          <p>Error</p>
+          <button
+            aria-label="delete"
+            class="delete"
+            v-on:click="error.active = false"
+          ></button>
+        </div>
+        <div class="message-body">
+          {{ error.message }}
+        </div>
+      </article>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 
 interface Acronym {
   id: number;
@@ -154,8 +189,14 @@ function beginAdd(): void {
 
   if (search.value.includes(" ")) {
     insert.phrase = search.value;
+    // nextTick is required since a v-show element is not available until the
+    // next Vue update.
+    nextTick(() => inputAddAbbreviation.value?.focus());
   } else {
     insert.abbreviation = search.value;
+    // nextTick is required since a v-show element is not available until the
+    // next Vue update.
+    nextTick(() => inputAddPhrase.value?.focus());
   }
 }
 
@@ -188,7 +229,7 @@ function sort(column: { name: string; ascending: boolean }): void {
 }
 
 async function submitAdd(): Promise<void> {
-  await fetch(`/api`, {
+  const response = await fetch(`/api`, {
     body: JSON.stringify({
       abbreviation: insert.abbreviation,
       phrase: insert.phrase,
@@ -196,11 +237,18 @@ async function submitAdd(): Promise<void> {
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
+  if (!response.ok) {
+    error.message = await response.text();
+    error.active = true;
+    return;
+  }
 
   insert.abbreviation = "";
   insert.phrase = "";
   insert.enable = false;
+
   search.value = "";
+  inputSearch.value?.focus();
   await fetchData();
 }
 
@@ -239,14 +287,20 @@ let columns = reactive([
   { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
   { name: "phrase", ascending: true, icon: "fa-arrow-up" },
 ]);
+const error = reactive({
+  active: false,
+  message: "",
+});
 let insert = reactive({
   abbreviation: "",
   enable: false,
   phrase: "",
 });
+const inputAddAbbreviation = ref<HTMLElement | null>(null);
+const inputAddPhrase = ref<HTMLElement | null>(null);
+const inputSearch = ref<HTMLElement | null>(null);
 const navBarBurger = ref(false);
 const search = ref("");
-let updates: { data: Array<Acronym> } = reactive({ data: [] });
 
 const acronymsFiltered = computed(() => {
   const text = search.value.toLowerCase();
