@@ -47,6 +47,8 @@ jobs:
           poetry install -v
       - name: Run test suite
         run: poetry run pytest --cov
+      - name: Run end to end test suite
+        run: poetry run pytest -m e2e
 
   test-chart:
     name: Run Helm test suite
@@ -90,28 +92,3 @@ jobs:
         run: |
           sleep 60
           helm test acronyms
-
-  test-frontend:
-    name: Run frontend test suite for Node ${{ matrix.node }}
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["16", "18"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v2
-      - name: Install Node interpreter
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node }}
-      - name: Cache Node packages
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: >-
-            node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
-      - name: Install Node packages
-        run: npm install
-      - name: Run test suite
-        run: npm run test:run
