@@ -146,15 +146,12 @@
             <td>{{ acronym.phrase }}</td>
             <td>
               <span
-                class="icon mx-1 is-clickable is-right"
+                class="icon mr-5 is-clickable"
                 @click="beginEdit(acronym.id)"
               >
                 <i class="fas fa-pencil"></i>
               </span>
-              <span
-                class="icon mx-1 is-clickable is-right"
-                @click="remove(acronym.id)"
-              >
+              <span class="icon is-clickable" @click="remove(acronym.id)">
                 <i class="fas fa-trash-can"></i>
               </span>
             </td>

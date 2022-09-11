@@ -46,7 +46,7 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install -v
       - name: Run test suite
-        run: poetry run pytest
+        run: poetry run pytest --cov
 
   test-chart:
     name: Run Helm test suite

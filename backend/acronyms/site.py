@@ -75,9 +75,9 @@ async def post_acronym(
 ) -> int:
     """Insert an acronym to database."""
     acronym_ = Acronym(abbreviation=acronym.abbreviation, phrase=acronym.phrase)
-    session.add(acronym_)
 
     try:
+        session.add(acronym_)
         session.commit()
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")
@@ -92,9 +92,9 @@ async def put_acronym(
 ) -> Dict[str, bool]:
     """Get all matching acronyms."""
     acronym = session.query(Acronym).filter(Acronym.id == id)
-    acronym.update(body.dict())
 
     try:
+        acronym.update(body.dict())
         session.commit()
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")

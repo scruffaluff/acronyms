@@ -7,6 +7,7 @@ from typing import cast
 from fastapi.testclient import TestClient
 from playwright.sync_api import expect, Page
 import pytest
+from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym
@@ -14,16 +15,16 @@ from acronyms.models import Acronym
 
 def test_delete_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
-    response = client.get("/api")
-    assert response.status_code == 200
-    assert 1 in [acronym["id"] for acronym in response.json()]
+    get_response_1 = client.get("/api")
+    get_response_1.raise_for_status()
+    assert 1 in [acronym["id"] for acronym in get_response_1.json()]
 
-    response = client.delete("/api/1")
-    assert response.status_code == 200
+    delete_response = client.delete("/api/1")
+    delete_response.raise_for_status()
 
-    response = client.get("/api")
-    assert response.status_code == 200
-    assert 1 not in [acronym["id"] for acronym in response.json()]
+    get_response_2 = client.get("/api")
+    get_response_2.raise_for_status()
+    assert 1 not in [acronym["id"] for acronym in get_response_2.json()]
 
 
 def test_get_acronym(client: TestClient) -> None:
@@ -34,29 +35,47 @@ def test_get_acronym(client: TestClient) -> None:
     ]
 
     response = client.get("/api?abbreviation=DM")
-    assert response.status_code == 200
+    response.raise_for_status()
     assert response.json() == expected
+
+
+def test_get_favicon(client: TestClient) -> None:
+    """Fetch acronym from database by abbreviation."""
+    response = client.get("/favicon.ico")
+    response.raise_for_status()
+    assert response.headers["content-type"] == "image/vnd.microsoft.icon"
 
 
 def test_get_home(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     response = client.get("/")
-    assert response.status_code == 200
+    response.raise_for_status()
 
 
 def test_post_acronym(client: TestClient) -> None:
     """Add a new acronym to database."""
-    pre_response = client.get("/api")
-    assert pre_response.status_code == 200
-    records = len(pre_response.json())
+    get_response_1 = client.get("/api")
+    get_response_1.raise_for_status()
+    records = len(get_response_1.json())
 
     body = {"abbreviation": "ROI", "phrase": "Return On Investment"}
     post_response = client.post("/api", json=body)
-    assert post_response.status_code == 200
+    post_response.raise_for_status()
 
-    get_response = client.get("/api")
-    assert get_response.status_code == 200
-    assert len(get_response.json()) == records + 1
+    get_response_2 = client.get("/api")
+    get_response_2.raise_for_status()
+    assert len(get_response_2.json()) == records + 1
+
+
+def test_post_duplicate(client: TestClient) -> None:
+    """Adding a duplicate acronym receives an HTTP error."""
+    body = {"abbreviation": "ROI", "phrase": "Return On Investment"}
+    response_1 = client.post("/api", json=body)
+    response_1.raise_for_status()
+
+    response_2 = client.post("/api", json=body)
+    with pytest.raises(HTTPError):
+        response_2.raise_for_status()
 
 
 def test_query_acronym(database: Session) -> None:
@@ -70,17 +89,30 @@ def test_query_acronym(database: Session) -> None:
 
 def test_put_acronym(client: TestClient) -> None:
     """Update acronym values."""
-    response = client.get("/api?id=1")
-    assert response.status_code == 200
-    assert response.json()["phrase"] == "Ante Meridiem"
+    get_response_1 = client.get("/api?id=1")
+    get_response_1.raise_for_status()
+    assert get_response_1.json()["phrase"] == "Ante Meridiem"
 
     body = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
-    response = client.put("/api/1", json=body)
-    assert response.status_code == 200
+    body_response = client.put("/api/1", json=body)
+    body_response.raise_for_status()
 
-    response = client.get("/api?id=1")
-    assert response.status_code == 200
-    assert response.json()["phrase"] == "Amplitude Modulation"
+    get_response_1 = client.get("/api?id=1")
+    get_response_1.raise_for_status()
+    assert get_response_1.json()["phrase"] == "Amplitude Modulation"
+
+
+def test_put_duplicate(client: TestClient) -> None:
+    """Editing an acronym to a duplicate value receives an HTTP error."""
+    get_response = client.get("/api?id=1")
+    get_response.raise_for_status()
+
+    body = {
+        key: value for key, value in get_response.json().items() if key != "id"
+    }
+    put_response = client.put("/api/2", json=body)
+    with pytest.raises(HTTPError):
+        put_response.raise_for_status()
 
 
 @pytest.mark.e2e
