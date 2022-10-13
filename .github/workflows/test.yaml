@@ -89,6 +89,7 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install -v
           poetry run playwright install chromium
+          timeout 5s playwright open --browser chromium
       - name: Install dependencies
         run: |
           bash scripts/install_dependencies.sh
@@ -104,5 +105,8 @@ jobs:
         run: helm install --values chart/values_ci.yaml acronyms ./chart
       - name: Run end to end test suite
         run: |
-          sleep 120
+          kubectl wait --namespace acronyms \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=acronyms \
+            --timeout=90s
           poetry run pytest -m e2e
