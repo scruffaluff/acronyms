@@ -110,4 +110,6 @@ jobs:
           poetry install -v
           poetry run playwright install chromium
       - name: Run end to end test suite
-        run: poetry run pytest -m e2e
+        run: |
+          sleep 120
+          poetry run pytest -m e2e
