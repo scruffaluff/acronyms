@@ -90,8 +90,8 @@ jobs:
           poetry install -v
       - name: Install browser and open to create security database
         run: |
-          poetry run playwright install-deps chromium
-          timeout 5s poetry run playwright open --browser chromium
+          poetry run playwright install chromium
+          poetry run python scripts/open_browser.py
       - name: Install dependencies
         run: |
           bash scripts/install_dependencies.sh
