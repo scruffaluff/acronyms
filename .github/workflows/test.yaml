@@ -109,8 +109,5 @@ jobs:
           acronyms ./chart
       - name: Run end to end test suite
         run: |
-          kubectl wait --namespace acronyms \
-            --for=condition=ready pod \
-            --selector=app.kubernetes.io/name=acronyms \
-            --timeout=90s
+          sleep 60
           poetry run pytest -m e2e
