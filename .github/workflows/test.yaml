@@ -104,7 +104,9 @@ jobs:
           docker build -t "${image}" .
           docker push "${image}"
       - name: Deploy Helm release
-        run: helm install --values chart/values_ci.yaml acronyms ./chart
+        run: >-
+          helm --namespace acronyms install --values chart/values_ci.yaml
+          acronyms ./chart
       - name: Run end to end test suite
         run: |
           kubectl wait --namespace acronyms \
