@@ -109,5 +109,5 @@ jobs:
           acronyms ./chart
       - name: Run end to end test suite
         run: |
-          sleep 60
+          sleep 120
           poetry run pytest -m e2e
