@@ -107,7 +107,7 @@ jobs:
     if: >-
       ${{ !contains(fromJson('["refs/heads/develop", "refs/heads/main",
       "refs/heads/master"]'), github.ref) }}
-    name: Run unit test suite for Node 18 and Python 3.10
+    name: Run unit test suite for Node 18.10 and Python 3.10
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -130,13 +130,13 @@ jobs:
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:
-          node-version: "18"
+          node-version: "18.10"
       - name: Cache Node packages
         uses: actions/cache@v2
         with:
           path: node_modules
           key: >-
-            node-18_npm-${{ hashFiles('package-lock.json') }}
+            node-18.10_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
       - name: Build frontend assets

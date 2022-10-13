@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["16", "18"]
+        node: ["16.17", "18.10"]
         python: ["3.9", "3.10"]
     runs-on: ubuntu-latest
     steps:
@@ -101,10 +101,6 @@ jobs:
           docker push "${image}"
       - name: Deploy Helm release
         run: helm install --values chart/values_ci.yaml acronyms ./chart
-      - name: Run test suite
-        run: |
-          sleep 60
-          helm test acronyms
       - name: Install Python interpreter
         uses: actions/setup-python@v2
         with:
