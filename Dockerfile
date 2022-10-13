@@ -1,4 +1,4 @@
-FROM node:18.8.0 as frontend
+FROM node:18.10.0 as frontend
 
 WORKDIR /repo
 

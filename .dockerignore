@@ -35,7 +35,6 @@ f1
 flit.ini
 node_modules/
 nohup.out
-package-lock.json
 Pipfile
 Pipfile.lock
 public/
