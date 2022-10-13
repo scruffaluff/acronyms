@@ -88,8 +88,10 @@ jobs:
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
           poetry install -v
+      - name: Install browser and open to create security database
+        run: |
           poetry run playwright install chromium
-          timeout 5s playwright open --browser chromium
+          timeout 5s poetry run playwright open --browser chromium
       - name: Install dependencies
         run: |
           bash scripts/install_dependencies.sh
