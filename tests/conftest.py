@@ -11,12 +11,15 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym, Base, get_db
-from acronyms.site import app
 
 
 @pytest.fixture
 def client(database: Session) -> TestClient:
     """Fast API test client."""
+    # App import placed here since it depends on prebuilt Node assets, which are
+    # not required for end to end tests.
+    from acronyms.site import app
+
     app.dependency_overrides[get_db] = lambda: database
     return TestClient(app)
 

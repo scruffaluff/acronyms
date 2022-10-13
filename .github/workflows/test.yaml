@@ -86,14 +86,6 @@ jobs:
         uses: azure/setup-helm@v1
       - name: Create K3d Kubernetes cluster
         run: k3d cluster create --config scripts/k3d.yaml
-      - name: Configure K3d Kubernetes cluster
-        env:
-          ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}
-          ACRONYMS_POSTGRES_USER: ${{ secrets.ACRONYMS_POSTGRES_USER }}
-        run: |
-          kubectl create secret generic acronyms \
-            --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
-            --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
       - name: Build and push Docker images
         run: |
           image='registry.localhost:5001/scruffaluff/acronyms:latest'
@@ -116,5 +108,6 @@ jobs:
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
           poetry install -v
+          poetry run playwright install chromium
       - name: Run end to end test suite
         run: poetry run pytest -m e2e
