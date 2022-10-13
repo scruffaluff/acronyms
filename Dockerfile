@@ -4,7 +4,7 @@ WORKDIR /repo
 
 COPY . .
 
-RUN npm install && npm run build
+RUN npm ci && npm run build
 
 FROM python:3.10.7
 

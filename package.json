@@ -5,8 +5,8 @@
   "scripts": {
     "build": "vue-tsc --noEmit && vite build",
     "dev": "vite",
-    "lint:fix": "eslint --fix --ext js,ts,vue frontend tests/frontend",
-    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 frontend tests/frontend",
+    "lint:fix": "eslint --fix --ext js,ts,vue frontend",
+    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 frontend",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
