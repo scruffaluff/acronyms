@@ -115,7 +115,7 @@ jobs:
           image='registry.localhost:5001/scruffaluff/acronyms:latest'
           docker build -t "${image}" .
           docker push "${image}"
-      - name: Deploy Helm release wait for pods to become ready
+      - name: Deploy Helm release and wait for pods to become ready
         run: |
           helm --namespace acronyms install \
             --values chart/values_ci.yaml \

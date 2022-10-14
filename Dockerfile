@@ -6,22 +6,25 @@ COPY . .
 
 RUN npm ci && npm run build
 
-FROM python:3.10.7
+FROM python:3.10.8
 
 ARG TARGETARCH
 
 RUN adduser --uid 1000 acronyms
 
-COPY . /repo
-
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir /repo \
-    && rm -fr /repo
-
 USER acronyms
 WORKDIR /app
+ENV PATH="/home/acronyms/.local/bin:${PATH}"
 
 COPY --chown=acronyms --from=frontend /repo/dist /app/dist
+COPY --chown=acronyms . /repo
 
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --user /repo
+
+USER root
+RUN rm -fr /repo
+
+USER acronyms
 EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]
