@@ -19,17 +19,12 @@ ENV PATH="/home/acronyms/.local/bin:${PATH}"
 COPY --chown=acronyms --from=frontend /repo/dist /app/dist
 COPY --chown=acronyms . /repo
 
-# Temporarily commented out for testing.
-# # hadolint ignore=DL3013
-# RUN pip install --no-cache-dir --user /repo
-
-# USER root
-# RUN rm -fr /repo
-
-# USER acronyms
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --user /repo
 
 USER root
-RUN pip install --no-cache-dir /repo && rm -fr /repo
+RUN rm -fr /repo
 
+USER acronyms
 EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]
