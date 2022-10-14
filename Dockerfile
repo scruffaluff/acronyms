@@ -10,21 +10,22 @@ FROM python:3.10.8
 
 ARG TARGETARCH
 
-RUN adduser --uid 1000 acronyms
+RUN adduser --disabled-password --uid 1000 acronyms \
+    && mkdir /app \
+    && chown acronyms:acronyms /app
 
 USER acronyms
 WORKDIR /app
-ENV PATH="/home/acronyms/.local/bin:${PATH}"
+ENV \
+    HOME=/home/acronyms \
+    PATH="/home/acronyms/.local/bin:${PATH}"
 
 COPY --chown=acronyms --from=frontend /repo/dist /app/dist
-COPY --chown=acronyms . /repo
+COPY --chown=acronyms . "${HOME}/repo"
 
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user /repo
+RUN pip install --no-cache-dir --user "${HOME}/repo" \
+    && rm -fr "${HOME}/repo"
 
-USER root
-RUN rm -fr /repo
-
-USER acronyms
 EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]
