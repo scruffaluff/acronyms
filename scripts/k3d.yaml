@@ -12,6 +12,10 @@ agents: 2
 kubeAPI:
   host: 127-0-0-1.nip.io
   hostIP: 127.0.0.1
+options:
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
 ports:
   - port: 80:80
     nodeFilters:
@@ -19,7 +23,9 @@ ports:
   - port: 443:443
     nodeFilters:
       - loadbalancer
-# Used for Tilt development.
+  - port: 5432:5432
+    nodeFilters:
+      - loadbalancer
 registries:
   create:
     name: registry.localhost

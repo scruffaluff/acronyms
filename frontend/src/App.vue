@@ -16,64 +16,163 @@
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div class="navbar-menu" id="login" :class="{ 'is-active': navBarBurger }">
+    <div id="login" class="navbar-menu" :class="{ 'is-active': navBarBurger }">
       <div class="navbar-end">
         <div class="navbar-item">
-          <a class="button is-primary">
+          <button class="button is-primary">
             <strong>Sign up</strong>
-          </a>
+          </button>
         </div>
         <div class="navbar-item">
-          <a class="button is-light">Log in</a>
+          <button class="button is-light">Log in</button>
         </div>
       </div>
     </div>
   </nav>
 
   <main class="main section">
-    <div class="mx-6 my-6 container">
-      <div class="field">
-        <div class="control has-icons-left has-icons-right">
+    <div class="columns mx-6 my-6">
+      <div class="column field is-four-fifths mb-0">
+        <div class="control has-icons-left">
           <input
+            ref="inputSearch"
+            v-model="search"
             class="input"
             placeholder="Search"
             type="text"
-            v-model="search"
+            @keydown.tab="addButton?.focus()"
           />
           <span class="icon is-left is-small">
             <i class="fas fa-search"></i>
           </span>
         </div>
       </div>
+      <div class="container column">
+        <a class="button is-primary" @click="beginAdd()">
+          <strong>Add</strong>
+        </a>
+      </div>
     </div>
 
-    <table class="container table is-fullwidth is-hoverable has-text-left">
-      <thead>
-        <tr>
-          <th v-for="column in columns">
-            {{ column.name }}
-            <span class="icon is-small" @click="switchSort(column.name)">
-              <i class="fas" :class="column.icon"></i>
-            </span>
-          </th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="acronym in acronymsFiltered">
-          <td>{{ acronym.abbreviation }}</td>
-          <td>{{ acronym.expansion }}</td>
-          <td>
-            <span class="icon mx-1 is-right" @click="put(acronym.id)">
-              <i class="fas fa-pencil"></i>
-            </span>
-            <span class="icon mx-1 is-right" @click="remove(acronym.id)">
-              <i class="fas fa-trash-can"></i>
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="container table is-fullwidth is-hoverable has-text-left">
+        <thead>
+          <tr>
+            <th
+              v-for="column in columns"
+              :key="column.name"
+              style="width: {{ column.width }}"
+            >
+              {{ column.name }}
+              <span
+                class="icon is-clickable is-small"
+                :class="{ 'has-text-primary': recentSort == column.name }"
+                @click="switchSort(column.name)"
+              >
+                <i class="fas" :class="column.icon"></i>
+              </span>
+            </th>
+            <th style="width: 25%">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-show="insert.active">
+            <td>
+              <input
+                ref="inputAddAbbreviation"
+                v-model="insert.abbreviation"
+                class="input"
+                placeholder="Abbreviation"
+                type="text"
+                @keyup.enter="submitAdd()"
+              />
+            </td>
+            <td>
+              <input
+                ref="inputAddPhrase"
+                v-model="insert.phrase"
+                class="input"
+                placeholder="Phrase"
+                type="text"
+                @keyup.enter="submitAdd()"
+              />
+            </td>
+            <td>
+              <button class="button is-info is-light mx-1" @click="submitAdd()">
+                <strong>Submit</strong>
+              </button>
+              <button
+                class="button is-light mx-1"
+                @click="insert.active = false"
+              >
+                <strong>Cancel</strong>
+              </button>
+            </td>
+          </tr>
+          <tr v-for="acronym in acronymsFiltered" :key="acronym.id">
+            <template v-if="acronym.edit">
+              <td>
+                <input
+                  ref="inputEditAbbreviation"
+                  v-model="acronym.abbreviation"
+                  class="input"
+                  placeholder="Abbreviation"
+                  type="text"
+                />
+              </td>
+              <td>
+                <input
+                  v-model="acronym.phrase"
+                  class="input"
+                  placeholder="Phrase"
+                  type="text"
+                />
+              </td>
+              <td>
+                <button
+                  class="button is-light is-info mr-1"
+                  @click="submitEdit(acronym.id)"
+                >
+                  <strong>Submit</strong>
+                </button>
+                <button class="button is-light" @click="acronym.edit = false">
+                  <strong>Cancel</strong>
+                </button>
+              </td>
+            </template>
+            <template v-else>
+              <td>{{ acronym.abbreviation }}</td>
+              <td>{{ acronym.phrase }}</td>
+              <td v-if="acronym.delete">
+                <button
+                  class="button is-light is-danger mr-1"
+                  @click="submitDelete(acronym.id)"
+                >
+                  <strong>Delete</strong>
+                </button>
+                <button class="button is-light" @click="acronym.delete = false">
+                  <strong>Cancel</strong>
+                </button>
+              </td>
+              <td v-else>
+                <span
+                  class="icon mr-5 is-clickable"
+                  @click="beginEdit(acronym.id)"
+                >
+                  <i class="fas fa-pencil"></i>
+                </span>
+                <span
+                  class="icon is-clickable"
+                  @click="beginDelete(acronym.id)"
+                >
+                  <i class="fas fa-trash-can"></i>
+                </span>
+              </td>
+            </template>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 
   <footer class="footer py-6">
@@ -84,34 +183,82 @@
       </h4>
     </div>
   </footer>
+
+  <div id="error-modal" class="modal" :class="{ 'is-active': error.active }">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <article class="message is-danger">
+        <div class="message-header">
+          <p>Error</p>
+          <button
+            aria-label="delete"
+            class="delete"
+            @click="error.active = false"
+          ></button>
+        </div>
+        <div class="message-body">
+          {{ error.message }}
+        </div>
+      </article>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 
 interface Acronym {
   id: number;
   abbreviation: string;
-  expansion: string;
+  delete: boolean;
+  edit: boolean;
+  phrase: string;
+}
+
+interface AcronymResponse {
+  id: number;
+  abbreviation: string;
+  phrase: string;
+}
+
+function beginAdd(): void {
+  insert.active = true;
+
+  // nextTick is required since a v-show element is not available until the next
+  // Vue update.
+  if (!search.value || search.value.includes(" ")) {
+    insert.phrase = search.value;
+    nextTick(() => inputAddAbbreviation.value?.focus());
+  } else {
+    insert.abbreviation = search.value;
+    nextTick(() => inputAddPhrase.value?.focus());
+  }
+}
+
+function beginDelete(id: number): void {
+  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+  acronym.delete = true;
+}
+
+function beginEdit(id: number): void {
+  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+  acronym.edit = true;
+
+  nextTick(() => inputEditAbbreviation.value[0].focus());
 }
 
 async function fetchData(): Promise<void> {
   const response = await fetch("/api");
-  acronyms.data = await response.json();
-}
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
 
-async function put(id: number): Promise<void> {
-  await fetch(`/api/${id}`, {
-    body: JSON.stringify({ abbreviation: "BB", expansion: "Boop Bopping" }),
-    headers: { "Content-Type": "application/json" },
-    method: "PUT",
-  });
-  await fetchData();
-}
-
-async function remove(id: number): Promise<void> {
-  await fetch(`/api/${id}`, { method: "DELETE" });
-  await fetchData();
+  acronyms.data = (await response.json()).map((acronym: AcronymResponse) => ({
+    ...acronym,
+    delete: false,
+    edit: false,
+  }));
 }
 
 function sort(column: { name: string; ascending: boolean }): void {
@@ -122,6 +269,60 @@ function sort(column: { name: string; ascending: boolean }): void {
   } else {
     acronyms.data.sort((left, right) => (left[name] < right[name] ? 1 : -1));
   }
+}
+
+async function submitAdd(): Promise<void> {
+  const response = await fetch(`/api`, {
+    body: JSON.stringify({
+      abbreviation: insert.abbreviation,
+      phrase: insert.phrase,
+    }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  if (!response.ok) {
+    error.message = await response.text();
+    error.active = true;
+    return;
+  }
+
+  insert.abbreviation = "";
+  insert.phrase = "";
+  insert.active = false;
+
+  search.value = "";
+  inputSearch.value?.focus();
+  await fetchData();
+}
+
+async function submitDelete(id: number): Promise<void> {
+  const response = await fetch(`/api/${id}`, { method: "DELETE" });
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
+
+  await fetchData();
+}
+
+async function submitEdit(id: number): Promise<void> {
+  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+
+  const response = await fetch(`/api/${id}`, {
+    body: JSON.stringify({
+      abbreviation: acronym.abbreviation,
+      phrase: acronym.phrase,
+    }),
+    headers: { "Content-Type": "application/json" },
+    method: "PUT",
+  });
+  if (!response.ok) {
+    console.error(response.text());
+    return;
+  }
+
+  acronym.edit = false;
+  await fetchData();
 }
 
 function switchSort(name: string): void {
@@ -136,30 +337,41 @@ function switchSort(name: string): void {
   }
 
   sort(column);
+  recentSort.value = name;
 }
 
-let acronyms: { data: Array<Acronym> } = reactive({ data: [] });
-let columns = reactive([
-  { name: "abbreviation", ascending: true, icon: "fa-arrow-up" },
-  { name: "expansion", ascending: true, icon: "fa-arrow-up" },
+const acronyms: { data: Array<Acronym> } = reactive({ data: [] });
+const addButton = ref<HTMLElement | null>(null);
+const columns = reactive([
+  { name: "abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
+  { name: "phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
 ]);
+const error = reactive({
+  active: false,
+  message: "",
+});
+const insert = reactive({
+  abbreviation: "",
+  active: false,
+  phrase: "",
+});
+const inputAddAbbreviation = ref<HTMLElement | null>(null);
+const inputAddPhrase = ref<HTMLElement | null>(null);
+const inputEditAbbreviation = ref<Array<HTMLElement>>([]);
+const inputSearch = ref<HTMLElement | null>(null);
 const navBarBurger = ref(false);
+const recentSort = ref("");
 const search = ref("");
 
 const acronymsFiltered = computed(() => {
   const text = search.value.toLowerCase();
 
-  if (!text) {
-    return acronyms.data;
-  } else if (text.includes(" ")) {
-    return acronyms.data.filter((acronym) =>
-      acronym.expansion.toLowerCase().includes(text)
-    );
-  } else {
-    return acronyms.data.filter((acronym) =>
-      acronym.abbreviation.toLowerCase().includes(text)
-    );
-  }
+  return acronyms.data.filter((acronym) => {
+    const abbreviation = acronym.abbreviation.toLowerCase();
+    const phrase = acronym.phrase.toLowerCase();
+
+    return abbreviation.includes(text) || phrase.includes(text);
+  });
 });
 
 onMounted(fetchData);
@@ -171,6 +383,9 @@ onMounted(fetchData);
 }
 .title {
   margin-bottom: 0;
+}
+table {
+  table-layout: fixed;
 }
 th {
   text-transform: capitalize;

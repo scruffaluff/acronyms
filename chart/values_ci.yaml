@@ -1,7 +1,16 @@
 ---
 image:
-  repository:
-    backend: registry.localhost:5001/scruffaluff/acronyms-backend
-    frontend: registry.localhost:5001/scruffaluff/acronyms-frontend
-  pullPolicy: IfNotPresent
+  repository: registry.localhost:5001/scruffaluff/acronyms
   tag: latest
+
+ingress:
+  className: ""
+  enabled: true
+  hosts:
+    - host: acronyms.127-0-0-1.nip.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - acronyms.127-0-0-1.nip.io

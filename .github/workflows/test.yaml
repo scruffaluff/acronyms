@@ -20,14 +20,14 @@ on:
       - master
 
 jobs:
-  test-backend:
-    name: Run backend test suite for Python ${{ matrix.python }}
-    defaults:
-      run:
-        working-directory: backend
+  test-unit:
+    name: >-
+      Run unit test suite for Node ${{ matrix.node }} and Python ${{
+      matrix.python }}
     strategy:
       fail-fast: false
       matrix:
+        node: ["16.17", "18.10"]
         python: ["3.9", "3.10"]
     runs-on: ubuntu-latest
     steps:
@@ -40,74 +40,14 @@ jobs:
       - name: Cache Python packages
         uses: actions/cache@v2
         with:
-          path: backend/.venv
+          path: .venv
           key: >-
-            python-${{ matrix.python }}_poetry-${{
-            hashFiles('backend/poetry.lock') }}
+            python-${{ matrix.python }}_poetry-${{ hashFiles('poetry.lock') }}
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
           poetry install -v
-      - name: Run test suite
-        run: poetry run pytest
-
-  test-chart:
-    name: Run Helm test suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Install Kubectl
-        run: |
-          version="$(curl -LSs https://dl.k8s.io/release/stable.txt)"
-          curl -LOSs "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl"
-          sudo install kubectl /usr/local/bin/kubectl
-      - name: Install K3d
-        run: >-
-          curl -LSfs
-          https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-      - name: Create K3d Kubernetes cluster
-        run: k3d cluster create --config scripts/k3d.yaml
-      - name: Configure K3d Kubernetes cluster
-        env:
-          ACRONYMS_POSTGRES_PASSWORD: ${{ secrets.ACRONYMS_POSTGRES_PASSWORD }}
-          ACRONYMS_POSTGRES_USER: ${{ secrets.ACRONYMS_POSTGRES_USER }}
-        run: |
-          kubectl create secret generic acronyms \
-            --from-literal database-password="${ACRONYMS_POSTGRES_PASSWORD?}" \
-            --from-literal database-user="${ACRONYMS_POSTGRES_USER?}"
-      - name: Build and push Docker images
-        run: |
-          prefix='registry.localhost:5001/scruffaluff/acronyms'
-          docker build -t "${prefix}-backend:latest" backend
-          docker push "${prefix}-backend:latest"
-          docker build -t "${prefix}-frontend:latest" frontend
-          docker push "${prefix}-frontend:latest"
-      - name: Deploy Helm release
-        run: helm install --values chart/values_ci.yaml acronyms ./chart
-      - name: Run test suite
-        run: |
-          sleep 60
-          helm test acronyms
-
-  test-frontend:
-    name: Run frontend test suite for Node ${{ matrix.node }}
-    defaults:
-      run:
-        working-directory: frontend
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["16", "17"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v2
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:
@@ -117,9 +57,57 @@ jobs:
         with:
           path: node_modules
           key: >-
-            node-${{ matrix.node }}_npm-${{
-            hashFiles('frontend/package-lock.json') }}
+            node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
-        run: npm install
+        run: npm ci
+      - name: Build frontend assets
+        run: npm run build
       - name: Run test suite
-        run: npm run test:run
+        run: poetry run pytest --cov
+
+  test-e2e:
+    name: Run end to end test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Install Python interpreter
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Cache Python packages
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: >-
+            python-3.10_poetry-${{ hashFiles('poetry.lock') }}
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip poetry setuptools wheel
+          poetry config virtualenvs.in-project true
+          poetry install -v
+      - name: Install browser and open to create security database
+        run: |
+          poetry run playwright install chromium
+          poetry run python scripts/open_browser.py
+      - name: Install dependencies
+        run: |
+          bash scripts/install_dependencies.sh
+          mkcert -install
+      - name: Create K3d Kubernetes cluster
+        run: bash scripts/create_cluster.sh
+      - name: Build and push Docker images
+        run: |
+          image='registry.localhost:5001/scruffaluff/acronyms:latest'
+          docker build -t "${image}" .
+          docker push "${image}"
+      - name: Deploy Helm release
+        run: >-
+          helm --namespace acronyms install --values chart/values_ci.yaml
+          acronyms ./chart
+      - name: Run end to end test suite
+        run: |
+          sleep 120
+          poetry run pytest -m e2e

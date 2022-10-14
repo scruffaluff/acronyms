@@ -6,7 +6,7 @@ metadata:
   namespace: kube-system
 spec:
   defaultCertificate:
-    secretName: default-tls-certs
+    secretName: ingress-tls-certs
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
