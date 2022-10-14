@@ -18,6 +18,12 @@ on:
       - develop
       - main
       - master
+  workflow_dispatch:
+    inputs:
+      debug:
+        default: "false"
+        description: Use TMate session for debugging on failure
+        required: false
 
 jobs:
   test-unit:
@@ -64,6 +70,12 @@ jobs:
         run: npm run build
       - name: Run test suite
         run: poetry run pytest --cov
+      - name: Setup tmate session if job failed
+        if: >-
+          ${{ failure() && github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.debug == 'true' }}
+        timeout-minutes: 60
+        uses: mxschmitt/action-tmate@v3
 
   test-e2e:
     name: Run end to end test suite
@@ -103,11 +115,20 @@ jobs:
           image='registry.localhost:5001/scruffaluff/acronyms:latest'
           docker build -t "${image}" .
           docker push "${image}"
-      - name: Deploy Helm release
-        run: >-
-          helm --namespace acronyms install --values chart/values_ci.yaml
-          acronyms ./chart
-      - name: Run end to end test suite
+      - name: Deploy Helm release wait for pods to become ready
         run: |
-          sleep 120
-          poetry run pytest -m e2e
+          helm --namespace acronyms install \
+            --values chart/values_ci.yaml \
+            acronyms ./chart
+          kubectl --namespace acronyms wait \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=acronyms \
+            --timeout=300s
+      - name: Run end to end test suite
+        run: poetry run pytest -m e2e
+      - name: Setup tmate session if job failed
+        if: >-
+          ${{ failure() && github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.debug == 'true' }}
+        timeout-minutes: 60
+        uses: mxschmitt/action-tmate@v3
