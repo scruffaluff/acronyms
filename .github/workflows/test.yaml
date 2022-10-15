@@ -121,7 +121,7 @@ jobs:
             --values chart/values_ci.yaml \
             acronyms ./chart
           kubectl --namespace acronyms wait \
-            --for=condition=ready pod \
+            --for=condition=ready pods \
             --selector=app.kubernetes.io/name=acronyms \
             --timeout=300s
       - name: Run end to end test suite

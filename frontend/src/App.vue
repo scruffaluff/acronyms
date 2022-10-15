@@ -109,7 +109,7 @@
               </button>
             </td>
           </tr>
-          <tr v-for="acronym in acronymsFiltered" :key="acronym.id">
+          <tr v-for="acronym in acronyms.matches" :key="acronym.id">
             <template v-if="acronym.edit">
               <td>
                 <input
@@ -163,7 +163,7 @@
                 </span>
                 <span
                   class="icon is-clickable"
-                  @click="beginDelete(acronym.id)"
+                  @click="acronyms.markDelete(acronym.id)"
                 >
                   <i class="fas fa-trash-can"></i>
                 </span>
@@ -205,21 +205,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from "vue";
-
-interface Acronym {
-  id: number;
-  abbreviation: string;
-  delete: boolean;
-  edit: boolean;
-  phrase: string;
-}
-
-interface AcronymResponse {
-  id: number;
-  abbreviation: string;
-  phrase: string;
-}
+import { nextTick, onMounted, reactive, ref } from "vue";
+import { Acronym, useAcronymStore } from "./stores/acronym";
 
 function beginAdd(): void {
   insert.active = true;
@@ -235,30 +222,9 @@ function beginAdd(): void {
   }
 }
 
-function beginDelete(id: number): void {
-  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
-  acronym.delete = true;
-}
-
 function beginEdit(id: number): void {
-  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
-  acronym.edit = true;
-
+  acronyms.markEdit(id);
   nextTick(() => inputEditAbbreviation.value[0].focus());
-}
-
-async function fetchData(): Promise<void> {
-  const response = await fetch("/api");
-  if (!response.ok) {
-    console.error(response.text());
-    return;
-  }
-
-  acronyms.data = (await response.json()).map((acronym: AcronymResponse) => ({
-    ...acronym,
-    delete: false,
-    edit: false,
-  }));
 }
 
 function sort(column: { name: string; ascending: boolean }): void {
@@ -292,7 +258,7 @@ async function submitAdd(): Promise<void> {
 
   search.value = "";
   inputSearch.value?.focus();
-  await fetchData();
+  await acronyms.fetchData();
 }
 
 async function submitDelete(id: number): Promise<void> {
@@ -302,7 +268,7 @@ async function submitDelete(id: number): Promise<void> {
     return;
   }
 
-  await fetchData();
+  await acronyms.fetchData();
 }
 
 async function submitEdit(id: number): Promise<void> {
@@ -322,7 +288,7 @@ async function submitEdit(id: number): Promise<void> {
   }
 
   acronym.edit = false;
-  await fetchData();
+  await acronyms.fetchData();
 }
 
 function switchSort(name: string): void {
@@ -340,7 +306,7 @@ function switchSort(name: string): void {
   recentSort.value = name;
 }
 
-const acronyms: { data: Array<Acronym> } = reactive({ data: [] });
+const acronyms = useAcronymStore();
 const addButton = ref<HTMLElement | null>(null);
 const columns = reactive([
   { name: "abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
@@ -363,18 +329,7 @@ const navBarBurger = ref(false);
 const recentSort = ref("");
 const search = ref("");
 
-const acronymsFiltered = computed(() => {
-  const text = search.value.toLowerCase();
-
-  return acronyms.data.filter((acronym) => {
-    const abbreviation = acronym.abbreviation.toLowerCase();
-    const phrase = acronym.phrase.toLowerCase();
-
-    return abbreviation.includes(text) || phrase.includes(text);
-  });
-});
-
-onMounted(fetchData);
+onMounted(acronyms.fetchData);
 </script>
 
 <style>
