@@ -54,6 +54,7 @@ jobs:
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
           poetry install -v
+          poetry run playwright install chromium
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:

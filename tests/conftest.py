@@ -69,6 +69,8 @@ def server() -> Iterator[str]:
         shell=True,
     )
 
+    # Running the server via uvicorn directly as a Python function throws
+    # "RuntimeError: asyncio.run() cannot be called from a running event loop".
     process = Process(
         target=subprocess.run,
         kwargs={

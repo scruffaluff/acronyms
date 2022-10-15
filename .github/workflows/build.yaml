@@ -98,7 +98,9 @@ jobs:
       - name: Install Node packages
         run: npm ci
       - name: Lint code
-        run: npm run lint:test
+        run: |
+          npm run lint:test
+          npm run build
 
   test-unit:
     # GitHub contains function does not support literal arrays. For more
@@ -127,6 +129,7 @@ jobs:
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
           poetry install -v
+          poetry run playwright install chromium
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:
@@ -139,7 +142,5 @@ jobs:
             node-18.10_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
-      - name: Build frontend assets
-        run: npm run build
       - name: Run test suite
         run: poetry run pytest --cov
