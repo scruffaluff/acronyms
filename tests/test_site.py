@@ -52,6 +52,13 @@ def test_get_home(client: TestClient) -> None:
     response.raise_for_status()
 
 
+@pytest.mark.chart
+def test_ingress(page: Page) -> None:
+    """Website is available for external traffic."""
+    page.goto("https://acronyms.127-0-0-1.nip.io")
+    expect(page).to_have_title(re.compile("Acronyms"))
+
+
 def test_post_acronym(client: TestClient) -> None:
     """Add a new acronym to database."""
     get_response_1 = client.get("/api")
@@ -116,7 +123,7 @@ def test_put_duplicate(client: TestClient) -> None:
 
 
 @pytest.mark.e2e
-def test_site_available(page: Page) -> None:
+def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
-    page.goto("https://acronyms.127-0-0-1.nip.io")
+    page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))

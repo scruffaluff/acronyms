@@ -37,3 +37,5 @@ Pipfile.lock
 requirements.lock
 requirements.txt
 setup.py
+test-results/
+tests/results

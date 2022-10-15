@@ -66,8 +66,6 @@ jobs:
             node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
-      - name: Build frontend assets
-        run: npm run build
       - name: Run test suite
         run: poetry run pytest --cov
       - name: Setup tmate session if job failed
@@ -124,8 +122,8 @@ jobs:
             --for=condition=ready pods \
             --selector=app.kubernetes.io/name=acronyms \
             --timeout=300s
-      - name: Run end to end test suite
-        run: poetry run pytest -m e2e
+      - name: Run Helm chart test suite
+        run: poetry run pytest -m chart
       - name: Setup tmate session if job failed
         if: >-
           ${{ failure() && github.event_name == 'workflow_dispatch' &&

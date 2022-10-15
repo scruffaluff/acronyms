@@ -36,7 +36,7 @@
         <div class="control has-icons-left">
           <input
             ref="inputSearch"
-            v-model="search"
+            v-model="acronyms.search"
             class="input"
             placeholder="Search"
             type="text"
@@ -213,11 +213,11 @@ function beginAdd(): void {
 
   // nextTick is required since a v-show element is not available until the next
   // Vue update.
-  if (!search.value || search.value.includes(" ")) {
-    insert.phrase = search.value;
+  if (!acronyms.search || acronyms.search.includes(" ")) {
+    insert.phrase = acronyms.search;
     nextTick(() => inputAddAbbreviation.value?.focus());
   } else {
-    insert.abbreviation = search.value;
+    insert.abbreviation = acronyms.search;
     nextTick(() => inputAddPhrase.value?.focus());
   }
 }
@@ -256,7 +256,7 @@ async function submitAdd(): Promise<void> {
   insert.phrase = "";
   insert.active = false;
 
-  search.value = "";
+  acronyms.search = "";
   inputSearch.value?.focus();
   await acronyms.fetchData();
 }
@@ -327,7 +327,6 @@ const inputEditAbbreviation = ref<Array<HTMLElement>>([]);
 const inputSearch = ref<HTMLElement | null>(null);
 const navBarBurger = ref(false);
 const recentSort = ref("");
-const search = ref("");
 
 onMounted(acronyms.fetchData);
 </script>

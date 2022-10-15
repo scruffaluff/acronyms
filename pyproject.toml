@@ -79,9 +79,10 @@ types-toml = "^0.10.0"
 acronyms = "acronyms.__main__:main"
 
 [tool.pytest.ini_options]
-addopts = "--verbose --capture no -m 'not e2e'"
+addopts = "--verbose -m 'not chart' --browser chromium --capture no --output tests/results --screenshot only-on-failure --video retain-on-failure"
 markers = [
-    "e2e: End to end tests"
+    "chart: Helm chart tests",
+    "e2e: End to end tests",
 ]
 python_classes = "Test*"
 python_files = [

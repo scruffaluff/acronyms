@@ -1,6 +1,8 @@
 """Resuable testing fixtures for acronyms."""
 
 
+from multiprocessing import Process
+import subprocess
 from typing import Iterator
 
 from fastapi.testclient import TestClient
@@ -54,6 +56,31 @@ def database(session: Session) -> Session:
 def engine(connection: str) -> Engine:
     """Engine for temporary PostgreSQL database."""
     return sqlalchemy.create_engine(connection)
+
+
+@pytest.fixture(scope="session")
+def server() -> Iterator[str]:
+    """Compile frontend assets and starts backend server."""
+    subprocess.run(
+        "npx vite build --mode development",
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+    )
+
+    process = Process(
+        target=subprocess.run,
+        kwargs={
+            "args": "acronyms --port 8081",
+            "stdout": "subprocess.PIPE",
+            "stderr": "subprocess.PIPE",
+            "shell": True,
+        },
+    )
+    process.start()
+    yield "http://localhost:8081"
+    process.kill()
 
 
 @pytest.fixture

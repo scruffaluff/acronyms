@@ -20,10 +20,12 @@ export const useAcronymStore = defineStore("acronym", {
       const acronym = this.data.filter((acronym) => acronym.id == id)[0];
       acronym.delete = true;
     },
+
     markEdit(id: number): void {
       const acronym = this.data.filter((acronym) => acronym.id == id)[0];
       acronym.edit = true;
     },
+
     async fetchData(): Promise<void> {
       const response = await fetch("/api");
       if (!response.ok) {
@@ -38,8 +40,9 @@ export const useAcronymStore = defineStore("acronym", {
       }));
     },
   },
+
   getters: {
-    matches(state) {
+    matches(state): Acronym[] {
       const text = state.search.toLowerCase();
 
       return state.data.filter((acronym) => {
@@ -50,6 +53,7 @@ export const useAcronymStore = defineStore("acronym", {
       });
     },
   },
+
   state: () => {
     return { data: [] as Acronym[], search: "" };
   },
