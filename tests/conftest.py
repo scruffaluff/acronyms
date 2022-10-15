@@ -65,8 +65,9 @@ def server() -> Iterator[str]:
     # "RuntimeError: asyncio.run() cannot be called from a running event loop".
     process = Popen(
         ["poetry", "run", "acronyms", "--port", "8081"],
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+        # Temporary for CI debugging.
+        # stderr=subprocess.PIPE,
+        # stdout=subprocess.PIPE,
     )
     yield "http://localhost:8081"
     process.terminate()
