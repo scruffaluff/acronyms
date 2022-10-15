@@ -8,6 +8,8 @@ from typing import Iterator
 from fastapi.testclient import TestClient
 from psycopg import Connection
 import pytest
+import requests
+from requests.adapters import HTTPAdapter, Retry
 import sqlalchemy
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
@@ -62,16 +64,21 @@ def engine(connection: str) -> Engine:
 def server() -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     # Running the server via uvicorn directly as a Python function throws
-    # "RuntimeError: asyncio.run() cannot be called from a running event loop".
+    # RuntimeError: asyncio.run() cannot be called from a running event loop".
     process = Popen(
         ["poetry", "run", "acronyms", "--port", "8081"],
-        # Temporary for CI debugging.
-        # stderr=subprocess.PIPE,
-        # stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
-    import time
-    time.sleep(10)
-    yield "http://localhost:8081"
+    url = "http://localhost:8081"
+
+    # Retry requesting server until it is available.
+    with requests.Session() as session:
+        retries = Retry(total=4, backoff_factor=1)
+        session.mount("http://", HTTPAdapter(max_retries=retries))
+        session.get(url)
+
+    yield url
     process.terminate()
 
 
