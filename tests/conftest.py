@@ -1,8 +1,8 @@
 """Resuable testing fixtures for acronyms."""
 
 
-from multiprocessing import Process
 import subprocess
+from subprocess import Popen
 from typing import Iterator
 
 from fastapi.testclient import TestClient
@@ -61,28 +61,15 @@ def engine(connection: str) -> Engine:
 @pytest.fixture(scope="session")
 def server() -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
-    subprocess.run(
-        "npx vite build --mode development",
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-    )
-
     # Running the server via uvicorn directly as a Python function throws
     # "RuntimeError: asyncio.run() cannot be called from a running event loop".
-    process = Process(
-        target=subprocess.run,
-        kwargs={
-            "args": "acronyms --port 8081",
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-            "shell": True,
-        },
+    process = Popen(
+        ["acronyms", "--port", "8081"],
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
-    process.start()
     yield "http://localhost:8081"
-    process.kill()
+    process.terminate()
 
 
 @pytest.fixture
