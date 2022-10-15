@@ -64,7 +64,7 @@ def server() -> Iterator[str]:
     # Running the server via uvicorn directly as a Python function throws
     # "RuntimeError: asyncio.run() cannot be called from a running event loop".
     process = Popen(
-        ["acronyms", "--port", "8081"],
+        ["poetry", "run", "acronyms", "--port", "8081"],
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
