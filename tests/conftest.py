@@ -69,6 +69,8 @@ def server() -> Iterator[str]:
         # stderr=subprocess.PIPE,
         # stdout=subprocess.PIPE,
     )
+    import time
+    time.sleep(10)
     yield "http://localhost:8081"
     process.terminate()
 
