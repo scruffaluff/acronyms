@@ -75,8 +75,8 @@ def server() -> Iterator[str]:
         target=subprocess.run,
         kwargs={
             "args": "acronyms --port 8081",
-            "stdout": "subprocess.PIPE",
-            "stderr": "subprocess.PIPE",
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
             "shell": True,
         },
     )

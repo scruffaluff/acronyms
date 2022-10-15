@@ -97,6 +97,8 @@ jobs:
           key: node-18_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
+      - name: Build frontend assets
+        run: npm run build
       - name: Lint code
         run: |
           npm run lint:test
