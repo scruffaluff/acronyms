@@ -13,6 +13,37 @@ from sqlalchemy.orm import Session
 from acronyms.models import Acronym
 
 
+@pytest.mark.e2e
+def test_add_acronym(server: str, page: Page) -> None:
+    """New acronym is found after following add acronym flow."""
+    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
+    table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
+    page.goto(server)
+    table_body = page.locator("data-testid=table-body")
+
+    page.locator("#search").fill(acronym["phrase"])
+    expect(table_body).not_to_have_text(table_text)
+    page.locator("#add").click()
+
+    entry = page.locator("*:focus")
+    entry.fill(acronym["abbreviation"])
+    entry.press("Enter")
+    expect(table_body).to_have_text(table_text)
+
+
+@pytest.mark.e2e
+def test_add_acronym_error(server: str, page: Page) -> None:
+    """Error modal pops up upon erroneous acronym submission."""
+    page.goto(server)
+
+    page.locator("#search").fill("Error Handling")
+    page.locator("#add").click()
+
+    entry = page.locator("*:focus")
+    entry.press("Enter")
+    expect(page.locator("#error-modal")).to_be_visible()
+
+
 def test_delete_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     get_response_1 = client.get("/api")
@@ -120,34 +151,3 @@ def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))
-
-
-@pytest.mark.e2e
-def test_add_acronym(server: str, page: Page) -> None:
-    """New acronym is found after following add acronym flow."""
-    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
-    table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
-    page.goto(server)
-    table_body = page.locator("data-testid=table-body")
-
-    page.locator("#search").fill(acronym["phrase"])
-    expect(table_body).not_to_have_text(table_text)
-    page.locator("#add").click()
-
-    entry = page.locator("*:focus")
-    entry.fill(acronym["abbreviation"])
-    entry.press("Enter")
-    expect(table_body).to_have_text(table_text)
-
-
-@pytest.mark.e2e
-def test_add_acronym_error(server: str, page: Page) -> None:
-    """Error modal pops up upon erroneous acronym submission."""
-    page.goto(server)
-
-    page.locator("#search").fill("Error Handling")
-    page.locator("#add").click()
-
-    entry = page.locator("*:focus")
-    entry.press("Enter")
-    expect(page.locator("#error-modal")).to_be_visible()

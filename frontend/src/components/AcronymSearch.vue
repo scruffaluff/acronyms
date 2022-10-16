@@ -7,9 +7,10 @@
           ref="inputSearch"
           v-model="acronyms.search"
           class="input"
-          placeholder="Search"
           type="text"
-          @keydown.tab="addButton?.focus()"
+          placeholder="Search"
+          @keyup.ctrl.enter="beginAdd()"
+          @keyup.tab="addButton?.focus()"
         />
         <span class="icon is-left is-small">
           <i class="fas fa-search"></i>
@@ -34,11 +35,11 @@
           >
             {{ column.name }}
             <span
-              class="icon is-clickable is-small"
               :class="{ 'has-text-primary': recentSort == column.name }"
+              class="icon is-clickable is-small"
               @click="switchSort(column.name)"
             >
-              <i class="fas" :class="column.icon"></i>
+              <i :class="column.icon" class="fas"></i>
             </span>
           </th>
           <th style="width: 25%">Action</th>
@@ -52,7 +53,6 @@
               v-model="acronyms.insert.abbreviation"
               class="input"
               placeholder="Abbreviation"
-              type="text"
               @keyup.enter="submitAdd()"
             />
           </td>
@@ -62,7 +62,6 @@
               v-model="acronyms.insert.phrase"
               class="input"
               placeholder="Phrase"
-              type="text"
               @keyup.enter="submitAdd()"
             />
           </td>
@@ -85,8 +84,8 @@
                 ref="inputEditAbbreviation"
                 v-model="acronym.abbreviation"
                 class="input"
-                placeholder="Abbreviation"
                 type="text"
+                placeholder="Abbreviation"
               />
             </td>
             <td>
@@ -94,7 +93,6 @@
                 v-model="acronym.phrase"
                 class="input"
                 placeholder="Phrase"
-                type="text"
               />
             </td>
             <td>
@@ -145,8 +143,8 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from "vue";
 import { Acronym, useAcronymStore } from "../stores/acronym";
+import { nextTick, onMounted, reactive, ref } from "vue";
 
 function beginAdd(): void {
   acronyms.insert.active = true;

@@ -16,8 +16,9 @@
 
   <div
     id="error-modal"
-    class="modal"
     :class="{ 'is-active': acronyms.error.active }"
+    class="modal"
+    @keyup.esc="acronyms.error.active = false"
   >
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -25,8 +26,8 @@
         <div class="message-header">
           <p>Error</p>
           <button
-            aria-label="delete"
             class="delete"
+            aria-label="delete"
             @click="acronyms.error.active = false"
           ></button>
         </div>
@@ -39,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { useAcronymStore } from "./stores/acronym";
 import AcronymSearch from "./components/AcronymSearch.vue";
 import NavBar from "./components/NavBar.vue";
+import { useAcronymStore } from "./stores/acronym";
 
 const acronyms = useAcronymStore();
 </script>

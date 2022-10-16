@@ -3,12 +3,12 @@
     <div class="navbar-brand">
       <div class="navbar-item title mb-0 is-4 has-text-primary">Acronyms</div>
       <a
-        aria-label="menu"
-        aria-expanded="false"
+        :class="{ 'is-active': navBarBurger }"
         class="navbar-burger"
         data-target="login"
         role="button"
-        :class="{ 'is-active': navBarBurger }"
+        aria-label="menu"
+        aria-expanded="false"
         @click="navBarBurger = !navBarBurger"
       >
         <span aria-hidden="true"></span>
@@ -16,7 +16,7 @@
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div id="login" class="navbar-menu" :class="{ 'is-active': navBarBurger }">
+    <div id="login" :class="{ 'is-active': navBarBurger }" class="navbar-menu">
       <div class="navbar-end">
         <div class="navbar-item">
           <button class="button is-primary">
@@ -33,5 +33,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+
 const navBarBurger = ref(false);
 </script>
