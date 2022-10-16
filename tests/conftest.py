@@ -1,15 +1,18 @@
 """Resuable testing fixtures for acronyms."""
 
 
+from argparse import BooleanOptionalAction
 import os
 from pathlib import Path
 import subprocess
 from subprocess import Popen
 from typing import Iterator
 
+from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
 from psycopg import Connection
 import pytest
+from pytest import Parser
 import requests
 from requests.adapters import HTTPAdapter, Retry
 import sqlalchemy
@@ -62,6 +65,16 @@ def engine(connection: str) -> Engine:
     return sqlalchemy.create_engine(connection)
 
 
+def pytest_addoption(parser: Parser) -> None:
+    """Select whether to run tests against Helm chart."""
+    parser.addoption(
+        "--chart",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Whether to run tests against Helm chart",
+    )
+
+
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Build Javascript assets at pytest startup."""
     subprocess.run(
@@ -73,29 +86,33 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
 
 @pytest.fixture(scope="session")
-def server() -> Iterator[str]:
+def server(request: SubRequest) -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
-    database = "test"
+    if request.config.getoption("--chart"):
+        yield "https://acronyms.127-0-0-1.nip.io"
+    else:
+        database = "test"
 
-    # Running the server via uvicorn directly as a Python function throws
-    # RuntimeError: asyncio.run() cannot be called from a running event loop".
-    process = Popen(
-        ["acronyms", "--port", "8081"],
-        env=dict(**os.environ, **{"ACRONYMS_DATABASE_NAME": database}),
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-    url = "http://localhost:8081"
+        # Running the server via uvicorn directly as a Python function throws
+        # "RuntimeError: asyncio.run() cannot be called from a running event
+        # loop".
+        process = Popen(
+            ["acronyms", "--port", "8081"],
+            env=dict(**os.environ, **{"ACRONYMS_DATABASE_NAME": database}),
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        url = "http://localhost:8081"
 
-    # Retry requesting server until it is available.
-    with requests.Session() as session:
-        retries = Retry(total=4, backoff_factor=1)
-        session.mount("http://", HTTPAdapter(max_retries=retries))
-        session.get(url)
+        # Retry requesting server until it is available.
+        with requests.Session() as session:
+            retries = Retry(total=4, backoff_factor=1)
+            session.mount("http://", HTTPAdapter(max_retries=retries))
+            session.get(url)
 
-    yield url
-    process.terminate()
-    (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
+        yield url
+        process.terminate()
+        (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
 
 
 @pytest.fixture
