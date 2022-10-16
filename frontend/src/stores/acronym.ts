@@ -32,14 +32,8 @@ export const useAcronymStore = defineStore("acronym", () => {
     });
   });
 
-  function markDelete(id: number): void {
-    const acronym = data.value.filter((acronym) => acronym.id == id)[0];
-    acronym.delete = true;
-  }
-
-  function markEdit(id: number): void {
-    const acronym = data.value.filter((acronym) => acronym.id == id)[0];
-    acronym.edit = true;
+  function getById(id: number): Acronym {
+    return data.value.filter((acronym) => acronym.id === id)[0];
   }
 
   async function fetchData(): Promise<void> {
@@ -60,9 +54,8 @@ export const useAcronymStore = defineStore("acronym", () => {
     data,
     error,
     fetchData,
+    getById,
     insert,
-    markDelete,
-    markEdit,
     matches,
     search,
   };

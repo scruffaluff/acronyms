@@ -130,10 +130,7 @@
               >
                 <i class="fas fa-pencil"></i>
               </span>
-              <span
-                class="icon is-clickable"
-                @click="acronyms.markDelete(acronym.id)"
-              >
+              <span class="icon is-clickable" @click="acronym.delete = true">
                 <i class="fas fa-trash-can"></i>
               </span>
             </td>
@@ -163,7 +160,7 @@ function beginAdd(): void {
 }
 
 function beginEdit(id: number): void {
-  acronyms.markEdit(id);
+  acronyms.getById(id).edit = true;
   nextTick(() => inputEditAbbreviation.value[0].focus());
 }
 
@@ -217,7 +214,7 @@ async function submitDelete(id: number): Promise<void> {
 }
 
 async function submitEdit(id: number): Promise<void> {
-  const acronym = acronyms.data.filter((acronym) => acronym.id == id)[0];
+  const acronym = acronyms.getById(id);
 
   const response = await fetch(`/api/${id}`, {
     body: JSON.stringify({
