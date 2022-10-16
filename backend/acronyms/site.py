@@ -79,8 +79,8 @@ async def post_acronym(
     try:
         session.add(acronym_)
         session.commit()
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Duplicate acronym request")
+    except IntegrityError as exception:
+        raise HTTPException(status_code=400, detail=str(exception))
     return acronym_.id
 
 

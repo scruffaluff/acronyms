@@ -187,7 +187,12 @@ async function submitAdd(): Promise<void> {
     method: "POST",
   });
   if (!response.ok) {
-    acronyms.error.message = await response.text();
+    try {
+      acronyms.error.message = (await response.json()).detail;
+    } catch (_) {
+      acronyms.error.message = await response.text();
+    }
+
     acronyms.error.active = true;
     return;
   }

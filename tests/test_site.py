@@ -124,7 +124,7 @@ def test_site_available(server: str, page: Page) -> None:
 
 @pytest.mark.e2e
 def test_add_acronym(server: str, page: Page) -> None:
-    """Website is available for external traffic."""
+    """New acronym is found after following add acronym flow."""
     acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
     table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
     page.goto(server)
@@ -138,3 +138,16 @@ def test_add_acronym(server: str, page: Page) -> None:
     entry.fill(acronym["abbreviation"])
     entry.press("Enter")
     expect(table_body).to_have_text(table_text)
+
+
+@pytest.mark.e2e
+def test_add_acronym_error(server: str, page: Page) -> None:
+    """Error modal pops up upon erroneous acronym submission."""
+    page.goto(server)
+
+    page.locator("#search").fill("Error Handling")
+    page.locator("#add").click()
+
+    entry = page.locator("*:focus")
+    entry.press("Enter")
+    expect(page.locator("#error-modal")).to_be_visible()

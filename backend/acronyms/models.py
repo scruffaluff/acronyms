@@ -5,7 +5,13 @@ import os
 from typing import Iterator
 
 import sqlalchemy
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    Integer,
+    Unicode,
+    UniqueConstraint,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
@@ -45,5 +51,5 @@ class Acronym(Base):
     __tablename__ = "acronyms"
     __table_args__ = (UniqueConstraint("abbreviation", "phrase"),)
     id = Column(Integer, primary_key=True, index=True)
-    abbreviation = Column(Unicode)
-    phrase = Column(Unicode)
+    abbreviation = Column(Unicode, CheckConstraint("LENGTH(abbreviation) > 0"))
+    phrase = Column(Unicode, CheckConstraint("LENGTH(phrase) > 0"))
