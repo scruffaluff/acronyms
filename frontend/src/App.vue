@@ -35,7 +35,7 @@
       <div class="column field is-four-fifths mb-0">
         <div class="control has-icons-left">
           <input
-            id="input"
+            id="search"
             ref="inputSearch"
             v-model="acronyms.search"
             class="input"

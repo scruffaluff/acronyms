@@ -133,12 +133,15 @@ def test_site_available(server: str, page: Page) -> None:
 def test_add_acronym(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
+    table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
     page.goto(server)
-
-    page.locator("#input").fill(acronym["phrase"])
     table_body = page.locator("data-testid=table-body")
-    expect(table_body).not_to_have_text(acronym["phrase"])
+
+    page.locator("#search").fill(acronym["phrase"])
+    expect(table_body).not_to_have_text(table_text)
     page.locator("#add").click()
 
-    page.locator("*:focus").press("Enter")
-    expect(table_body).to_have_text(re.compile(acronym["phrase"]))
+    entry = page.locator("*:focus")
+    entry.fill(acronym["abbreviation"])
+    entry.press("Enter")
+    expect(table_body).to_have_text(table_text)
