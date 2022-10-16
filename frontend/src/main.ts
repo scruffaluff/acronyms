@@ -1,4 +1,5 @@
 import App from "./App.vue";
+import "./styles.scss";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 
