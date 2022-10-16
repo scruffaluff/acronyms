@@ -55,7 +55,7 @@
               v-model="acronyms.insert.abbreviation"
               class="input"
               placeholder="Abbreviation"
-              @keyup.enter="submitAdd()"
+              @keyup.enter="valid(acronyms.insert) && submitAdd()"
             />
           </td>
           <td>
@@ -64,11 +64,15 @@
               v-model="acronyms.insert.phrase"
               class="input"
               placeholder="Phrase"
-              @keyup.enter="submitAdd()"
+              @keyup.enter="valid(acronyms.insert) && submitAdd()"
             />
           </td>
           <td>
-            <button class="button is-info is-light mx-1" @click="submitAdd()">
+            <button
+              :disabled="!valid(acronyms.insert)"
+              class="button is-info is-light mx-1"
+              @click="submitAdd()"
+            >
               <strong>Submit</strong>
             </button>
             <button
@@ -99,6 +103,7 @@
             </td>
             <td>
               <button
+                :disabled="!valid(acronym)"
                 class="button is-light is-info mr-1"
                 @click="submitEdit(acronym.id)"
               >
@@ -142,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { Acronym, useAcronymStore } from "../stores/acronym";
+import { Acronym, useAcronymStore, valid } from "../stores/acronym";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
 function beginAdd(): void {

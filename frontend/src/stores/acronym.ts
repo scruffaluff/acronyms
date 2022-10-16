@@ -15,6 +15,13 @@ export interface AcronymResponse {
   phrase: string;
 }
 
+export function valid(acronym: {
+  abbreviation: string;
+  phrase: string;
+}): boolean {
+  return acronym.abbreviation.length !== 0 && acronym.phrase.length !== 0;
+}
+
 export const useAcronymStore = defineStore("acronym", () => {
   const data = ref<Acronym[]>([]);
   const error = ref({ active: false, message: "" });

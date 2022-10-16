@@ -9,7 +9,9 @@
     <div class="content has-text-centered">
       <h4 class="mb-0">
         <strong>Acronyms</strong> by
-        <a href="https://github.com/scruffaluff">Scruffaluff</a>.
+        <a class="has-text-primary" href="https://github.com/scruffaluff"
+          >Scruffaluff</a
+        >.
       </h4>
     </div>
   </footer>
