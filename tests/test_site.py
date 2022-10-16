@@ -127,3 +127,18 @@ def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))
+
+
+@pytest.mark.e2e
+def test_add_acronym(server: str, page: Page) -> None:
+    """Website is available for external traffic."""
+    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
+    page.goto(server)
+
+    page.locator("#input").fill(acronym["phrase"])
+    table_body = page.locator("data-testid=table-body")
+    expect(table_body).not_to_have_text(acronym["phrase"])
+    page.locator("#add").click()
+
+    page.locator("*:focus").press("Enter")
+    expect(table_body).to_have_text(re.compile(acronym["phrase"]))

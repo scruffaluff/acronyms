@@ -1,6 +1,8 @@
 """Resuable testing fixtures for acronyms."""
 
 
+import os
+from pathlib import Path
 import subprocess
 from subprocess import Popen
 from typing import Iterator
@@ -63,10 +65,14 @@ def engine(connection: str) -> Engine:
 @pytest.fixture(scope="session")
 def server() -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
+    database = "test"
+    (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
+
     # Running the server via uvicorn directly as a Python function throws
     # RuntimeError: asyncio.run() cannot be called from a running event loop".
     process = Popen(
-        ["poetry", "run", "acronyms", "--port", "8081"],
+        ["acronyms", "--port", "8081"],
+        env=dict(**os.environ, **{"ACRONYMS_DATABASE_NAME": database}),
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )

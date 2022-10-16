@@ -35,6 +35,7 @@
       <div class="column field is-four-fifths mb-0">
         <div class="control has-icons-left">
           <input
+            id="input"
             ref="inputSearch"
             v-model="acronyms.search"
             class="input"
@@ -48,7 +49,7 @@
         </div>
       </div>
       <div class="container column">
-        <a class="button is-primary" @click="beginAdd()">
+        <a id="add" class="button is-primary" @click="beginAdd()">
           <strong>Add</strong>
         </a>
       </div>
@@ -75,7 +76,7 @@
             <th style="width: 25%">Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-testid="table-body">
           <tr v-show="insert.active">
             <td>
               <input
