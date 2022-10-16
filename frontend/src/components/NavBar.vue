@@ -36,3 +36,9 @@ import { ref } from "vue";
 
 const navBarBurger = ref(false);
 </script>
+
+<style>
+.title {
+  margin-bottom: 0;
+}
+</style>

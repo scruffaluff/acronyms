@@ -25,7 +25,9 @@
   </div>
 
   <div class="table-container">
-    <table class="container table is-fullwidth is-hoverable has-text-left">
+    <table
+      class="container table is-fullwidth is-hoverable fixed-columns has-text-left"
+    >
       <thead>
         <tr>
           <th
@@ -252,8 +254,8 @@ function switchSort(name: string): void {
 const acronyms = useAcronymStore();
 const addButton = ref<HTMLElement | null>(null);
 const columns = reactive([
-  { name: "abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
-  { name: "phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
+  { name: "Abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
+  { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
 ]);
 const inputAddAbbreviation = ref<HTMLElement | null>(null);
 const inputAddPhrase = ref<HTMLElement | null>(null);
@@ -263,3 +265,9 @@ const recentSort = ref("");
 
 onMounted(acronyms.fetchData);
 </script>
+
+<style>
+.fixed-columns {
+  table-layout: fixed;
+}
+</style>

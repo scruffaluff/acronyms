@@ -5,9 +5,9 @@
     <AcronymSearch />
   </main>
 
-  <footer class="footer py-6">
-    <div class="container">
-      <h4>
+  <footer class="footer bottom-fixed py-5">
+    <div class="content has-text-centered">
+      <h4 class="mb-0">
         <strong>Acronyms</strong> by
         <a href="https://github.com/scruffaluff">Scruffaluff</a>.
       </h4>
@@ -18,7 +18,6 @@
     id="error-modal"
     :class="{ 'is-active': acronyms.error.active }"
     class="modal"
-    @keyup.esc="acronyms.error.active = false"
   >
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -48,16 +47,10 @@ const acronyms = useAcronymStore();
 </script>
 
 <style>
+/* Fixes footer to bottom of page with footer width relative to parent div. Do
+not use 'position: fixed;' on footer instead. It will make the footer's width
+relative to the body element. */
 .main {
-  flex: 1;
-}
-.title {
-  margin-bottom: 0;
-}
-table {
-  table-layout: fixed;
-}
-th {
-  text-transform: capitalize;
+  flex: auto;
 }
 </style>
