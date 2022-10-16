@@ -55,6 +55,11 @@ export const useAcronymStore = defineStore("acronym", {
   },
 
   state: () => {
-    return { data: [] as Acronym[], search: "" };
+    return {
+      error: { active: false, message: "" },
+      insert: { abbreviation: "", active: false, phrase: "" },
+      data: [] as Acronym[],
+      search: "",
+    };
   },
 });
