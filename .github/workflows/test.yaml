@@ -67,8 +67,6 @@ jobs:
             node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
-      - name: Build frontend assets
-        run: npm run build
       - name: Run test suite
         run: poetry run pytest --cov
       - name: Setup tmate session if job failed

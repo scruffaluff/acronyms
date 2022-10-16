@@ -62,11 +62,20 @@ def engine(connection: str) -> Engine:
     return sqlalchemy.create_engine(connection)
 
 
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Build Javascript assets at pytest startup."""
+    subprocess.run(
+        ["npm", "run", "build"],
+        check=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+
+
 @pytest.fixture(scope="session")
 def server() -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     database = "test"
-    (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
 
     # Running the server via uvicorn directly as a Python function throws
     # RuntimeError: asyncio.run() cannot be called from a running event loop".
@@ -86,6 +95,7 @@ def server() -> Iterator[str]:
 
     yield url
     process.terminate()
+    (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
 
 
 @pytest.fixture
