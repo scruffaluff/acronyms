@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { computed, ref } from "vue";
 
 export interface Acronym {
   id: number;
@@ -14,52 +15,55 @@ export interface AcronymResponse {
   phrase: string;
 }
 
-export const useAcronymStore = defineStore("acronym", {
-  actions: {
-    markDelete(id: number): void {
-      const acronym = this.data.filter((acronym) => acronym.id == id)[0];
-      acronym.delete = true;
-    },
+export const useAcronymStore = defineStore("acronym", () => {
+  const data = ref<Acronym[]>([]);
+  const error = ref({ active: false, message: "" });
+  const insert = ref({ abbreviation: "", active: false, phrase: "" });
+  const search = ref("");
 
-    markEdit(id: number): void {
-      const acronym = this.data.filter((acronym) => acronym.id == id)[0];
-      acronym.edit = true;
-    },
+  const matches = computed(() => {
+    const text = search.value.toLowerCase();
 
-    async fetchData(): Promise<void> {
-      const response = await fetch("/api");
-      if (!response.ok) {
-        console.error(response.text());
-        return;
-      }
+    return data.value.filter((acronym) => {
+      const abbreviation = acronym.abbreviation.toLowerCase();
+      const phrase = acronym.phrase.toLowerCase();
 
-      this.data = (await response.json()).map((acronym: AcronymResponse) => ({
-        ...acronym,
-        delete: false,
-        edit: false,
-      }));
-    },
-  },
+      return abbreviation.includes(text) || phrase.includes(text);
+    });
+  });
 
-  getters: {
-    matches(state): Acronym[] {
-      const text = state.search.toLowerCase();
+  function markDelete(id: number): void {
+    const acronym = data.value.filter((acronym) => acronym.id == id)[0];
+    acronym.delete = true;
+  }
 
-      return state.data.filter((acronym) => {
-        const abbreviation = acronym.abbreviation.toLowerCase();
-        const phrase = acronym.phrase.toLowerCase();
+  function markEdit(id: number): void {
+    const acronym = data.value.filter((acronym) => acronym.id == id)[0];
+    acronym.edit = true;
+  }
 
-        return abbreviation.includes(text) || phrase.includes(text);
-      });
-    },
-  },
+  async function fetchData(): Promise<void> {
+    const response = await fetch("/api");
+    if (!response.ok) {
+      console.error(response.text());
+      return;
+    }
 
-  state: () => {
-    return {
-      error: { active: false, message: "" },
-      insert: { abbreviation: "", active: false, phrase: "" },
-      data: [] as Acronym[],
-      search: "",
-    };
-  },
+    data.value = (await response.json()).map((acronym: AcronymResponse) => ({
+      ...acronym,
+      delete: false,
+      edit: false,
+    }));
+  }
+
+  return {
+    data,
+    error,
+    fetchData,
+    insert,
+    markDelete,
+    markEdit,
+    matches,
+    search,
+  };
 });
