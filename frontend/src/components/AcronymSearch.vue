@@ -92,11 +92,7 @@
               />
             </td>
             <td>
-              <input
-                v-model="edit.phrase"
-                class="input"
-                placeholder="Phrase"
-              />
+              <input v-model="edit.phrase" class="input" placeholder="Phrase" />
             </td>
             <td>
               <button
