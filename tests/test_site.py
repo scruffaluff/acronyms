@@ -7,6 +7,7 @@ from typing import cast
 from fastapi.testclient import TestClient
 from playwright.sync_api import expect, Page
 import pytest
+import requests
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
@@ -53,21 +54,17 @@ def test_add_acronym_invalid(server: str, page: Page) -> None:
 
 @pytest.mark.e2e
 def test_add_acronym_error(server: str, page: Page) -> None:
-    """Error modal pops up upon erroneous acronym submission."""
+    """Error modal pops up upon duplicate acronym submission."""
+    acronym = {"abbreviation": "ECC", "phrase": "Error Correction Code"}
+    response = requests.post(f"{server}/api", json=acronym)
+    response.raise_for_status()
+
     page.goto(server)
-
-    page.locator("#search").fill("Error Handling")
+    page.locator("#search").fill(acronym["phrase"])
     page.locator("#add").click()
 
     entry = page.locator("*:focus")
-    entry.fill("EH")
-    entry.press("Enter")
-
-    page.locator("#search").fill("Error Handling")
-    page.locator("#add").click()
-
-    entry = page.locator("*:focus")
-    entry.fill("EH")
+    entry.fill(acronym["abbreviation"])
     entry.press("Enter")
     expect(page.locator("#error-modal")).to_be_visible()
 

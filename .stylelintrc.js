@@ -9,7 +9,6 @@ module.exports = {
     "stylelint-config-standard-scss",
     "stylelint-config-prettier-scss",
   ],
-  ignoreFiles: ["node_modules/"],
   rules: {
     "scss/at-import-partial-extension": "always",
   },

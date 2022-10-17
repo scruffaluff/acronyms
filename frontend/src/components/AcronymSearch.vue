@@ -48,47 +48,44 @@
         </tr>
       </thead>
       <tbody data-testid="table-body">
-        <tr v-show="acronyms.insert.active">
+        <tr v-show="edit.active && edit.id === null">
           <td>
             <input
               ref="inputAddAbbreviation"
-              v-model="acronyms.insert.abbreviation"
+              v-model="edit.abbreviation"
               class="input"
               placeholder="Abbreviation"
-              @keyup.enter="valid(acronyms.insert) && submitAdd()"
+              @keyup.enter="edit.valid() && submitAdd()"
             />
           </td>
           <td>
             <input
               ref="inputAddPhrase"
-              v-model="acronyms.insert.phrase"
+              v-model="edit.phrase"
               class="input"
               placeholder="Phrase"
-              @keyup.enter="valid(acronyms.insert) && submitAdd()"
+              @keyup.enter="edit.valid() && submitAdd()"
             />
           </td>
           <td>
             <button
-              :disabled="!valid(acronyms.insert)"
+              :disabled="!edit.valid()"
               class="button is-info is-light mx-1"
               @click="submitAdd()"
             >
               <strong>Submit</strong>
             </button>
-            <button
-              class="button is-light mx-1"
-              @click="acronyms.insert.active = false"
-            >
+            <button class="button is-light mx-1" @click="edit.active = false">
               <strong>Cancel</strong>
             </button>
           </td>
         </tr>
         <tr v-for="acronym in acronyms.matches" :key="acronym.id">
-          <template v-if="acronym.edit">
+          <template v-if="edit.active && edit.id === acronym.id">
             <td>
               <input
                 ref="inputEditAbbreviation"
-                v-model="acronym.abbreviation"
+                v-model="edit.abbreviation"
                 class="input"
                 type="text"
                 placeholder="Abbreviation"
@@ -96,16 +93,16 @@
             </td>
             <td>
               <input
-                v-model="acronym.phrase"
+                v-model="edit.phrase"
                 class="input"
                 placeholder="Phrase"
               />
             </td>
             <td>
               <button
-                :disabled="!valid(acronym)"
+                :disabled="!edit.valid()"
                 class="button is-light is-info mr-1"
-                @click="submitEdit(acronym.id)"
+                @click="submitEdit(edit)"
               >
                 <strong>Submit</strong>
               </button>
@@ -147,19 +144,37 @@
 </template>
 
 <script setup lang="ts">
-import { Acronym, useAcronymStore, valid } from "../stores/acronym";
+import { Acronym, useAcronymStore } from "../stores/acronym";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
+class Edit {
+  abbreviation = "";
+  active = false;
+  id: number | null = null;
+  phrase = "";
+
+  clear(): void {
+    this.abbreviation = "";
+    this.active = false;
+    this.id = null;
+    this.phrase = "";
+  }
+
+  valid(): boolean {
+    return this.abbreviation.length !== 0 && this.phrase.length !== 0;
+  }
+}
+
 function beginAdd(): void {
-  acronyms.insert.active = true;
+  edit.active = true;
 
   // nextTick is required since a v-show element is not available until the next
   // Vue update.
   if (!acronyms.search || acronyms.search.includes(" ")) {
-    acronyms.insert.phrase = acronyms.search;
+    edit.phrase = acronyms.search;
     nextTick(() => inputAddAbbreviation.value?.focus());
   } else {
-    acronyms.insert.abbreviation = acronyms.search;
+    edit.abbreviation = acronyms.search;
     nextTick(() => inputAddPhrase.value?.focus());
   }
 }
@@ -182,8 +197,8 @@ function sort(column: { name: string; ascending: boolean }): void {
 async function submitAdd(): Promise<void> {
   const response = await fetch(`/api`, {
     body: JSON.stringify({
-      abbreviation: acronyms.insert.abbreviation,
-      phrase: acronyms.insert.phrase,
+      abbreviation: edit.abbreviation,
+      phrase: edit.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -199,9 +214,7 @@ async function submitAdd(): Promise<void> {
     return;
   }
 
-  acronyms.insert.abbreviation = "";
-  acronyms.insert.phrase = "";
-  acronyms.insert.active = false;
+  edit.clear();
 
   acronyms.search = "";
   inputSearch.value?.focus();
@@ -218,13 +231,11 @@ async function submitDelete(id: number): Promise<void> {
   await acronyms.fetchData();
 }
 
-async function submitEdit(id: number): Promise<void> {
-  const acronym = acronyms.getById(id);
-
-  const response = await fetch(`/api/${id}`, {
+async function submitEdit(edit: Edit): Promise<void> {
+  const response = await fetch(`/api/${edit.id}`, {
     body: JSON.stringify({
-      abbreviation: acronym.abbreviation,
-      phrase: acronym.phrase,
+      abbreviation: edit.abbreviation,
+      phrase: edit.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "PUT",
@@ -234,7 +245,7 @@ async function submitEdit(id: number): Promise<void> {
     return;
   }
 
-  acronym.edit = false;
+  edit.clear();
   await acronyms.fetchData();
 }
 
@@ -253,17 +264,19 @@ function switchSort(name: string): void {
   recentSort.value = name;
 }
 
-const acronyms = useAcronymStore();
 const addButton = ref<HTMLElement | null>(null);
-const columns = reactive([
-  { name: "Abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
-  { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
-]);
 const inputAddAbbreviation = ref<HTMLElement | null>(null);
 const inputAddPhrase = ref<HTMLElement | null>(null);
 const inputEditAbbreviation = ref<Array<HTMLElement>>([]);
 const inputSearch = ref<HTMLElement | null>(null);
 const recentSort = ref("");
+
+const acronyms = useAcronymStore();
+const columns = reactive([
+  { name: "Abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
+  { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
+]);
+const edit = reactive(new Edit());
 
 onMounted(acronyms.fetchData);
 </script>
