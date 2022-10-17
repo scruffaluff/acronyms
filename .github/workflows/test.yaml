@@ -137,7 +137,7 @@ jobs:
             --timeout=300s
       - name: Run Helm chart test suite
         run: |
-          REQUESTS_CA_BUNDLE="$(mkcert -CAROOT)/rootCA.pem"
+          export REQUESTS_CA_BUNDLE="$(mkcert -CAROOT)/rootCA.pem"
           poetry run pytest --chart -m e2e
       - name: Setup tmate session if job failed
         if: >-
