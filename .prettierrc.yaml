@@ -3,6 +3,21 @@
 # For more information, visit https://prettier.io/docs/en/configuration.html.
 
 arrowParens: always
+# Ordered to match rules at
+# https://eslint.vuejs.org/rules/attributes-order.html#rule-details.
+attributeGroups:
+  - ^(is|v-is)$
+  - ^v-for
+  - ^(v-if|v-else-if|v-else|v-show|v-cloak)$
+  - ^(v-once|v-pre)$
+  - ^id$
+  - ^(key|ref)$
+  - ^(slot|v-slot)$
+  - ^v-model$
+  - ^(v-bind|:)
+  - $DEFAULT
+  - ^(v-on|@)
+  - ^(v-html|v-text)$
 printWidth: 80
 proseWrap: always
 semi: true

@@ -1,52 +1,25 @@
 <template>
-  <nav class="navbar p-4 px-6" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <div class="navbar-item title mb-0 is-4 has-text-primary">Acronyms</div>
-      <a
-        aria-label="menu"
-        aria-expanded="false"
-        class="navbar-burger"
-        data-target="login"
-        role="button"
-        :class="{ 'is-active': navBarBurger }"
-        @click="navBarBurger = !navBarBurger"
-      >
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
-    </div>
-    <div id="login" class="navbar-menu" :class="{ 'is-active': navBarBurger }">
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <button class="button is-primary">
-            <strong>Sign up</strong>
-          </button>
-        </div>
-        <div class="navbar-item">
-          <button class="button is-light">Log in</button>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <NavBar />
 
-  <main class="main section">
+  <main class="main section>">
     <AcronymSearch />
   </main>
 
-  <footer class="footer py-6">
-    <div class="container">
-      <h4>
+  <footer class="footer bottom-fixed py-5">
+    <div class="content has-text-centered">
+      <h4 class="mb-0">
         <strong>Acronyms</strong> by
-        <a href="https://github.com/scruffaluff">Scruffaluff</a>.
+        <a class="has-text-primary" href="https://github.com/scruffaluff"
+          >Scruffaluff</a
+        >.
       </h4>
     </div>
   </footer>
 
   <div
     id="error-modal"
-    class="modal"
     :class="{ 'is-active': acronyms.error.active }"
+    class="modal"
   >
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -54,8 +27,8 @@
         <div class="message-header">
           <p>Error</p>
           <button
-            aria-label="delete"
             class="delete"
+            aria-label="delete"
             @click="acronyms.error.active = false"
           ></button>
         </div>
@@ -68,25 +41,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useAcronymStore } from "./stores/acronym";
 import AcronymSearch from "./components/AcronymSearch.vue";
+import NavBar from "./components/NavBar.vue";
+import { useAcronymStore } from "./stores/acronym";
 
 const acronyms = useAcronymStore();
-const navBarBurger = ref(false);
 </script>
 
 <style>
+/* Fixes footer to bottom of page with footer width relative to parent div. Do
+not use 'position: fixed;' on footer instead. It will make the footer's width
+relative to the body element. */
 .main {
-  flex: 1;
-}
-.title {
-  margin-bottom: 0;
-}
-table {
-  table-layout: fixed;
-}
-th {
-  text-transform: capitalize;
+  flex: auto;
 }
 </style>

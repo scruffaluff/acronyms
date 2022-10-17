@@ -7,10 +7,93 @@ from typing import cast
 from fastapi.testclient import TestClient
 from playwright.sync_api import expect, Page
 import pytest
+import requests
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym
+
+
+@pytest.mark.e2e
+def test_add_acronym_valid(server: str, page: Page) -> None:
+    """Add acronym process completes for valid acronym."""
+    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
+    table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
+    page.goto(server)
+
+    table_body = page.locator("data-testid=table-body")
+    submit = page.locator(
+        '[data-testid="table-body"] button:has-text("Submit")'
+    )
+
+    page.locator("#search").fill(acronym["phrase"])
+    expect(table_body).not_to_have_text(table_text)
+    page.locator("#add").click()
+    expect(submit).to_be_visible()
+
+    entry = page.locator("*:focus")
+    entry.fill(acronym["abbreviation"])
+    entry.press("Enter")
+    expect(submit).not_to_be_visible()
+    expect(table_body).to_have_text(table_text)
+
+
+@pytest.mark.e2e
+def test_add_acronym_invalid(server: str, page: Page) -> None:
+    """Add acronym process is unable to complete for invalid acronym."""
+    page.goto(server)
+    page.locator("#add").click()
+    submit = page.locator(
+        '[data-testid="table-body"] button:has-text("Submit")'
+    )
+
+    entry = page.locator("*:focus")
+    entry.press("Enter")
+    expect(submit).to_be_visible()
+
+
+@pytest.mark.e2e
+def test_add_acronym_error(server: str, page: Page) -> None:
+    """Error modal pops up upon duplicate acronym submission."""
+    acronym = {"abbreviation": "ECC", "phrase": "Error Correction Code"}
+    response = requests.post(f"{server}/api", json=acronym)
+    response.raise_for_status()
+
+    page.goto(server)
+    page.locator("#search").fill(acronym["phrase"])
+    page.locator("#add").click()
+
+    entry = page.locator("*:focus")
+    entry.fill(acronym["abbreviation"])
+    entry.press("Enter")
+    expect(page.locator("#error-modal")).to_be_visible()
+
+
+@pytest.mark.e2e
+def test_begin_add_acronym_button(server: str, page: Page) -> None:
+    """Clicking add button begins new acronym process."""
+    page.goto(server)
+    submit = page.locator(
+        '[data-testid="table-body"] button:has-text("Submit")'
+    )
+    expect(submit).not_to_be_visible()
+
+    page.locator("#add").click()
+    expect(submit).to_be_visible()
+
+
+@pytest.mark.e2e
+def test_begin_add_acronym_keypress(server: str, page: Page) -> None:
+    """Pressing keys while in search focus begins new acronym process."""
+    page.goto(server)
+    submit = page.locator(
+        '[data-testid="table-body"] button:has-text("Submit")'
+    )
+    expect(submit).not_to_be_visible()
+
+    search = page.locator("#search")
+    search.press("Control+Enter")
+    expect(submit).to_be_visible()
 
 
 def test_delete_acronym(client: TestClient) -> None:
@@ -120,21 +203,3 @@ def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))
-
-
-@pytest.mark.e2e
-def test_add_acronym(server: str, page: Page) -> None:
-    """Website is available for external traffic."""
-    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
-    table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
-    page.goto(server)
-    table_body = page.locator("data-testid=table-body")
-
-    page.locator("#search").fill(acronym["phrase"])
-    expect(table_body).not_to_have_text(table_text)
-    page.locator("#add").click()
-
-    entry = page.locator("*:focus")
-    entry.fill(acronym["abbreviation"])
-    entry.press("Enter")
-    expect(table_body).to_have_text(table_text)

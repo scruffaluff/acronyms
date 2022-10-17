@@ -1,0 +1,14 @@
+@charset "utf-8";
+
+$primary: #d333ff;
+$fa-font-path: "../../node_modules/@fortawesome/fontawesome-free/webfonts";
+
+@import "../../node_modules/bulma/bulma.sass";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
+
+#app {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
