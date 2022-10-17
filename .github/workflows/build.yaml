@@ -101,6 +101,7 @@ jobs:
         run: npm run build
       - name: Lint code
         run: |
+          npx stylelint "frontend/**/*.{css,scss}"
           npm run lint:test
           npm run build
 
