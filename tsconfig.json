@@ -1,3 +1,7 @@
+// Typescript configuration file for compiling JavaScript code with types.
+//
+// For an options reference, visit https://www.typescriptlang.org/tsconfig.
+
 {
   "compilerOptions": {
     "allowJs": false,

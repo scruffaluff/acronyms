@@ -1,6 +1,7 @@
 {
   "name": "acronyms",
   "dependencies": {
+    "@creativebulma/bulma-tooltip": "^1.2.0",
     "@fortawesome/fontawesome-free": "^6.2.0",
     "@vueuse/core": "^9.3.1",
     "@vueuse/motion": "^2.0.0-beta.23",
@@ -30,7 +31,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build --emptyOutDir",
     "dev": "vite",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",

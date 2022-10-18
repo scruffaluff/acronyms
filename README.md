@@ -15,9 +15,12 @@
 
 Acronyms is web application for managing acronyms.
 
-## Getting Started
+## Todo
 
-### Installation
+- Post requests should return the acronym id, show that data does not need to be
+  fetched again.
+- Data should only be fetched after page load and after each new focus on the
+  search bar.
 
 ## Contributing
 

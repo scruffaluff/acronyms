@@ -14,14 +14,14 @@
           <button class="button is-light">Log in</button>
         </div>
         <div class="navbar-item">
-          <button
+          <span
             :class="isDark ? 'is-dark' : 'is-light'"
-            class="button"
+            class="has-tooltip-bottom"
+            data-tooltip="Toggle Color Scheme"
             @click="toggleDark()"
           >
             <i :class="isDark ? 'fa-moon' : 'fa-sun'" class="fas mr-2"></i>
-            {{ isDark ? "Dark" : "Light" }}
-          </button>
+          </span>
         </div>
       </div>
     </div>

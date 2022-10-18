@@ -1,3 +1,8 @@
+// TypeScript environment file to add third party toolingtypes to compiler.
+//
+// For more information, visit
+// https://www.typescriptlang.org/docs/handbook/declaration-files/templates/module-d-ts.html.
+
 /// <reference types="vite/client" />
 
 declare module "*.vue" {

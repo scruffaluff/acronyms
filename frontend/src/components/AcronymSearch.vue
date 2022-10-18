@@ -10,7 +10,7 @@
           class="input"
           type="text"
           placeholder="Search"
-          @keyup.ctrl.enter="beginAdd()"
+          @keydown.ctrl.enter.exact="beginAdd()"
           @keyup.tab="addButton?.focus()"
         />
         <span class="icon is-left is-small">
@@ -19,12 +19,7 @@
       </div>
     </div>
     <div class="container column">
-      <a
-        id="add"
-        class="button is-primary"
-        @keyup="keyUpHandler"
-        @click="beginAdd()"
-      >
+      <a id="add" class="button is-primary" @click="beginAdd()">
         <strong>Add</strong>
       </a>
     </div>
@@ -44,7 +39,8 @@
             {{ column.name }}
             <span
               :class="{ 'has-text-primary': recentSort == column.name }"
-              class="icon is-clickable is-small"
+              class="icon is-clickable is-small has-tooltip-right"
+              data-tooltip="Sort"
               @keyup.ctrl.a="beginAdd()"
               @click="switchSort(column.name)"
             >
@@ -135,15 +131,17 @@
             <td v-else>
               <span
                 class="icon mr-5 is-clickable"
+                data-tooltip="Edit"
                 @click="beginEdit(acronym.id)"
-                @keyup="keyUpHandler"
+                @keydown="keyDownHandler($event)"
               >
                 <i class="fas fa-pencil"></i>
               </span>
               <span
                 class="icon is-clickable"
+                data-tooltip="Delete"
                 @click="acronym.delete = true"
-                @keyup="keyUpHandler"
+                @keydown="keyDownHandler($event)"
               >
                 <i class="fas fa-trash-can"></i>
               </span>
@@ -202,14 +200,27 @@ function beginEdit(id: number): void {
   nextTick(() => inputEditAbbreviation.value[0].focus());
 }
 
-function keyUpHandler(event: KeyboardEvent): void {
+function keyDownHandler(event: KeyboardEvent): void {
   if (event.ctrlKey) {
     if (event.key === "a") {
+      event.preventDefault();
+      beginAdd();
+    } else if (event.key === "s") {
+      event.preventDefault();
       beginAdd();
     } else if (event.key === "Z") {
       redoEdit();
     } else if (event.key === "z") {
       undoEdit();
+    }
+  } else if (event.key === "Escape") {
+    if (edit.value.active) {
+      edit.value.clear();
+    }
+
+    if (acronyms.error.active) {
+      acronyms.error.message = "";
+      acronyms.error.active = false;
     }
   }
 }
@@ -312,7 +323,7 @@ const { undo: undoEdit, redo: redoEdit } = useRefHistory(edit, {
   deep: true,
 });
 
-document.addEventListener("keyup", keyUpHandler);
+document.addEventListener("keydown", keyDownHandler);
 onMounted(acronyms.fetchData);
 </script>
 

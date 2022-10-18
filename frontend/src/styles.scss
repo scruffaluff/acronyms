@@ -4,6 +4,7 @@ $primary: #d333ff;
 $fa-font-path: "@fortawesome/fontawesome-free/webfonts";
 
 @import "bulma/bulma.sass";
+@import "@creativebulma/bulma-tooltip/src/sass/index.sass";
 @import "@fortawesome/fontawesome-free/scss/fontawesome.scss";
 @import "@fortawesome/fontawesome-free/scss/solid.scss";
 
@@ -14,5 +15,5 @@ $fa-font-path: "@fortawesome/fontawesome-free/webfonts";
 }
 
 .divider {
-  border-top: 0.125rem solid $grey-light;
+  border-top: 0.125rem solid $grey-lighter;
 }

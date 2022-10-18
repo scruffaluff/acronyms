@@ -26,7 +26,7 @@ main() {
   # Sleeping for 1 second prevents vite from making folder "dist/assets"
   # temporarily unavailable to the backend server.
   sleep 1
-  npx vite build --watch --mode development
+  npx vite build --emptyOutDir --watch --mode development
 }
 
 main
