@@ -1,5 +1,6 @@
 <template>
   <NavBar />
+  <div class="divider"></div>
 
   <main class="main section>">
     <AcronymSearch />
@@ -18,6 +19,7 @@
 
   <div
     id="error-modal"
+    v-motion-fade-visible
     :class="{ 'is-active': acronyms.error.active }"
     class="modal"
   >

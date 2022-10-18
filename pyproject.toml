@@ -25,6 +25,27 @@ command_line = "-m pytest"
 omit = []
 source = ["acronyms"]
 
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_calls = false
+disallow_untyped_defs = true
+exclude = [
+    ".benchmarks/",
+    ".hypothesis/",
+    ".pytest_cache/",
+    ".venv/",
+    "dist/",
+    "node_modules/",
+    "tmp/",
+]
+ignore_missing_imports = true
+no_implicit_optional = true
+plugins = "sqlmypy"
+strict_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+
 [tool.poetry]
 authors = ["Macklan Weinstein <macklan.weinstein@gmail.com>"]
 description = "Application for saving acronyms"

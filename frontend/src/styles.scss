@@ -1,14 +1,18 @@
 @charset "utf-8";
 
 $primary: #d333ff;
-$fa-font-path: "../../node_modules/@fortawesome/fontawesome-free/webfonts";
+$fa-font-path: "@fortawesome/fontawesome-free/webfonts";
 
-@import "../../node_modules/bulma/bulma.sass";
-@import "../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
-@import "../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
+@import "bulma/bulma.sass";
+@import "@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "@fortawesome/fontawesome-free/scss/solid.scss";
 
 #app {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
+}
+
+.divider {
+  border-top: 0.125rem solid $grey-light;
 }

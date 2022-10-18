@@ -86,8 +86,7 @@ jobs:
         run: npm run build
       - name: Lint code
         run: |
-          npx prettier --check .
-          npx stylelint "frontend/**/*.{css,scss}"
+          npm run format:test
           npm run lint:test
           npm run build
 

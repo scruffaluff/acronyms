@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
+    "allowJs": false,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
-    "lib": ["esnext", "dom"],
+    "lib": ["dom", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
+    "noUnusedLocals": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
+    "strictNullChecks": true,
     "target": "esnext",
     "useDefineForClassFields": true
   },
@@ -16,6 +20,5 @@
     "frontend/src/**/*.ts",
     "frontend/src/**/*.tsx",
     "frontend/src/**/*.vue"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  ]
 }
