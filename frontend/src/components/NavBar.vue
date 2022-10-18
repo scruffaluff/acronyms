@@ -1,20 +1,7 @@
 <template>
-  <nav class="navbar p-4 px-6" role="navigation" aria-label="main navigation">
+  <nav class="navbar p-2 px-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <div class="navbar-item title mb-0 is-4 has-text-primary">Acronyms</div>
-      <a
-        :class="{ 'is-active': navBarBurger }"
-        class="navbar-burger"
-        data-target="login"
-        role="button"
-        aria-label="menu"
-        aria-expanded="false"
-        @click="navBarBurger = !navBarBurger"
-      >
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
     </div>
     <div id="login" :class="{ 'is-active': navBarBurger }" class="navbar-menu">
       <div class="navbar-end">
@@ -26,15 +13,29 @@
         <div class="navbar-item">
           <button class="button is-light">Log in</button>
         </div>
+        <div class="navbar-item">
+          <button
+            :class="isDark ? 'is-dark' : 'is-light'"
+            class="button"
+            @click="toggleDark()"
+          >
+            <i :class="isDark ? 'fa-moon' : 'fa-sun'" class="fas mr-2"></i>
+            {{ isDark ? "Dark" : "Light" }}
+          </button>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
+import { useDark, useToggle } from "@vueuse/core";
 import { ref } from "vue";
 
 const navBarBurger = ref(false);
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 </script>
 
 <style>

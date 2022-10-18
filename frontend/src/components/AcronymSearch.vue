@@ -6,6 +6,7 @@
           id="search"
           ref="inputSearch"
           v-model="acronyms.search"
+          aria-label="search"
           class="input"
           type="text"
           placeholder="Search"
@@ -18,7 +19,12 @@
       </div>
     </div>
     <div class="container column">
-      <a id="add" class="button is-primary" @click="beginAdd()">
+      <a
+        id="add"
+        class="button is-primary"
+        @keyup="keyUpHandler"
+        @click="beginAdd()"
+      >
         <strong>Add</strong>
       </a>
     </div>
@@ -39,6 +45,7 @@
             <span
               :class="{ 'has-text-primary': recentSort == column.name }"
               class="icon is-clickable is-small"
+              @keyup.ctrl.a="beginAdd()"
               @click="switchSort(column.name)"
             >
               <i :class="column.icon" class="fas"></i>
@@ -48,7 +55,10 @@
         </tr>
       </thead>
       <tbody data-testid="table-body">
-        <tr v-show="edit.active && edit.id === null">
+        <tr
+          v-show="edit.active && edit.id === null"
+          v-motion-slide-visible-left
+        >
           <td>
             <input
               ref="inputAddAbbreviation"
@@ -86,6 +96,7 @@
               <input
                 ref="inputEditAbbreviation"
                 v-model="edit.abbreviation"
+                aria-label="abbreviation-editor"
                 class="input"
                 type="text"
                 placeholder="Abbreviation"
@@ -98,7 +109,7 @@
               <button
                 :disabled="!edit.valid()"
                 class="button is-light is-info mr-1"
-                @click="submitEdit(edit)"
+                @click="submitEdit()"
               >
                 <strong>Submit</strong>
               </button>
@@ -125,10 +136,15 @@
               <span
                 class="icon mr-5 is-clickable"
                 @click="beginEdit(acronym.id)"
+                @keyup="keyUpHandler"
               >
                 <i class="fas fa-pencil"></i>
               </span>
-              <span class="icon is-clickable" @click="acronym.delete = true">
+              <span
+                class="icon is-clickable"
+                @click="acronym.delete = true"
+                @keyup="keyUpHandler"
+              >
                 <i class="fas fa-trash-can"></i>
               </span>
             </td>
@@ -141,6 +157,7 @@
 
 <script setup lang="ts">
 import { Acronym, useAcronymStore } from "../stores/acronym";
+import { useRefHistory } from "@vueuse/core";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
 class Edit {
@@ -162,22 +179,39 @@ class Edit {
 }
 
 function beginAdd(): void {
-  edit.active = true;
+  edit.value.active = true;
 
   // nextTick is required since a v-show element is not available until the next
   // Vue update.
   if (!acronyms.search || acronyms.search.includes(" ")) {
-    edit.phrase = acronyms.search;
+    edit.value.phrase = acronyms.search;
     nextTick(() => inputAddAbbreviation.value?.focus());
   } else {
-    edit.abbreviation = acronyms.search;
+    edit.value.abbreviation = acronyms.search;
     nextTick(() => inputAddPhrase.value?.focus());
   }
 }
 
 function beginEdit(id: number): void {
-  acronyms.getById(id).edit = true;
+  const acronym = acronyms.getById(id);
+  edit.value.id = id;
+  edit.value.abbreviation = acronym.abbreviation;
+  edit.value.phrase = acronym.phrase;
+
+  edit.value.active = true;
   nextTick(() => inputEditAbbreviation.value[0].focus());
+}
+
+function keyUpHandler(event: KeyboardEvent): void {
+  if (event.ctrlKey) {
+    if (event.key === "a") {
+      beginAdd();
+    } else if (event.key === "Z") {
+      redoEdit();
+    } else if (event.key === "z") {
+      undoEdit();
+    }
+  }
 }
 
 function sort(column: { name: string; ascending: boolean }): void {
@@ -193,8 +227,8 @@ function sort(column: { name: string; ascending: boolean }): void {
 async function submitAdd(): Promise<void> {
   const response = await fetch(`/api`, {
     body: JSON.stringify({
-      abbreviation: edit.abbreviation,
-      phrase: edit.phrase,
+      abbreviation: edit.value.abbreviation,
+      phrase: edit.value.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -210,7 +244,7 @@ async function submitAdd(): Promise<void> {
     return;
   }
 
-  edit.clear();
+  edit.value.clear();
 
   acronyms.search = "";
   inputSearch.value?.focus();
@@ -227,11 +261,11 @@ async function submitDelete(id: number): Promise<void> {
   await acronyms.fetchData();
 }
 
-async function submitEdit(edit: Edit): Promise<void> {
-  const response = await fetch(`/api/${edit.id}`, {
+async function submitEdit(): Promise<void> {
+  const response = await fetch(`/api/${edit.value.id}`, {
     body: JSON.stringify({
-      abbreviation: edit.abbreviation,
-      phrase: edit.phrase,
+      abbreviation: edit.value.abbreviation,
+      phrase: edit.value.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "PUT",
@@ -241,7 +275,7 @@ async function submitEdit(edit: Edit): Promise<void> {
     return;
   }
 
-  edit.clear();
+  edit.value.clear();
   await acronyms.fetchData();
 }
 
@@ -272,8 +306,13 @@ const columns = reactive([
   { name: "Abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
   { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
 ]);
-const edit = reactive(new Edit());
+const edit = ref(new Edit());
+const { undo: undoEdit, redo: redoEdit } = useRefHistory(edit, {
+  capacity: 25,
+  deep: true,
+});
 
+document.addEventListener("keyup", keyUpHandler);
 onMounted(acronyms.fetchData);
 </script>
 

@@ -1,12 +1,12 @@
 <template>
   <NavBar />
-  <div class="divider"></div>
+  <hr class="divider m-0" />
 
-  <main class="main section>">
+  <main class="container main is-max-desktop">
     <AcronymSearch />
   </main>
 
-  <footer class="footer bottom-fixed py-5">
+  <footer class="footer bottom-fixed py-4">
     <div class="content has-text-centered">
       <h4 class="mb-0">
         <strong>Acronyms</strong> by
