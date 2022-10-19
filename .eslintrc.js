@@ -17,7 +17,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
   },
-  plugins: ["@typescript-eslint", "vuejs-accessibility", "prettier"],
+  plugins: ["@typescript-eslint", "vue", "vuejs-accessibility"],
   root: true,
   rules: {
     "@typescript-eslint/no-unused-vars": [
@@ -29,5 +29,6 @@ module.exports = {
         vars: "all",
       },
     ],
+    "vuejs-accessibility/click-events-have-key-events": "off",
   },
 };

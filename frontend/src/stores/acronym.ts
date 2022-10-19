@@ -4,14 +4,6 @@ import { computed, ref } from "vue";
 export interface Acronym {
   id: number;
   abbreviation: string;
-  delete: boolean;
-  edit: boolean;
-  phrase: string;
-}
-
-export interface AcronymResponse {
-  id: number;
-  abbreviation: string;
   phrase: string;
 }
 
@@ -42,11 +34,7 @@ export const useAcronymStore = defineStore("acronym", () => {
       return;
     }
 
-    data.value = (await response.json()).map((acronym: AcronymResponse) => ({
-      ...acronym,
-      delete: false,
-      edit: false,
-    }));
+    data.value = await response.json();
   }
 
   return {

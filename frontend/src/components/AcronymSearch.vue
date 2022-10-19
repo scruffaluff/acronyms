@@ -5,7 +5,7 @@
         <input
           id="search"
           ref="inputSearch"
-          v-model="acronyms.search"
+          v-model.trim="acronyms.search"
           aria-label="search"
           class="input"
           type="text"
@@ -58,7 +58,7 @@
           <td>
             <input
               ref="inputAddAbbreviation"
-              v-model="edit.abbreviation"
+              v-model.trim="edit.abbreviation"
               class="input"
               placeholder="Abbreviation"
               @keyup.enter="edit.valid() && submitAdd()"
@@ -67,7 +67,7 @@
           <td>
             <input
               ref="inputAddPhrase"
-              v-model="edit.phrase"
+              v-model.trim="edit.phrase"
               class="input"
               placeholder="Phrase"
               @keyup.enter="edit.valid() && submitAdd()"
@@ -91,7 +91,7 @@
             <td>
               <input
                 ref="inputEditAbbreviation"
-                v-model="edit.abbreviation"
+                v-model.trim="edit.abbreviation"
                 aria-label="abbreviation-editor"
                 class="input"
                 type="text"
@@ -99,7 +99,11 @@
               />
             </td>
             <td>
-              <input v-model="edit.phrase" class="input" placeholder="Phrase" />
+              <input
+                v-model.trim="edit.phrase"
+                class="input"
+                placeholder="Phrase"
+              />
             </td>
             <td>
               <button
@@ -109,7 +113,7 @@
               >
                 <strong>Submit</strong>
               </button>
-              <button class="button is-light" @click="acronym.edit = false">
+              <button class="button is-light" @click="edit.active = false">
                 <strong>Cancel</strong>
               </button>
             </td>
