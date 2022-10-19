@@ -4,7 +4,7 @@
       <div class="control has-icons-left">
         <input
           id="search"
-          ref="inputSearch"
+          ref="searchInput"
           v-model.trim="acronyms.search"
           aria-label="search"
           class="input"
@@ -38,7 +38,7 @@
           >
             {{ column.name }}
             <span
-              :class="{ 'has-text-primary': recentSort == column.name }"
+              :class="{ 'has-text-primary': lastSort == column.name }"
               class="icon is-clickable is-small has-tooltip-right"
               data-tooltip="Sort"
               @keyup.ctrl.a="beginAdd()"
@@ -52,105 +52,42 @@
       </thead>
       <tbody data-testid="table-body">
         <tr
-          v-show="edit.active && edit.id === null"
+          v-show="editor.edit && editor.id === null"
           v-motion-slide-visible-left
         >
           <td>
             <input
-              ref="inputAddAbbreviation"
-              v-model.trim="edit.abbreviation"
+              ref="addAbbreviationInput"
+              v-model.trim="editor.abbreviation"
               class="input"
               placeholder="Abbreviation"
-              @keyup.enter="edit.valid() && submitAdd()"
+              @keyup.enter="editor.valid() && submitAdd()"
             />
           </td>
           <td>
             <input
-              ref="inputAddPhrase"
-              v-model.trim="edit.phrase"
+              ref="addPhraseInput"
+              v-model.trim="editor.phrase"
               class="input"
               placeholder="Phrase"
-              @keyup.enter="edit.valid() && submitAdd()"
+              @keyup.enter="editor.valid() && submitAdd()"
             />
           </td>
           <td>
             <button
-              :disabled="!edit.valid()"
+              :disabled="!editor.valid()"
               class="button is-info is-light mx-1"
               @click="submitAdd()"
             >
               <strong>Submit</strong>
             </button>
-            <button class="button is-light mx-1" @click="edit.active = false">
+            <button class="button is-light mx-1" @click="editor.edit = false">
               <strong>Cancel</strong>
             </button>
           </td>
         </tr>
         <tr v-for="acronym in acronyms.matches" :key="acronym.id">
-          <template v-if="edit.active && edit.id === acronym.id">
-            <td>
-              <input
-                ref="inputEditAbbreviation"
-                v-model.trim="edit.abbreviation"
-                aria-label="abbreviation-editor"
-                class="input"
-                type="text"
-                placeholder="Abbreviation"
-              />
-            </td>
-            <td>
-              <input
-                v-model.trim="edit.phrase"
-                class="input"
-                placeholder="Phrase"
-              />
-            </td>
-            <td>
-              <button
-                :disabled="!edit.valid()"
-                class="button is-light is-info mr-1"
-                @click="submitEdit()"
-              >
-                <strong>Submit</strong>
-              </button>
-              <button class="button is-light" @click="edit.active = false">
-                <strong>Cancel</strong>
-              </button>
-            </td>
-          </template>
-          <template v-else>
-            <td>{{ acronym.abbreviation }}</td>
-            <td>{{ acronym.phrase }}</td>
-            <td v-if="acronym.delete">
-              <button
-                class="button is-light is-danger mr-1"
-                @click="submitDelete(acronym.id)"
-              >
-                <strong>Delete</strong>
-              </button>
-              <button class="button is-light" @click="acronym.delete = false">
-                <strong>Cancel</strong>
-              </button>
-            </td>
-            <td v-else>
-              <span
-                class="icon mr-5 is-clickable"
-                data-tooltip="Edit"
-                @click="beginEdit(acronym.id)"
-                @keydown="keyDownHandler($event)"
-              >
-                <i class="fas fa-pencil"></i>
-              </span>
-              <span
-                class="icon is-clickable"
-                data-tooltip="Delete"
-                @click="acronym.delete = true"
-                @keydown="keyDownHandler($event)"
-              >
-                <i class="fas fa-trash-can"></i>
-              </span>
-            </td>
-          </template>
+          <AcronymRow :identifier="acronym.id" />
         </tr>
       </tbody>
     </table>
@@ -158,74 +95,22 @@
 </template>
 
 <script setup lang="ts">
+import AcronymRow from "../components/AcronymRow.vue";
 import { Acronym, useAcronymStore } from "../stores/acronym";
-import { useRefHistory } from "@vueuse/core";
+import { useEditorStore } from "../stores/editor";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
-class Edit {
-  abbreviation = "";
-  active = false;
-  id: number | null = null;
-  phrase = "";
-
-  clear(): void {
-    this.abbreviation = "";
-    this.active = false;
-    this.id = null;
-    this.phrase = "";
-  }
-
-  valid(): boolean {
-    return this.abbreviation.length !== 0 && this.phrase.length !== 0;
-  }
-}
-
 function beginAdd(): void {
-  edit.value.active = true;
+  editor.edit = true;
 
   // nextTick is required since a v-show element is not available until the next
   // Vue update.
   if (!acronyms.search || acronyms.search.includes(" ")) {
-    edit.value.phrase = acronyms.search;
-    nextTick(() => inputAddAbbreviation.value?.focus());
+    editor.phrase = acronyms.search;
+    nextTick(() => addAbbreviationInput.value?.focus());
   } else {
-    edit.value.abbreviation = acronyms.search;
-    nextTick(() => inputAddPhrase.value?.focus());
-  }
-}
-
-function beginEdit(id: number): void {
-  const acronym = acronyms.getById(id);
-  edit.value.id = id;
-  edit.value.abbreviation = acronym.abbreviation;
-  edit.value.phrase = acronym.phrase;
-
-  edit.value.active = true;
-  nextTick(() => inputEditAbbreviation.value[0].focus());
-}
-
-function keyDownHandler(event: KeyboardEvent): void {
-  if (event.ctrlKey) {
-    if (event.key === "a") {
-      event.preventDefault();
-      beginAdd();
-    } else if (event.key === "s") {
-      event.preventDefault();
-      beginAdd();
-    } else if (event.key === "Z") {
-      redoEdit();
-    } else if (event.key === "z") {
-      undoEdit();
-    }
-  } else if (event.key === "Escape") {
-    if (edit.value.active) {
-      edit.value.clear();
-    }
-
-    if (acronyms.error.active) {
-      acronyms.error.message = "";
-      acronyms.error.active = false;
-    }
+    editor.abbreviation = acronyms.search;
+    nextTick(() => addPhraseInput.value?.focus());
   }
 }
 
@@ -242,8 +127,8 @@ function sort(column: { name: string; ascending: boolean }): void {
 async function submitAdd(): Promise<void> {
   const response = await fetch(`/api`, {
     body: JSON.stringify({
-      abbreviation: edit.value.abbreviation,
-      phrase: edit.value.phrase,
+      abbreviation: editor.abbreviation,
+      phrase: editor.phrase,
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -259,38 +144,10 @@ async function submitAdd(): Promise<void> {
     return;
   }
 
-  edit.value.clear();
+  editor.clear();
 
   acronyms.search = "";
-  inputSearch.value?.focus();
-  await acronyms.fetchData();
-}
-
-async function submitDelete(id: number): Promise<void> {
-  const response = await fetch(`/api/${id}`, { method: "DELETE" });
-  if (!response.ok) {
-    console.error(response.text());
-    return;
-  }
-
-  await acronyms.fetchData();
-}
-
-async function submitEdit(): Promise<void> {
-  const response = await fetch(`/api/${edit.value.id}`, {
-    body: JSON.stringify({
-      abbreviation: edit.value.abbreviation,
-      phrase: edit.value.phrase,
-    }),
-    headers: { "Content-Type": "application/json" },
-    method: "PUT",
-  });
-  if (!response.ok) {
-    console.error(response.text());
-    return;
-  }
-
-  edit.value.clear();
+  searchInput.value?.focus();
   await acronyms.fetchData();
 }
 
@@ -306,28 +163,23 @@ function switchSort(name: string): void {
   }
 
   sort(column);
-  recentSort.value = name;
+  lastSort.value = name;
 }
 
 const addButton = ref<HTMLElement | null>(null);
-const inputAddAbbreviation = ref<HTMLElement | null>(null);
-const inputAddPhrase = ref<HTMLElement | null>(null);
-const inputEditAbbreviation = ref<Array<HTMLElement>>([]);
-const inputSearch = ref<HTMLElement | null>(null);
-const recentSort = ref("");
+const addAbbreviationInput = ref<HTMLElement | null>(null);
+const addPhraseInput = ref<HTMLElement | null>(null);
+const searchInput = ref<HTMLElement | null>(null);
+const lastSort = ref("");
 
 const acronyms = useAcronymStore();
+const editor = useEditorStore();
 const columns = reactive([
   { name: "Abbreviation", ascending: true, icon: "fa-arrow-up", width: "25%" },
   { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
 ]);
-const edit = ref(new Edit());
-const { undo: undoEdit, redo: redoEdit } = useRefHistory(edit, {
-  capacity: 25,
-  deep: true,
-});
 
-document.addEventListener("keydown", keyDownHandler);
+defineExpose({ beginAdd });
 onMounted(acronyms.fetchData);
 </script>
 

@@ -23,6 +23,10 @@ export const useAcronymStore = defineStore("acronym", () => {
     });
   });
 
+  function deleteById(id: number): void {
+    data.value = data.value.filter((acronym) => acronym.id !== id);
+  }
+
   function getById(id: number): Acronym {
     return data.value.filter((acronym) => acronym.id === id)[0];
   }
@@ -39,6 +43,7 @@ export const useAcronymStore = defineStore("acronym", () => {
 
   return {
     data,
+    deleteById,
     error,
     fetchData,
     getById,

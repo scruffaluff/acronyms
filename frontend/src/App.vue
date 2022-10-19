@@ -3,7 +3,7 @@
   <hr class="divider m-0" />
 
   <main class="container main is-max-desktop">
-    <AcronymSearch />
+    <AcronymSearch ref="acronymSearch" />
   </main>
 
   <footer class="footer bottom-fixed py-4">
@@ -46,8 +46,26 @@
 import AcronymSearch from "./components/AcronymSearch.vue";
 import NavBar from "./components/NavBar.vue";
 import { useAcronymStore } from "./stores/acronym";
+import { ref } from "vue";
+
+function keyDownHandler(event: KeyboardEvent): void {
+  if (event.ctrlKey) {
+    if (event.key === "a") {
+      event.preventDefault();
+      acronymSearch.value?.beginAdd();
+    }
+  } else if (event.key === "Escape") {
+    if (acronyms.error.active) {
+      acronyms.error.message = "";
+      acronyms.error.active = false;
+    }
+  }
+}
+
+const acronymSearch = ref<InstanceType<typeof AcronymSearch> | null>(null);
 
 const acronyms = useAcronymStore();
+document.addEventListener("keydown", keyDownHandler);
 </script>
 
 <style>
