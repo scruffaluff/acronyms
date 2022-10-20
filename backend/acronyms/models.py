@@ -2,7 +2,7 @@
 
 
 import os
-from typing import Iterator
+from typing import Iterator, Literal
 
 import sqlalchemy
 from sqlalchemy import (
@@ -53,3 +53,7 @@ class Acronym(Base):
     id = Column(Integer, primary_key=True, index=True)
     abbreviation = Column(Unicode, CheckConstraint("LENGTH(abbreviation) > 0"))
     phrase = Column(Unicode, CheckConstraint("LENGTH(phrase) > 0"))
+
+
+# TODO: Figure out to directly infer type of all column names for Acronym.
+AcronymColumn = Literal["id", "abbreviation", "phrase"]

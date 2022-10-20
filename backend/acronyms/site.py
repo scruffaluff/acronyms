@@ -5,7 +5,7 @@ named __main__.py.
 """
 
 
-from typing import Any, Dict, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from acronyms import models
-from acronyms.models import Acronym
+from acronyms.models import Acronym, AcronymColumn
 
 
 app = FastAPI()
@@ -53,20 +53,23 @@ async def delete_acronym(
 
 @app.get("/api")
 async def get_acronym(
+    id: Optional[int] = None,
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
-    id: Optional[int] = None,
+    limit: int = 10,
+    offset: int = 0,
+    order: Optional[AcronymColumn] = None,
     session: Session = Depends(models.get_db),
-) -> Optional[Any]:
+) -> Union[Acronym, List[Acronym], None]:
     """Get all matching acronyms."""
     query = session.query(Acronym)
-
     if id is not None:
         return query.get(id)
+
     if abbreviation is not None:
         query = query.filter(Acronym.abbreviation == abbreviation)
 
-    return query.all()
+    return query.order_by(order).limit(limit).all()
 
 
 @app.post("/api")

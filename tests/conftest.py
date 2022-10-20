@@ -47,10 +47,21 @@ def database(session: Session) -> Session:
     """Connection URI for temporary PostgreSQL database."""
     acronyms = [
         Acronym(abbreviation="AM", phrase="Ante Meridiem"),
+        Acronym(abbreviation="CV", phrase="Coefficient of Variation"),
         Acronym(abbreviation="DM", phrase="Data Mining"),
         Acronym(abbreviation="DM", phrase="Direct Message"),
-        Acronym(abbreviation="RIP", phrase="Rest In Peace"),
+        Acronym(abbreviation="FT", phrase="Full Time"),
+        Acronym(abbreviation="FY", phrase="Fiscal Year"),
+        Acronym(abbreviation="GUI", phrase="Graphical User Interface"),
         Acronym(abbreviation="JSON", phrase="JavaScript Object Notation"),
+        Acronym(abbreviation="ML", phrase="Machine Learning"),
+        Acronym(abbreviation="NA", phrase="Not Applicable"),
+        Acronym(abbreviation="NA", phrase="Nursing Assistant"),
+        Acronym(abbreviation="NH", phrase="New Hampshire"),
+        Acronym(abbreviation="NH", phrase="Nursing Home"),
+        Acronym(abbreviation="PT", phrase="Part Time"),
+        Acronym(abbreviation="PT", phrase="Physical Therapist"),
+        Acronym(abbreviation="RIP", phrase="Rest In Peace"),
     ]
 
     for acronym in acronyms:

@@ -113,13 +113,20 @@ def test_delete_acronym(client: TestClient) -> None:
 def test_get_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     expected = [
-        {"id": 2, "abbreviation": "DM", "phrase": "Data Mining"},
-        {"id": 3, "abbreviation": "DM", "phrase": "Direct Message"},
+        {"id": 3, "abbreviation": "DM", "phrase": "Data Mining"},
+        {"id": 4, "abbreviation": "DM", "phrase": "Direct Message"},
     ]
 
     response = client.get("/api?abbreviation=DM")
     response.raise_for_status()
     assert response.json() == expected
+
+
+def test_get_pagination_default(client: TestClient) -> None:
+    """Acronym fetches are paginated."""
+    response = client.get("/api")
+    response.raise_for_status()
+    assert len(response.json()) == 10
 
 
 def test_get_favicon(client: TestClient) -> None:
@@ -135,19 +142,16 @@ def test_get_home(client: TestClient) -> None:
     response.raise_for_status()
 
 
-def test_post_acronym(client: TestClient) -> None:
+def test_post_acronym(client: TestClient, session: Session) -> None:
     """Add a new acronym to database."""
-    get_response_1 = client.get("/api")
-    get_response_1.raise_for_status()
-    records = len(get_response_1.json())
+    query = session.query(Acronym)
+    count = query.count()
 
     body = {"abbreviation": "ROI", "phrase": "Return On Investment"}
     post_response = client.post("/api", json=body)
     post_response.raise_for_status()
 
-    get_response_2 = client.get("/api")
-    get_response_2.raise_for_status()
-    assert len(get_response_2.json()) == records + 1
+    assert query.count() == count + 1
 
 
 def test_post_duplicate(client: TestClient) -> None:
