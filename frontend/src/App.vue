@@ -43,9 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { useAcronymStore } from "./stores/acronym";
 import AcronymSearch from "@/components/AcronymSearch.vue";
 import NavBar from "@/components/NavBar.vue";
+import { useAcronymStore } from "@/stores/acronym";
 import { ref } from "vue";
 
 function keyDownHandler(event: KeyboardEvent): void {

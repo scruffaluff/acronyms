@@ -97,9 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import { Acronym, useAcronymStore } from "../stores/acronym";
-import { useEditorStore } from "../stores/editor";
 import AcronymRow from "@/components/AcronymRow.vue";
+import { Acronym, useAcronymStore } from "@/stores/acronym";
+import { useEditorStore } from "@/stores/editor";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
 function beginAdd(): void {
@@ -158,7 +158,7 @@ async function submitAdd(): Promise<void> {
 }
 
 function switchSort(name: string): void {
-  const column = columns.filter((order) => order.name == name)[0];
+  const column = columns.filter((order) => order.name === name)[0];
 
   if (column.ascending) {
     column.icon = "fa-arrow-down";

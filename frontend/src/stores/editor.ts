@@ -1,4 +1,4 @@
-import { Acronym } from "../stores/acronym";
+import { Acronym } from "@/stores/acronym";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 

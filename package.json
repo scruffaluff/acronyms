@@ -12,6 +12,7 @@
   "devDependencies": {
     "@babel/types": "^7.19.0",
     "@trivago/prettier-plugin-sort-imports": "^3.3.0",
+    "@types/node": "^18.11.2",
     "@typescript-eslint/eslint-plugin": "^5.36.0",
     "@typescript-eslint/parser": "^5.36.0",
     "@vitejs/plugin-vue": "^3.1.0",
@@ -19,7 +20,6 @@
     "@vue/eslint-config-typescript": "^11.0.0",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-config-stylelint": "^17.0.0",
     "eslint-plugin-vue": "^9.4.0",
     "eslint-plugin-vuejs-accessibility": "^1.2.0",
     "sass": "^1.55.0",

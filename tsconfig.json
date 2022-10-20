@@ -12,6 +12,9 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noUnusedLocals": true,
+    "paths": {
+      "@/*": ["./frontend/src/*"]
+    },
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,

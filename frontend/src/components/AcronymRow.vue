@@ -60,8 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAcronymStore } from "../stores/acronym";
-import { useEditorStore } from "../stores/editor";
+import { useAcronymStore } from "@/stores/acronym";
+import { useEditorStore } from "@/stores/editor";
 import { nextTick, ref } from "vue";
 
 function beginEdit(): void {

@@ -1,5 +1,5 @@
-import App from "./App.vue";
-import "./styles.scss";
+import App from "@/App.vue";
+import "@/styles.scss";
 import { MotionPlugin } from "@vueuse/motion";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
