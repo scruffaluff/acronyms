@@ -20,6 +20,7 @@
 *.pyc
 *.swp
 *.tar.gz
+*.tgz
 *.whl
 **/__pycache__/
 **/.ipynb_checkpoints/
@@ -30,6 +31,7 @@ dist/
 environment.yml
 f1
 flit.ini
+index.yaml
 node_modules/
 nohup.out
 Pipfile

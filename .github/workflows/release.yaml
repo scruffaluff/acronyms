@@ -1,0 +1,74 @@
+# GitHub Actions workflow file.
+#
+# For more information, visit
+# https://docs.github.com/actions/learn-github-actions.
+
+---
+name: release
+
+# Trigger workflow on SemVer compatible tags.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  release:
+    name: Get Git tag and make GitHub release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.extract_tag.outputs.tag }}
+    steps:
+      - name: Extract Git tag
+        id: extract_tag
+        shell: bash
+        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Acronyms ${{ steps.extract_tag.outputs.tag }}
+          body: >-
+            See the [changelog](https://github.com/scruffaluff/acronyms/blob/${{
+            steps.extract_tag.outputs.tag }}/CHANGELOG.md) for more information.
+
+  chart:
+    name: Package and upload Helm chart
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+      - name: Package Helm chart
+        run: |
+          helm package chart
+          helm repo index .
+
+  image:
+    name: Build and push Docker image
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: "."
+          file: Dockerfile
+          push: true
+          tags: |
+            scruffaluff/acronyms:${{ needs.release.outputs.tag }}
+            scruffaluff/acronyms:latest
