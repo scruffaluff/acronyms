@@ -203,3 +203,22 @@ def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))
+
+
+@pytest.mark.e2e
+def test_sort_acronyms(server: str, page: Page) -> None:
+    """Error modal pops up upon duplicate acronym submission."""
+    acronyms = [
+        {"abbreviation": "DM", "phrase": "Data Mining"},
+        {"abbreviation": "DM", "phrase": "Direct Message"},
+    ]
+    for acronym in acronyms:
+        response = requests.post(f"{server}/api", json=acronym)
+        response.raise_for_status()
+
+    page.goto(server)
+    table_body = page.locator("data-testid=table-body")
+    expect(table_body).to_have_text(re.compile("DMData MiningDMDirect Message"))
+
+    page.locator("#phrase-sort").click()
+    expect(table_body).to_have_text(re.compile("DMDirect MessageDMData Mining"))

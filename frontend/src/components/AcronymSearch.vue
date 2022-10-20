@@ -34,10 +34,11 @@
           <th
             v-for="column in columns"
             :key="column.name"
-            style="width: {{ column.width }}"
+            :style="`width: ${column.width}`"
           >
             {{ column.name }}
             <span
+              :id="`${column.name.toLowerCase()}-sort`"
               :class="{ 'has-text-primary': lastSort == column.name }"
               class="icon is-clickable is-small has-tooltip-right"
               data-tooltip="Sort"
@@ -86,6 +87,7 @@
             </button>
           </td>
         </tr>
+
         <tr v-for="acronym in acronyms.matches" :key="acronym.id">
           <AcronymRow :identifier="acronym.id" />
         </tr>
@@ -95,9 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import AcronymRow from "../components/AcronymRow.vue";
 import { Acronym, useAcronymStore } from "../stores/acronym";
 import { useEditorStore } from "../stores/editor";
+import AcronymRow from "@/components/AcronymRow.vue";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
 function beginAdd(): void {
@@ -115,7 +117,7 @@ function beginAdd(): void {
 }
 
 function sort(column: { name: string; ascending: boolean }): void {
-  const name = column.name as keyof Acronym;
+  const name = column.name.toLowerCase() as keyof Acronym;
 
   if (column.ascending) {
     acronyms.data.sort((left, right) => (left[name] > right[name] ? 1 : -1));
@@ -144,11 +146,15 @@ async function submitAdd(): Promise<void> {
     return;
   }
 
+  acronyms.data.push({
+    abbreviation: editor.abbreviation,
+    id: (await response.json()).id,
+    phrase: editor.phrase,
+  });
   editor.clear();
 
   acronyms.search = "";
   searchInput.value?.focus();
-  await acronyms.fetchData();
 }
 
 function switchSort(name: string): void {
