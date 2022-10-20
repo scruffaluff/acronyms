@@ -129,6 +129,13 @@ def test_get_pagination_default(client: TestClient) -> None:
     assert len(response.json()) == 10
 
 
+def test_get_pagination_offset(client: TestClient) -> None:
+    """Acronym fetches are paginated."""
+    response = client.get("/api?offset=10")
+    response.raise_for_status()
+    assert len(response.json()) == 6
+
+
 def test_get_favicon(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     response = client.get("/favicon.ico")

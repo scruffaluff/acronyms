@@ -69,7 +69,7 @@ async def get_acronym(
     if abbreviation is not None:
         query = query.filter(Acronym.abbreviation == abbreviation)
 
-    return query.order_by(order).limit(limit).all()
+    return query.order_by(order).offset(offset).limit(limit).all()
 
 
 @app.post("/api")
