@@ -131,4 +131,4 @@ jobs:
       - name: Install Node packages
         run: npm ci
       - name: Run test suite
-        run: poetry run pytest --cov
+        run: poetry run pytest --build --cov
