@@ -22,6 +22,18 @@ from sqlalchemy.orm import Session
 from acronyms.models import Acronym, Base, get_db
 
 
+@pytest.fixture(autouse=True, scope="session")
+def build(request: SubRequest) -> None:
+    """Build frontend assets before test suite."""
+    if request.config.getoption("--build"):
+        subprocess.run(
+            ["npm", "run", "build"],
+            check=True,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+
+
 @pytest.fixture
 def client(database: Session) -> TestClient:
     """Fast API test client."""
@@ -79,20 +91,17 @@ def engine(connection: str) -> Engine:
 def pytest_addoption(parser: Parser) -> None:
     """Select whether to run tests against Helm chart."""
     parser.addoption(
+        "--build",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Whether to compile frontend code before executing tests",
+    )
+
+    parser.addoption(
         "--chart",
         action=BooleanOptionalAction,
         default=False,
         help="Whether to run tests against Helm chart",
-    )
-
-
-def pytest_sessionstart(session: pytest.Session) -> None:
-    """Build Javascript assets at pytest startup."""
-    subprocess.run(
-        ["npm", "run", "build"],
-        check=True,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
     )
 
 
