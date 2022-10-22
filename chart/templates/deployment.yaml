@@ -29,6 +29,9 @@ spec:
       {{- end }}
       containers:
         - name: {{ include "acronyms.fullname" . }}
+          args:
+            # Allows ingress controller to pass X-Forwarded headers.
+            - --proxy-headers
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
