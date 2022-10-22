@@ -25,8 +25,19 @@ class Acronym(Base):
     __tablename__ = "acronyms"
     __table_args__ = (UniqueConstraint("abbreviation", "phrase"),)
     id = Column(Integer, primary_key=True, index=True)
-    abbreviation = Column(Unicode, CheckConstraint("LENGTH(abbreviation) > 0"))
-    phrase = Column(Unicode, CheckConstraint("LENGTH(phrase) > 0"))
+    abbreviation = Column(
+        Unicode,
+        CheckConstraint("LENGTH(abbreviation) > 0"),
+        index=True,
+        nullable=False,
+    )
+    description = Column(Unicode, nullable=True)
+    phrase = Column(
+        Unicode,
+        CheckConstraint("LENGTH(phrase) > 0"),
+        index=True,
+        nullable=False,
+    )
 
 
 # TODO: Figure out to directly infer type of all column names for Acronym.

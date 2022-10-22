@@ -6,4 +6,9 @@ and learning the coding guidelines.
 
 ## Database Migrations
 
+Example commands.
+
+```
 alembic revision --autogenerate --message 'First revision'
+alembic upgrade head
+```
