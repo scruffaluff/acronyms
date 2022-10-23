@@ -34,6 +34,7 @@ exclude = [
     ".hypothesis/",
     ".pytest_cache/",
     ".venv/",
+    "backend/alembic",
     "dist/",
     "node_modules/",
     "tmp/",

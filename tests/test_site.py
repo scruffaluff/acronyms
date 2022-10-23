@@ -113,8 +113,18 @@ def test_delete_acronym(client: TestClient) -> None:
 def test_get_acronym(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     expected = [
-        {"id": 3, "abbreviation": "DM", "phrase": "Data Mining"},
-        {"id": 4, "abbreviation": "DM", "phrase": "Direct Message"},
+        {
+            "id": 3,
+            "abbreviation": "DM",
+            "description": None,
+            "phrase": "Data Mining",
+        },
+        {
+            "id": 4,
+            "abbreviation": "DM",
+            "description": None,
+            "phrase": "Direct Message",
+        },
     ]
 
     response = client.get("/api?abbreviation=DM")
