@@ -32,7 +32,7 @@ export const useAcronymStore = defineStore("acronym", () => {
   }
 
   async function fetchData(): Promise<void> {
-    const response = await fetch("/api");
+    const response = await fetch("/api/acronym");
     if (!response.ok) {
       console.error(response.text());
       return;

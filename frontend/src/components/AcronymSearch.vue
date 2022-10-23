@@ -127,7 +127,7 @@ function sort(column: { name: string; ascending: boolean }): void {
 }
 
 async function submitAdd(): Promise<void> {
-  const response = await fetch(`/api`, {
+  const response = await fetch(`/api/acronym`, {
     body: JSON.stringify({
       abbreviation: editor.abbreviation,
       phrase: editor.phrase,

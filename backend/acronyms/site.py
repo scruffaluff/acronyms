@@ -42,7 +42,7 @@ def read_favicon() -> FileResponse:
     return FileResponse("dist/favicon.ico")
 
 
-@app.delete("/api/{id}")
+@app.delete("/api/acronym/{id}")
 async def delete_acronym(
     id: int, session: Session = Depends(models.get_db)
 ) -> Dict[str, bool]:
@@ -52,7 +52,7 @@ async def delete_acronym(
     return {"ok": True}
 
 
-@app.get("/api")
+@app.get("/api/acronym")
 async def get_acronym(
     id: Optional[int] = None,
     abbreviation: Optional[str] = None,
@@ -81,7 +81,7 @@ async def get_acronym(
     return query_.order_by(order).offset(offset).limit(limit).all()
 
 
-@app.post("/api")
+@app.post("/api/acronym")
 async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
 ) -> int:
@@ -96,7 +96,7 @@ async def post_acronym(
     return acronym_.id
 
 
-@app.put("/api/{id}")
+@app.put("/api/acronym/{id}")
 async def put_acronym(
     id: int,
     body: AcronymBody,

@@ -17,5 +17,7 @@ acronyms = json.loads(data_path.read_text())
 
 with Session() as session:
     for acronym in acronyms:
-        response = session.post(f"{arguments.endpoint}/api", json=acronym)
+        response = session.post(
+            f"{arguments.endpoint}/api/acronym", json=acronym
+        )
         response.raise_for_status()
