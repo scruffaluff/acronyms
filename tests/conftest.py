@@ -2,6 +2,7 @@
 
 
 from argparse import BooleanOptionalAction
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -20,6 +21,9 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym, Base, get_db
+
+
+DATA_PATH = Path(__file__).parent / "data"
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -57,27 +61,9 @@ def connection(postgresql: Connection) -> str:
 @pytest.fixture
 def database(session: Session) -> Session:
     """Connection URI for temporary PostgreSQL database."""
-    acronyms = [
-        Acronym(abbreviation="AM", phrase="Ante Meridiem"),
-        Acronym(abbreviation="CV", phrase="Coefficient of Variation"),
-        Acronym(abbreviation="DM", phrase="Data Mining"),
-        Acronym(abbreviation="DM", phrase="Direct Message"),
-        Acronym(abbreviation="FT", phrase="Full Time"),
-        Acronym(abbreviation="FY", phrase="Fiscal Year"),
-        Acronym(abbreviation="GUI", phrase="Graphical User Interface"),
-        Acronym(abbreviation="JSON", phrase="JavaScript Object Notation"),
-        Acronym(abbreviation="ML", phrase="Machine Learning"),
-        Acronym(abbreviation="NA", phrase="Not Applicable"),
-        Acronym(abbreviation="NA", phrase="Nursing Assistant"),
-        Acronym(abbreviation="NH", phrase="New Hampshire"),
-        Acronym(abbreviation="NH", phrase="Nursing Home"),
-        Acronym(abbreviation="PT", phrase="Part Time"),
-        Acronym(abbreviation="PT", phrase="Physical Therapist"),
-        Acronym(abbreviation="RIP", phrase="Rest In Peace"),
-    ]
-
+    acronyms = json.loads((DATA_PATH / "acronyms.json").read_text())
     for acronym in acronyms:
-        session.add(acronym)
+        session.add(Acronym(**acronym))
     session.commit()
     return session
 

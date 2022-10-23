@@ -1,0 +1,30 @@
+[
+  { "abbreviation": "AM", "description": null, "phrase": "Ante Meridiem" },
+  {
+    "abbreviation": "CV",
+    "description": null,
+    "phrase": "Coefficient of Variation"
+  },
+  { "abbreviation": "DM", "description": null, "phrase": "Data Mining" },
+  { "abbreviation": "DM", "description": null, "phrase": "Direct Message" },
+  { "abbreviation": "FT", "description": null, "phrase": "Full Time" },
+  { "abbreviation": "FY", "description": null, "phrase": "Fiscal Year" },
+  {
+    "abbreviation": "GUI",
+    "description": null,
+    "phrase": "Graphical User Interface"
+  },
+  {
+    "abbreviation": "JSON",
+    "description": null,
+    "phrase": "JavaScript Object Notation"
+  },
+  { "abbreviation": "ML", "description": null, "phrase": "Machine Learning" },
+  { "abbreviation": "NA", "description": null, "phrase": "Not Applicable" },
+  { "abbreviation": "NA", "description": null, "phrase": "Nursing Assistant" },
+  { "abbreviation": "NH", "description": null, "phrase": "New Hampshire" },
+  { "abbreviation": "NH", "description": null, "phrase": "Nursing Home" },
+  { "abbreviation": "PT", "description": null, "phrase": "Part Time" },
+  { "abbreviation": "PT", "description": null, "phrase": "Physical Therapist" },
+  { "abbreviation": "RIP", "description": null, "phrase": "Rest In Peace" }
+]

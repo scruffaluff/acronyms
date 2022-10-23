@@ -26,6 +26,7 @@ class AcronymBody(BaseModel):
     """Post request validator for Acronym type."""
 
     abbreviation: str
+    description: Optional[str]
     phrase: str
 
 
