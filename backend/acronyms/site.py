@@ -1,13 +1,9 @@
-"""Command line interface for acronyms.
-
-See https://docs.python.org/3/using/cmdline.html#cmdoption-m for why module is
-named __main__.py.
-"""
+"""Website main module."""
 
 
 from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Response
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -16,8 +12,10 @@ from sqlalchemy.orm import Session
 
 from acronyms import models
 from acronyms.models import Acronym, AcronymColumn
+from acronyms.settings import Settings
 
 
+settings = Settings()
 app = FastAPI(redoc_url=None)
 app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 
@@ -44,7 +42,8 @@ def read_favicon() -> FileResponse:
 
 @app.delete("/api/acronym/{id}")
 async def delete_acronym(
-    id: int, session: Session = Depends(models.get_db)
+    id: int = Path(description="Identifier of acronym to remove", ge=0),
+    session: Session = Depends(models.get_db),
 ) -> Dict[str, bool]:
     """Insert an acronym to database."""
     session.query(Acronym).filter(Acronym.id == id).delete()
@@ -56,9 +55,15 @@ async def delete_acronym(
 async def get_acronym(
     response: Response,
     id: Optional[int] = None,
+    # TODO: Allow searching by partial match.
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
-    limit: int = Query(default=10, gt=0, le=50),
+    limit: int = Query(
+        default=settings.page_size,
+        description="Maximum number of acronyms to return",
+        gt=0,
+        le=50,
+    ),
     offset: int = Query(default=0, ge=0),
     order: Optional[AcronymColumn] = None,
     session: Session = Depends(models.get_db),
@@ -76,6 +81,7 @@ async def get_acronym(
     elif phrase is None:
         query_ = query.filter(Acronym.abbreviation == abbreviation)
     else:
+        # TODO: Allow searching by "or" match instead of "and" match.
         query_ = query.filter(
             Acronym.abbreviation == abbreviation, Acronym.phrase == phrase
         )

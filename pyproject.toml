@@ -25,6 +25,34 @@ command_line = "-m pytest"
 omit = []
 source = ["acronyms"]
 
+[tool.flake8]
+application-import-names = [
+    "acronyms",
+    "tests",
+]
+docstring-convention = "google"
+exclude = [
+    ".mypy_cache/",
+    ".pytest_cache/",
+    ".venv/",
+    "backend/alembic/",
+    "dist/",
+    "node_modules/",
+    "template/",
+    "tmp/",
+]
+ignore = [
+    "E203",
+    "W503",
+]
+import-order-style = "google"
+max-complexity = 10
+max-line-length = 80
+per-file-ignores = [
+    "backend/acronyms/__main__.py:B008",
+    "backend/acronyms/site.py:B008",
+]
+
 [tool.mypy]
 check_untyped_defs = true
 disallow_untyped_calls = false
@@ -67,6 +95,7 @@ pydantic = "^1.10.0"
 python = "^3.9.0"
 SQLAlchemy = "^1.4.0"
 uvicorn = {extras = ["standard"], version = "^0.18.0"}
+pyyaml = "^6.0"
 
 [tool.poetry.dev-dependencies]
 alembic = "^1.8.0"
@@ -85,6 +114,7 @@ playwright = "^1.25.2"
 # won't support psycopg until sqlalchemy 2.0.0.
 psycopg = {extras = ["pool"], version = "^3.1.0"}
 py-spy = "^0.3.0"
+pyproject-flake8 = "^5.0.0"
 pytest = "^7.1.0"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.8.0"
@@ -94,6 +124,7 @@ requests = "^2.28.0"
 sqlalchemy-stubs = "^0.4"
 toml = "^0.10.0"
 tox = "^3.26.0"
+types-pyyaml = "^6.0.12"
 types-requests = "^2.28.0"
 types-toml = "^0.10.0"
 

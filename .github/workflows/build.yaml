@@ -39,7 +39,7 @@ jobs:
       - name: Lint code
         run: |
           poetry run black --check .
-          poetry run flake8 .
+          poetry run pflake8 .
           poetry run mypy .
 
   lint-chart:
