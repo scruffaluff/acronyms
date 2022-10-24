@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -23,9 +23,24 @@ app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 class AcronymBody(BaseModel):
     """Post request validator for Acronym type."""
 
-    abbreviation: str
+    abbreviation: str = Field(
+        title="Acronym abbreviation", max_length=30, min_length=1
+    )
     description: Optional[str]
-    phrase: str
+    phrase: str = Field(
+        description="Acronym phrase", max_length=300, min_length=1
+    )
+
+    class Config:
+        """Metadata for model."""
+
+        schema_extra = {
+            "example": {
+                "abbreviation": "AM",
+                "description": "Definition of amplitude modulation",
+                "phrase": "Amplitude Modulation",
+            }
+        }
 
 
 @app.get("/")

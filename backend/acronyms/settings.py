@@ -1,11 +1,12 @@
 """Application runtime settings."""
 
 
+import functools
 from pathlib import Path
 import sys
 from typing import Any, cast, Dict, Optional, Tuple
 
-from pydantic import BaseSettings
+from pydantic import AnyUrl, BaseSettings
 from pydantic.env_settings import SettingsSourceCallable
 import yaml
 
@@ -15,7 +16,7 @@ def secrets_directory() -> Optional[str]:
     if sys.platform == "linux":
         path = "/run/secrets"
         return path if Path(path).exists() else None
-    elif sys.platform == "windows":
+    elif sys.platform == "win32":
         path = r"C:\ProgramData\Docker\secrets"
         return path if Path(path).exists() else None
     else:
@@ -31,9 +32,16 @@ def yaml_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
         return {}
 
 
+class DatabaseUrl(AnyUrl):
+    """Custom validator for database connections."""
+
+    host_required = False
+
+
 class Settings(BaseSettings):
     """Application settings."""
 
+    database: DatabaseUrl = "sqlite:///./acronyms.db"
     page_size: int = 10
 
     class Config:
@@ -57,3 +65,9 @@ class Settings(BaseSettings):
                 file_secret_settings,
                 yaml_config_settings_source,
             )
+
+
+@functools.lru_cache(maxsize=1)
+def settings() -> Settings:
+    """Load application settings."""
+    return Settings()

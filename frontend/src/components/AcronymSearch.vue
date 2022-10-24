@@ -193,7 +193,7 @@ import AcronymRow from "@/components/AcronymRow.vue";
 import { Acronym, useAcronymStore } from "@/stores/acronym";
 import { useEditorStore } from "@/stores/editor";
 import { useOffsetPagination, UseOffsetPaginationReturn } from "@vueuse/core";
-import { nextTick, onMounted, reactive, ref } from "vue";
+import { nextTick, onMounted, reactive, ref, watch } from "vue";
 
 function beginAdd(): void {
   editor.edit = true;
@@ -269,6 +269,21 @@ function switchSort(name: string): void {
   lastSort.value = name;
 }
 
+function updatePaginator(count: number): void {
+  const newPaginator = useOffsetPagination({
+    total: count,
+    page: 1,
+    pageSize: 10,
+    onPageChange: switchPage,
+  });
+
+  for (const key_ in newPaginator) {
+    const key = key_ as keyof UseOffsetPaginationReturn;
+    // @ts-expect-error: TypeScript is incorrect here about reassigning refs.
+    paginator.value[key] = newPaginator[key];
+  }
+}
+
 const addButton = ref<HTMLElement | null>(null);
 const addAbbreviationInput = ref<HTMLElement | null>(null);
 const addPhraseInput = ref<HTMLElement | null>(null);
@@ -294,22 +309,8 @@ const paginator = ref<UseOffsetPaginationReturn>(
 );
 
 defineExpose({ beginAdd });
-onMounted(async () => {
-  await acronyms.fetchData(0);
-
-  const newPaginator = useOffsetPagination({
-    total: acronyms.count,
-    page: 1,
-    pageSize: 10,
-    onPageChange: switchPage,
-  });
-
-  for (const key_ in newPaginator) {
-    const key = key_ as keyof UseOffsetPaginationReturn;
-    // @ts-expect-error: TypeScript is incorrect here about reassigning refs.
-    paginator.value[key] = newPaginator[key];
-  }
-});
+watch(() => acronyms.count, updatePaginator);
+onMounted(async () => await acronyms.fetchData(0));
 </script>
 
 <style>

@@ -1,7 +1,6 @@
 """Database models."""
 
 
-import os
 from typing import Iterator, Literal
 
 import sqlalchemy
@@ -14,6 +13,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+
+from acronyms import settings
 
 
 Base = declarative_base()
@@ -44,27 +45,9 @@ class Acronym(Base):
 AcronymColumn = Literal["id", "abbreviation", "phrase"]
 
 
-def db_uri() -> str:
-    """Create engine and session for database."""
-    type_ = os.environ.get("ACRONYMS_DATABASE_TYPE", "sqlite")
-    database = os.environ.get("ACRONYMS_DATABASE_NAME", "acronyms")
-
-    if type_ == "postgresql":
-        host = os.environ["ACRONYMS_DATABASE_HOST"]
-        password = os.environ["ACRONYMS_DATABASE_PASSWORD"]
-        port = os.environ.get("ACRONYMS_DATABASE_PORT", "5432")
-        user = os.environ["ACRONYMS_DATABASE_USER"]
-
-        return f"{type_}://{user}:{password}@{host}:{port}/{database}"
-    elif type_ == "sqlite":
-        return f"sqlite:///./{database}.db"
-    else:
-        raise ValueError(f"Unsupported database type {type_}")
-
-
 def get_db() -> Iterator[Session]:
     """Create engine and session for database."""
-    uri = db_uri()
+    uri = settings.settings().database
     type_ = uri.split("://")[0]
 
     if type_ == "sqlite":
