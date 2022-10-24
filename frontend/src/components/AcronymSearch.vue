@@ -32,7 +32,7 @@
       <thead>
         <tr>
           <th
-            v-for="column in columns"
+            v-for="column of columns"
             :key="column.name"
             :style="{ width: column.width }"
           >
@@ -88,11 +88,103 @@
           </td>
         </tr>
 
-        <tr v-for="acronym in acronyms.matches" :key="acronym.id">
+        <tr v-for="acronym of acronyms.matches" :key="acronym.id">
           <AcronymRow :identifier="acronym.id" />
+        </tr>
+        <tr
+          v-for="index of 10 - acronyms.matches.length"
+          :key="index"
+          class="hidden-row"
+        >
+          <td>HRVS</td>
+          <td>Hidden Row for Vertical Spacing</td>
+          <td></td>
         </tr>
       </tbody>
     </table>
+
+    <nav
+      class="pagination is-centered mt-4 mx-2"
+      role="navigation"
+      aria-label="pagination"
+    >
+      <button
+        class="button is-primary pagination-previous"
+        :disabled="paginator.isFirstPage"
+        @click="paginator.prev"
+      >
+        Previous
+      </button>
+      <ul v-if="paginator.pageCount > 7" class="pagination-list">
+        <li>
+          <button
+            class="button pagination-link"
+            :class="{ hidden: paginator.currentPage <= 3 }"
+            :disabled="paginator.currentPage === 1"
+            @click="paginator.currentPage = 1"
+          >
+            1
+          </button>
+        </li>
+        <li>
+          <span
+            class="pagination-ellipsis"
+            :class="{ hidden: paginator.currentPage <= 3 }"
+            >&hellip;</span
+          >
+        </li>
+        <li v-for="index of 5" :key="index">
+          <button
+            v-show="
+              paginator.currentPage + index - 3 > 0 &&
+              paginator.currentPage + index - 3 <= paginator.pageCount
+            "
+            class="button pagination-link"
+            :disabled="index === 3"
+            @click="paginator.currentPage += index - 3"
+          >
+            {{ paginator.currentPage + index - 3 }}
+          </button>
+        </li>
+        <li>
+          <span
+            class="pagination-ellipsis"
+            :class="{ hidden: paginator.currentPage > paginator.pageCount - 3 }"
+            >&hellip;</span
+          >
+        </li>
+        <li>
+          <button
+            class="button pagination-link"
+            :class="{ hidden: paginator.currentPage > paginator.pageCount - 3 }"
+            :disabled="paginator.currentPage === paginator.pageCount"
+            @click="paginator.currentPage = paginator.pageCount"
+          >
+            {{ paginator.pageCount }}
+          </button>
+        </li>
+      </ul>
+      <ul v-else class="pagination-list">
+        <li>
+          <button
+            v-for="page of paginator.pageCount"
+            :key="page"
+            class="button pagination-link"
+            :disabled="paginator.currentPage === page"
+            @click="paginator.currentPage = page"
+          >
+            {{ page }}
+          </button>
+        </li>
+      </ul>
+      <button
+        class="button is-primary pagination-next"
+        :disabled="paginator.isLastPage"
+        @click="paginator.next"
+      >
+        Next
+      </button>
+    </nav>
   </div>
 </template>
 
@@ -100,6 +192,7 @@
 import AcronymRow from "@/components/AcronymRow.vue";
 import { Acronym, useAcronymStore } from "@/stores/acronym";
 import { useEditorStore } from "@/stores/editor";
+import { useOffsetPagination, UseOffsetPaginationReturn } from "@vueuse/core";
 import { nextTick, onMounted, reactive, ref } from "vue";
 
 function beginAdd(): void {
@@ -157,6 +250,10 @@ async function submitAdd(): Promise<void> {
   searchInput.value?.focus();
 }
 
+async function switchPage(payload: { currentPage: number }): Promise<void> {
+  await acronyms.fetchData(10 * (payload.currentPage - 1));
+}
+
 function switchSort(name: string): void {
   const column = columns.filter((order) => order.name === name)[0];
 
@@ -185,12 +282,47 @@ const columns = reactive([
   { name: "Phrase", ascending: true, icon: "fa-arrow-up", width: "50%" },
 ]);
 
+// Paginator does not expose its total attribute for later mutation. So
+// initialize with defaults for one page, and update after data fetch.
+const paginator = ref<UseOffsetPaginationReturn>(
+  useOffsetPagination({
+    total: 10,
+    page: 1,
+    pageSize: 10,
+    onPageChange: switchPage,
+  })
+);
+
 defineExpose({ beginAdd });
-onMounted(acronyms.fetchData);
+onMounted(async () => {
+  await acronyms.fetchData(0);
+
+  const newPaginator = useOffsetPagination({
+    total: acronyms.count,
+    page: 1,
+    pageSize: 10,
+    onPageChange: switchPage,
+  });
+
+  for (const key_ in newPaginator) {
+    const key = key_ as keyof UseOffsetPaginationReturn;
+    // @ts-expect-error: TypeScript is incorrect here about reassigning refs.
+    paginator.value[key] = newPaginator[key];
+  }
+});
 </script>
 
 <style>
 .fixed-columns {
   table-layout: fixed;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.hidden-row {
+  max-height: 100%;
+  visibility: hidden;
 }
 </style>

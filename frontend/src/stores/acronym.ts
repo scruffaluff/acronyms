@@ -8,6 +8,7 @@ export interface Acronym {
 }
 
 export const useAcronymStore = defineStore("acronym", () => {
+  const count = ref(0);
   const data = ref<Acronym[]>([]);
   const error = ref({ active: false, message: "" });
   const search = ref("");
@@ -31,17 +32,22 @@ export const useAcronymStore = defineStore("acronym", () => {
     return data.value.filter((acronym) => acronym.id === id)[0];
   }
 
-  async function fetchData(): Promise<void> {
-    const response = await fetch("/api/acronym");
+  async function fetchData(offset: number): Promise<void> {
+    const response = await fetch(`/api/acronym?offset=${offset}`);
     if (!response.ok) {
       console.error(response.text());
       return;
     }
 
+    const headerCount = response.headers.get("X-Total-Count");
+    if (headerCount !== null) {
+      count.value = parseInt(headerCount);
+    }
     data.value = await response.json();
   }
 
   return {
+    count,
     data,
     deleteById,
     error,

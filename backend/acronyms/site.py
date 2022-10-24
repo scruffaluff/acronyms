@@ -7,7 +7,7 @@ named __main__.py.
 
 from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -54,6 +54,7 @@ async def delete_acronym(
 
 @app.get("/api/acronym")
 async def get_acronym(
+    response: Response,
     id: Optional[int] = None,
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
@@ -64,6 +65,7 @@ async def get_acronym(
 ) -> Union[Acronym, List[Acronym], None]:
     """Get all matching acronyms."""
     query = session.query(Acronym)
+    response.headers["X-Total-Count"] = str(query.count())
     if id is not None:
         return query.get(id)
 

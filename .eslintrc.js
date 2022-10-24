@@ -28,6 +28,10 @@ module.exports = {
         vars: "all",
       },
     ],
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      { "ts-expect-error": "allow-with-description" },
+    ],
     "vuejs-accessibility/click-events-have-key-events": "off",
   },
 };
