@@ -41,7 +41,9 @@ class DatabaseUrl(AnyUrl):
 class Settings(BaseSettings):
     """Application settings."""
 
-    database: DatabaseUrl = "sqlite:///./acronyms.db"
+    database: DatabaseUrl = DatabaseUrl(
+        "sqlite:///./acronyms.db", scheme="sqlite"
+    )
     page_size: int = 10
 
     class Config:

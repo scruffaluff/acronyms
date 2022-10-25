@@ -14,13 +14,12 @@ from fastapi.testclient import TestClient
 from psycopg import Connection
 import pytest
 from pytest import Parser
-import requests
-from requests.adapters import HTTPAdapter, Retry
 import sqlalchemy
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym, Base, get_db
+from tests import util
 
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -91,34 +90,31 @@ def pytest_addoption(parser: Parser) -> None:
     )
 
 
-@pytest.fixture(scope="session")
-def server(request: SubRequest) -> Iterator[str]:
+@pytest.fixture
+def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     if request.config.getoption("--chart"):
         yield "https://acronyms.127-0-0-1.nip.io"
     else:
-        database = "test"
+        database = tmp_path / "acronyms_test.db"
+        port = util.find_port()
+        url = f"http://localhost:{port}"
 
         # Running the server via uvicorn directly as a Python function throws
         # "RuntimeError: asyncio.run() cannot be called from a running event
         # loop".
         process = Popen(
-            ["acronyms", "--port", "8081"],
-            env=dict(**os.environ, **{"ACRONYMS_DATABASE_NAME": database}),
+            ["acronyms", "--port", str(port)],
+            env=dict(
+                **os.environ, **{"ACRONYMS_DATABASE": f"sqlite:///{database}"}
+            ),
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )
-        url = "http://localhost:8081"
 
-        # Retry requesting server until it is available.
-        with requests.Session() as session:
-            retries = Retry(total=4, backoff_factor=1)
-            session.mount("http://", HTTPAdapter(max_retries=retries))
-            session.get(url)
-
+        util.wait_for_server(url)
         yield url
         process.terminate()
-        (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
 
 
 @pytest.fixture

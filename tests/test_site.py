@@ -17,7 +17,7 @@ from acronyms.models import Acronym
 @pytest.mark.e2e
 def test_add_acronym_valid(server: str, page: Page) -> None:
     """Add acronym process completes for valid acronym."""
-    acronym = {"abbreviation": "AM", "phrase": "Amplitude Modulation"}
+    acronym = {"abbreviation": "AFK", "phrase": "Away From Keyboard"}
     table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
     page.goto(server)
 
