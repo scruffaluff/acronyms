@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Spawns development server with reloading on file changes.
+# Waits until frontend assets are ready for the backend server.
 
 # Exit immediately if a command exits or pipes a non-zero return code.
 #
@@ -17,16 +17,15 @@ main() {
   # Switch current directory to repository root.
   cd "$(dirname "$(dirname "$(realpath "$0")")")"
 
-  # Build once so that files are guaranteed to exist before backend starts.
-  npm run build -- --mode development
-  poetry run acronyms \
-    --reload \
-    --reload-dir backend/acronyms &
-
-  # Sleeping for 1 second prevents vite from making folder "dist/assets"
-  # temporarily unavailable to the backend server.
+  # Frontend clears dist folder and rebuilds assets during each compile. There
+  # is a small time window where the assets exist before the frontend clears
+  # the dist folder. Sleeping for 1 second ensures the wait loop begins after
+  # the dist folder has been cleared.
   sleep 1
-  npx vite build --emptyOutDir --watch --mode development
+
+  until [[ -d 'dist/assets' ]]; do
+    sleep 1
+  done
 }
 
 main
