@@ -98,7 +98,7 @@ jobs:
 
   test:
     if: >-
-      ${{ !contains("refs/heads/main", github.ref) || (matrix.node == "18.10" &&
+      ${{ github.ref == "refs/heads/main" || (matrix.node == "18.10" &&
       matrix.python == "3.10") }}
     name: Run unit test suite for Node 18.10 and Python 3.10
     strategy:
