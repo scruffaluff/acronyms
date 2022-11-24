@@ -135,7 +135,10 @@ types-toml = "^0.10.0"
 acronyms = "acronyms.__main__:main"
 
 [tool.pytest.ini_options]
-addopts = "--verbose --browser chromium --capture no --output tests/results --screenshot only-on-failure --video retain-on-failure"
+addopts = """
+    --verbose --browser chromium --capture no --output tests/results \
+    --screenshot only-on-failure --video retain-on-failure
+"""
 markers = [
     "e2e: End to end tests",
 ]

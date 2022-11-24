@@ -5,19 +5,14 @@
 
 name: test
 
-# Trigger workflow on push or pull request to the develop, main, and master
-# branches.
+# Trigger workflow on push or pull request to the main branche.
 on:
   pull_request:
     branches:
-      - develop
       - main
-      - master
   push:
     branches:
-      - develop
       - main
-      - master
   workflow_dispatch:
     inputs:
       debug:
@@ -26,57 +21,7 @@ on:
         required: false
 
 jobs:
-  test-unit:
-    name: >-
-      Run unit test suite for Node ${{ matrix.node }} and Python ${{
-      matrix.python }}
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["16.17", "18.10"]
-        python: ["3.9", "3.10"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v2
-      - name: Install Python interpreter
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Cache Python packages
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: >-
-            python-${{ matrix.python }}_poetry-${{ hashFiles('poetry.lock') }}
-      - name: Install Python packages
-        run: |
-          python -m pip install --upgrade pip poetry setuptools wheel
-          poetry config virtualenvs.in-project true
-          poetry install -v
-          poetry run playwright install chromium
-      - name: Install Node interpreter
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node }}
-      - name: Cache Node packages
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: >-
-            node-${{ matrix.node }}_npm-${{ hashFiles('package-lock.json') }}
-      - name: Install Node packages
-        run: npm ci
-      - name: Run test suite
-        run: poetry run pytest --build --cov
-      - name: Setup tmate session if job failed
-        if: >-
-          ${{ failure() && github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.debug == 'true' }}
-        timeout-minutes: 60
-        uses: mxschmitt/action-tmate@v3
-
-  test-e2e:
+  chart:
     name: Run Helm chart test suite
     runs-on: ubuntu-latest
     steps:
@@ -101,7 +46,7 @@ jobs:
           poetry install -v
       - name: Install browser and open to create security database
         run: |
-          poetry run playwright install chromium
+          poetry run playwright install --with-deps chromium
           poetry run python scripts/open_browser.py
       - name: Install dependencies
         run: |
@@ -127,6 +72,13 @@ jobs:
         run: |
           export REQUESTS_CA_BUNDLE="$(mkcert -CAROOT)/rootCA.pem"
           poetry run pytest --chart -m e2e
+      - name: Upload Playwright screenshots and videos if tests fail
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-captures
+          path: tests/results
+          retention-days: 30
       - name: Setup tmate session if job failed
         if: >-
           ${{ failure() && github.event_name == 'workflow_dispatch' &&

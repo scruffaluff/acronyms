@@ -32,7 +32,7 @@
   "private": true,
   "scripts": {
     "build": "vue-tsc --noEmit && vite build --emptyOutDir",
-    "dev": "concurrently --kill-others --names 'backend,frontend' './scripts/wait_folder.sh && poetry run acronyms --reload --reload-dir backend/acronyms' 'vite build --watch --mode development'",
+    "dev": "concurrently --kill-others --names 'backend,frontend' 'poetry run python scripts/wait_folder.py && poetry run acronyms --reload --reload-dir backend/acronyms' 'vite build --watch --mode development'",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
     "lint:fix": "eslint --fix --ext js,ts,vue frontend",

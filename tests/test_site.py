@@ -1,6 +1,7 @@
 """Unit tests for acronyms."""
 
 
+import json
 import re
 from typing import cast
 
@@ -12,6 +13,7 @@ from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym
+from tests import util
 
 
 @pytest.mark.e2e
@@ -231,6 +233,19 @@ def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
     expect(page).to_have_title(re.compile("Acronyms"))
+
+
+@pytest.mark.e2e
+def test_search_acronyms(server: str, page: Page) -> None:
+    """Search finds results from all pages."""
+    phrase = "Physical Therapist"
+    util.upload_acronyms(server)
+
+    page.goto(server)
+    table_body = page.locator("data-testid=table-body")
+
+    page.locator("#search").fill(phrase)
+    expect(table_body).to_have_text(re.compile(phrase))
 
 
 @pytest.mark.e2e
