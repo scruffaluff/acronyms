@@ -1,10 +1,23 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 
+// Type is suppose to represent function with any set of parameters.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Callback = (...args: any[]) => void;
+
 export interface Acronym {
   id: number;
   abbreviation: string;
   phrase: string;
+}
+
+function debounce(callback: Callback, milliseconds = 100): Callback {
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback(...args), milliseconds);
+  };
 }
 
 export const useAcronymStore = defineStore("acronym", () => {
@@ -42,7 +55,7 @@ export const useAcronymStore = defineStore("acronym", () => {
     data.value = await response.json();
   }
 
-  watch(search, async () => await fetchData(0));
+  watch(search, async () => await debounce(fetchData, 500)(0));
 
   return {
     count,

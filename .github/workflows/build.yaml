@@ -62,11 +62,9 @@ jobs:
         with:
           recursive: true
       - name: Install Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
       - name: Install Helm plugins
-        run: |
-          mkdir -p "${HELM_HOME}/plugins"
-          helm plugin install https://github.com/datreeio/helm-datree
+        run: helm plugin install https://github.com/datreeio/helm-datree
       - name: Lint code
         run: |
           helm lint --strict
