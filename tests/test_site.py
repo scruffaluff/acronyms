@@ -1,7 +1,6 @@
 """Unit tests for acronyms."""
 
 
-import json
 import re
 from typing import cast
 

@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -92,13 +93,15 @@ async def get_acronym(
     if abbreviation is None and phrase is None:
         query_ = query
     elif abbreviation is None:
-        query_ = query.filter(Acronym.phrase == phrase)
+        query_ = query.filter(Acronym.phrase.contains(phrase))
     elif phrase is None:
-        query_ = query.filter(Acronym.abbreviation == abbreviation)
+        query_ = query.filter(Acronym.abbreviation.contains(abbreviation))
     else:
-        # TODO: Allow searching by "or" match instead of "and" match.
         query_ = query.filter(
-            Acronym.abbreviation == abbreviation, Acronym.phrase == phrase
+            sqlalchemy.or_(
+                Acronym.abbreviation.contains(abbreviation),
+                Acronym.phrase.contains(phrase),
+            )
         )
 
     return query_.order_by(order).offset(offset).limit(limit).all()

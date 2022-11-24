@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { ref, watch } from "vue";
 
 export interface Acronym {
   id: number;
@@ -13,17 +13,6 @@ export const useAcronymStore = defineStore("acronym", () => {
   const error = ref({ active: false, message: "" });
   const search = ref("");
 
-  const matches = computed(() => {
-    const text = search.value.toLowerCase();
-
-    return data.value.filter((acronym) => {
-      const abbreviation = acronym.abbreviation.toLowerCase();
-      const phrase = acronym.phrase.toLowerCase();
-
-      return abbreviation.includes(text) || phrase.includes(text);
-    });
-  });
-
   function deleteById(id: number): void {
     data.value = data.value.filter((acronym) => acronym.id !== id);
   }
@@ -33,7 +22,14 @@ export const useAcronymStore = defineStore("acronym", () => {
   }
 
   async function fetchData(offset: number): Promise<void> {
-    const response = await fetch(`/api/acronym?offset=${offset}`);
+    let parameters: string;
+    if (search.value) {
+      parameters = `&abbreviation=${search.value}&phrase=${search.value}`;
+    } else {
+      parameters = "";
+    }
+
+    const response = await fetch(`/api/acronym?offset=${offset}${parameters}`);
     if (!response.ok) {
       console.error(response.text());
       return;
@@ -46,6 +42,8 @@ export const useAcronymStore = defineStore("acronym", () => {
     data.value = await response.json();
   }
 
+  watch(search, async () => await fetchData(0));
+
   return {
     count,
     data,
@@ -53,7 +51,6 @@ export const useAcronymStore = defineStore("acronym", () => {
     error,
     fetchData,
     getById,
-    matches,
     search,
   };
 });

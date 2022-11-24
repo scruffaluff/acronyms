@@ -65,6 +65,7 @@ jobs:
         uses: azure/setup-helm@v1
       - name: Install Helm plugins
         run: |
+          mkdir -p "${HELM_HOME}/plugins"
           helm plugin install https://github.com/datreeio/helm-datree
       - name: Lint code
         run: |

@@ -88,11 +88,11 @@
           </td>
         </tr>
 
-        <tr v-for="acronym of acronyms.matches" :key="acronym.id">
+        <tr v-for="acronym of acronyms.data" :key="acronym.id">
           <AcronymRow :identifier="acronym.id" />
         </tr>
         <tr
-          v-for="index of 10 - acronyms.matches.length"
+          v-for="index of 10 - acronyms.data.length"
           :key="index"
           class="hidden-row"
         >
