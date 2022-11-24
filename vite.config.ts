@@ -4,12 +4,14 @@
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vite";
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
   build: {
     outDir: "../../dist",
   },
-  plugins: [vue()],
+  // Rollup plugin visualizer should be the last plugin.
+  plugins: [vue(), visualizer()],
   publicDir: "../public",
   resolve: {
     alias: {
