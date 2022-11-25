@@ -236,15 +236,18 @@ def test_site_available(server: str, page: Page) -> None:
 
 @pytest.mark.e2e
 def test_search_acronyms(server: str, page: Page) -> None:
-    """Search finds results from all pages."""
+    """Search finds results from all pages and changes page count."""
     phrase = "Physical Therapist"
     util.upload_acronyms(server)
 
     page.goto(server)
     table_body = page.locator("data-testid=table-body")
 
-    page.locator("#search").fill(phrase)
+    page.locator("#search").fill(phrase.split(" ")[0])
     expect(table_body).to_have_text(re.compile(phrase))
+
+    pages = page.locator('[data-testid="pages"] > li')
+    expect(pages).to_have_count(1)
 
 
 @pytest.mark.e2e

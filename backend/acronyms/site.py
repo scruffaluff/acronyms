@@ -86,7 +86,6 @@ async def get_acronym(
 ) -> Union[Acronym, List[Acronym], None]:
     """Get all matching acronyms."""
     query = session.query(Acronym)
-    response.headers["X-Total-Count"] = str(query.count())
     if id is not None:
         return query.get(id)
 
@@ -104,6 +103,7 @@ async def get_acronym(
             )
         )
 
+    response.headers["X-Total-Count"] = str(query_.count())
     return query_.order_by(order).offset(offset).limit(limit).all()
 
 

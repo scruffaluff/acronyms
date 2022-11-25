@@ -164,11 +164,9 @@
           </button>
         </li>
       </ul>
-      <ul v-else class="pagination-list">
-        <li>
+      <ul v-else class="pagination-list" data-testid="pages">
+        <li v-for="page of paginator.pageCount" :key="page">
           <button
-            v-for="page of paginator.pageCount"
-            :key="page"
             class="button pagination-link"
             :disabled="paginator.currentPage === page"
             @click="paginator.currentPage = page"
