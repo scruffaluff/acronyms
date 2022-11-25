@@ -28,4 +28,4 @@ RUN pip install --no-cache-dir --user "${HOME}/repo" \
     && rm -fr "${HOME}/repo"
 
 EXPOSE 8000
-ENTRYPOINT ["acronyms", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["acronyms", "--host", "0.0.0.0"]

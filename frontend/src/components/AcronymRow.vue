@@ -76,7 +76,7 @@ function beginRemove(): void {
 }
 
 async function submitEdit(): Promise<void> {
-  const response = await fetch(`/api/${editor.id}`, {
+  const response = await fetch(`/api/acronym/${editor.id}`, {
     body: JSON.stringify({
       abbreviation: editor.abbreviation,
       phrase: editor.phrase,
@@ -95,7 +95,7 @@ async function submitEdit(): Promise<void> {
 }
 
 async function submitRemove(id: number): Promise<void> {
-  const response = await fetch(`/api/${id}`, { method: "DELETE" });
+  const response = await fetch(`/api/acronym/${id}`, { method: "DELETE" });
   if (!response.ok) {
     console.error(response.text());
     return;

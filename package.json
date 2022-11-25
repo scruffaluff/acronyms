@@ -12,12 +12,13 @@
   "devDependencies": {
     "@babel/types": "^7.19.0",
     "@trivago/prettier-plugin-sort-imports": "^3.3.0",
-    "@types/node": "^18.11.2",
+    "@types/node": "^18.11.0",
     "@typescript-eslint/eslint-plugin": "^5.36.0",
     "@typescript-eslint/parser": "^5.36.0",
     "@vitejs/plugin-vue": "^3.1.0",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.0",
+    "concurrently": "^7.6.0",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-vue": "^9.4.0",
@@ -32,7 +33,7 @@
   "private": true,
   "scripts": {
     "build": "vue-tsc --noEmit && vite build --emptyOutDir",
-    "dev": "vite",
+    "dev": "concurrently --kill-others --names 'backend,frontend' 'poetry run python scripts/wait_folder.py && poetry run acronyms --reload --reload-dir backend/acronyms' 'vite build --watch --mode development'",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
     "lint:fix": "eslint --fix --ext js,ts,vue frontend",

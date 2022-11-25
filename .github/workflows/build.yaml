@@ -14,6 +14,12 @@ on:
   push:
     branches:
       - "**"
+  workflow_dispatch:
+    inputs:
+      debug:
+        default: "false"
+        description: Use TMate session for debugging on failure
+        required: false
 
 jobs:
   lint-backend:
@@ -35,11 +41,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
-          poetry install -v
+          poetry install --verbose
       - name: Lint code
         run: |
           poetry run black --check .
-          poetry run flake8 .
+          poetry run pflake8 .
           poetry run mypy .
 
   lint-chart:
@@ -56,10 +62,9 @@ jobs:
         with:
           recursive: true
       - name: Install Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
       - name: Install Helm plugins
-        run: |
-          helm plugin install https://github.com/datreeio/helm-datree
+        run: helm plugin install https://github.com/datreeio/helm-datree
       - name: Lint code
         run: |
           helm lint --strict
@@ -90,13 +95,7 @@ jobs:
           npm run lint:test
           npm run build
 
-  test-unit:
-    # GitHub contains function does not support literal arrays. For more
-    # information, visit
-    # https://github.community/t/passing-an-array-literal-to-contains-function-causes-syntax-error/17213.
-    if: >-
-      ${{ !contains(fromJson('["refs/heads/develop", "refs/heads/main",
-      "refs/heads/master"]'), github.ref) }}
+  test:
     name: Run unit test suite for Node 18.10 and Python 3.10
     runs-on: ubuntu-latest
     steps:
@@ -110,14 +109,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv
-          key: >-
-            python-3.10_poetry-${{ hashFiles('poetry.lock') }}
+          key: python-3.10_poetry-${{ hashFiles('poetry.lock') }}
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip poetry setuptools wheel
           poetry config virtualenvs.in-project true
-          poetry install -v
-          poetry run playwright install chromium
+          poetry install --verbose
+          poetry run playwright install --with-deps chromium
       - name: Install Node interpreter
         uses: actions/setup-node@v2
         with:
@@ -126,9 +124,21 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: >-
-            node-18.10_npm-${{ hashFiles('package-lock.json') }}
+          key: node-18.10_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
       - name: Run test suite
-        run: poetry run pytest --cov
+        run: poetry run pytest --build --cov
+      - name: Upload Playwright screenshots and videos if tests fail
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-captures
+          path: tests/results
+          retention-days: 30
+      - name: Setup tmate session if job failed
+        if: >-
+          ${{ failure() && github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.debug == 'true' }}
+        timeout-minutes: 60
+        uses: mxschmitt/action-tmate@v3

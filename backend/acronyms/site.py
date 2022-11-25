@@ -1,32 +1,47 @@
-"""Command line interface for acronyms.
-
-See https://docs.python.org/3/using/cmdline.html#cmdoption-m for why module is
-named __main__.py.
-"""
+"""Website main module."""
 
 
-from typing import Any, Dict, Optional
+from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from acronyms import models
-from acronyms.models import Acronym
+from acronyms.models import Acronym, AcronymColumn
+from acronyms.settings import Settings
 
 
-app = FastAPI()
+settings = Settings()
+app = FastAPI(redoc_url=None)
 app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 
 
 class AcronymBody(BaseModel):
     """Post request validator for Acronym type."""
 
-    abbreviation: str
-    phrase: str
+    abbreviation: str = Field(
+        title="Acronym abbreviation", max_length=30, min_length=1
+    )
+    description: Optional[str]
+    phrase: str = Field(
+        description="Acronym phrase", max_length=300, min_length=1
+    )
+
+    class Config:
+        """Metadata for model."""
+
+        schema_extra = {
+            "example": {
+                "abbreviation": "AM",
+                "description": "Definition of amplitude modulation",
+                "phrase": "Amplitude Modulation",
+            }
+        }
 
 
 @app.get("/")
@@ -41,9 +56,10 @@ def read_favicon() -> FileResponse:
     return FileResponse("dist/favicon.ico")
 
 
-@app.delete("/api/{id}")
+@app.delete("/api/acronym/{id}")
 async def delete_acronym(
-    id: int, session: Session = Depends(models.get_db)
+    id: int = Path(description="Identifier of acronym to remove", ge=0),
+    session: Session = Depends(models.get_db),
 ) -> Dict[str, bool]:
     """Insert an acronym to database."""
     session.query(Acronym).filter(Acronym.id == id).delete()
@@ -51,25 +67,47 @@ async def delete_acronym(
     return {"ok": True}
 
 
-@app.get("/api")
+@app.get("/api/acronym")
 async def get_acronym(
+    response: Response,
+    id: Optional[int] = None,
+    # TODO: Allow searching by partial match.
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
-    id: Optional[int] = None,
+    limit: int = Query(
+        default=settings.page_size,
+        description="Maximum number of acronyms to return",
+        gt=0,
+        le=50,
+    ),
+    offset: int = Query(default=0, ge=0),
+    order: Optional[AcronymColumn] = None,
     session: Session = Depends(models.get_db),
-) -> Optional[Any]:
+) -> Union[Acronym, List[Acronym], None]:
     """Get all matching acronyms."""
     query = session.query(Acronym)
-
     if id is not None:
         return query.get(id)
-    if abbreviation is not None:
-        query = query.filter(Acronym.abbreviation == abbreviation)
 
-    return query.all()
+    if abbreviation is None and phrase is None:
+        query_ = query
+    elif abbreviation is None:
+        query_ = query.filter(Acronym.phrase.contains(phrase))
+    elif phrase is None:
+        query_ = query.filter(Acronym.abbreviation.contains(abbreviation))
+    else:
+        query_ = query.filter(
+            sqlalchemy.or_(
+                Acronym.abbreviation.contains(abbreviation),
+                Acronym.phrase.contains(phrase),
+            )
+        )
+
+    response.headers["X-Total-Count"] = str(query_.count())
+    return query_.order_by(order).offset(offset).limit(limit).all()
 
 
-@app.post("/api")
+@app.post("/api/acronym")
 async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
 ) -> int:
@@ -84,7 +122,7 @@ async def post_acronym(
     return acronym_.id
 
 
-@app.put("/api/{id}")
+@app.put("/api/acronym/{id}")
 async def put_acronym(
     id: int,
     body: AcronymBody,

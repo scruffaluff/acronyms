@@ -2,6 +2,7 @@
 
 
 from argparse import BooleanOptionalAction
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -13,13 +14,27 @@ from fastapi.testclient import TestClient
 from psycopg import Connection
 import pytest
 from pytest import Parser
-import requests
-from requests.adapters import HTTPAdapter, Retry
 import sqlalchemy
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym, Base, get_db
+from tests import util
+
+
+DATA_PATH = Path(__file__).parent / "data"
+
+
+@pytest.fixture(autouse=True, scope="session")
+def build(request: SubRequest) -> None:
+    """Build frontend assets before test suite."""
+    if request.config.getoption("--build"):
+        subprocess.run(
+            ["npm", "run", "build"],
+            check=True,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
 
 
 @pytest.fixture
@@ -45,16 +60,9 @@ def connection(postgresql: Connection) -> str:
 @pytest.fixture
 def database(session: Session) -> Session:
     """Connection URI for temporary PostgreSQL database."""
-    acronyms = [
-        Acronym(abbreviation="AM", phrase="Ante Meridiem"),
-        Acronym(abbreviation="DM", phrase="Data Mining"),
-        Acronym(abbreviation="DM", phrase="Direct Message"),
-        Acronym(abbreviation="RIP", phrase="Rest In Peace"),
-        Acronym(abbreviation="JSON", phrase="JavaScript Object Notation"),
-    ]
-
+    acronyms = json.loads((DATA_PATH / "acronyms.json").read_text())
     for acronym in acronyms:
-        session.add(acronym)
+        session.add(Acronym(**acronym))
     session.commit()
     return session
 
@@ -68,6 +76,13 @@ def engine(connection: str) -> Engine:
 def pytest_addoption(parser: Parser) -> None:
     """Select whether to run tests against Helm chart."""
     parser.addoption(
+        "--build",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Whether to compile frontend code before executing tests",
+    )
+
+    parser.addoption(
         "--chart",
         action=BooleanOptionalAction,
         default=False,
@@ -75,44 +90,33 @@ def pytest_addoption(parser: Parser) -> None:
     )
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:
-    """Build Javascript assets at pytest startup."""
-    subprocess.run(
-        ["npm", "run", "build"],
-        check=True,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-
-
-@pytest.fixture(scope="session")
-def server(request: SubRequest) -> Iterator[str]:
+@pytest.fixture
+def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     if request.config.getoption("--chart"):
-        yield "https://acronyms.127-0-0-1.nip.io"
+        server_ = "https://acronyms.127-0-0-1.nip.io"
+        util.clear_acronyms(server_)
+        yield server_
     else:
-        database = "test"
+        database = tmp_path / "acronyms_test.db"
+        port = util.find_port()
+        url = f"http://localhost:{port}"
 
         # Running the server via uvicorn directly as a Python function throws
         # "RuntimeError: asyncio.run() cannot be called from a running event
         # loop".
         process = Popen(
-            ["acronyms", "--port", "8081"],
-            env=dict(**os.environ, **{"ACRONYMS_DATABASE_NAME": database}),
+            ["acronyms", "--port", str(port)],
+            env=dict(
+                **os.environ, **{"ACRONYMS_DATABASE": f"sqlite:///{database}"}
+            ),
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )
-        url = "http://localhost:8081"
 
-        # Retry requesting server until it is available.
-        with requests.Session() as session:
-            retries = Retry(total=4, backoff_factor=1)
-            session.mount("http://", HTTPAdapter(max_retries=retries))
-            session.get(url)
-
+        util.wait_for_server(url)
         yield url
         process.terminate()
-        (Path.cwd() / f"{database}.db").unlink(missing_ok=True)
 
 
 @pytest.fixture

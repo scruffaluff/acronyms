@@ -29,11 +29,14 @@ spec:
       {{- end }}
       containers:
         - name: {{ include "acronyms.fullname" . }}
+          args:
+            # Allows ingress controller to pass X-Forwarded headers.
+            - --proxy-headers
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
             httpGet:
-              path: /api
+              path: /api/acronym
               port: 8000
           ports:
             - name: http
@@ -41,7 +44,7 @@ spec:
               protocol: TCP
           readinessProbe:
             httpGet:
-              path: /api
+              path: /api/acronym
               port: 8000
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
