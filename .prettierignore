@@ -20,4 +20,5 @@ node_modules/
 package-lock.json
 poetry.lock
 site/
+stats.html
 templates/

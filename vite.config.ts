@@ -2,9 +2,9 @@
 //
 // For more information, visit https://vitejs.dev/config.
 import vue from "@vitejs/plugin-vue";
+import { visualizer } from "rollup-plugin-visualizer";
 import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vite";
-import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
   build: {
