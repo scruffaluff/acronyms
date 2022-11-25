@@ -12,6 +12,17 @@ from requests import Session
 from requests.adapters import HTTPAdapter, Retry
 
 
+def clear_acronyms(server: str) -> None:
+    """Remove all acronyms from server."""
+    response = requests.get(f"{server}/api/acronym")
+    response.raise_for_status()
+
+    for acronym in response.json():
+        id_ = acronym["id"]
+        response_ = requests.delete(f"{server}/api/acronym/{id_}")
+        response_.raise_for_status()
+
+
 def find_port() -> int:
     """Find an available free port."""
     sock = socket.socket()
@@ -24,10 +35,9 @@ def upload_acronyms(endpoint: str) -> None:
     data_path = Path(__file__).parents[1] / "tests/data/acronyms.json"
     acronyms = json.loads(data_path.read_text())
 
-    with Session() as session:
-        for acronym in acronyms:
-            response = session.post(f"{endpoint}/api/acronym", json=acronym)
-            response.raise_for_status()
+    for acronym in acronyms:
+        response = requests.post(f"{endpoint}/api/acronym", json=acronym)
+        response.raise_for_status()
 
 
 def wait_for_server(url: str) -> None:

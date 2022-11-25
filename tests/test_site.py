@@ -252,7 +252,7 @@ def test_search_acronyms(server: str, page: Page) -> None:
 
 @pytest.mark.e2e
 def test_sort_acronyms(server: str, page: Page) -> None:
-    """Error modal pops up upon duplicate acronym submission."""
+    """Sort icon changes acronym order."""
     acronyms = [
         {"abbreviation": "DM", "phrase": "Data Mining"},
         {"abbreviation": "DM", "phrase": "Direct Message"},

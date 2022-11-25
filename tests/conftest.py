@@ -94,7 +94,9 @@ def pytest_addoption(parser: Parser) -> None:
 def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     if request.config.getoption("--chart"):
-        yield "https://acronyms.127-0-0-1.nip.io"
+        server_ = "https://acronyms.127-0-0-1.nip.io"
+        util.clear_acronyms(server_)
+        yield server_
     else:
         database = tmp_path / "acronyms_test.db"
         port = util.find_port()
