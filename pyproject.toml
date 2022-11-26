@@ -92,13 +92,18 @@ packages = [
 version = "0.1.0"
 
 [tool.poetry.dependencies]
+aioredis = "^2.0.0"
+aiosqlite = "^0.17.0"
+asyncpg = "^0.27.0"
 fastapi = "^0.82.0"
+fastapi-cache2 = { extras = ["redis"], version = "^0.1.0" }
+fastapi-users = { extras = ["oauth", "sqlalchemy"], version = "^10.2.0" }
 psycopg2 = "^2.9.0"
 pydantic = "^1.10.0"
 python = "^3.9.0"
+pyyaml = "^6.0.0"
 SQLAlchemy = "^1.4.0"
-uvicorn = {extras = ["standard"], version = "^0.18.0"}
-pyyaml = "^6.0"
+uvicorn = { extras = ["standard"], version = "^0.18.0" }
 
 [tool.poetry.dev-dependencies]
 alembic = "^1.8.0"

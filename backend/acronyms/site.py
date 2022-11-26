@@ -6,12 +6,14 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from fastapi_cache import decorator, FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from acronyms import models
+from acronyms.schemas import AcronymBody
 from acronyms.models import Acronym, AcronymColumn
 from acronyms.settings import Settings
 
@@ -19,41 +21,6 @@ from acronyms.settings import Settings
 settings = Settings()
 app = FastAPI(redoc_url=None)
 app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
-
-
-class AcronymBody(BaseModel):
-    """Post request validator for Acronym type."""
-
-    abbreviation: str = Field(
-        title="Acronym abbreviation", max_length=30, min_length=1
-    )
-    description: Optional[str]
-    phrase: str = Field(
-        description="Acronym phrase", max_length=300, min_length=1
-    )
-
-    class Config:
-        """Metadata for model."""
-
-        schema_extra = {
-            "example": {
-                "abbreviation": "AM",
-                "description": "Definition of amplitude modulation",
-                "phrase": "Amplitude Modulation",
-            }
-        }
-
-
-@app.get("/")
-def read_index() -> FileResponse:
-    """Fetch frontend Vue entrypoint as site root."""
-    return FileResponse("dist/index.html")
-
-
-@app.get("/favicon.ico")
-def read_favicon() -> FileResponse:
-    """Fetch site favicon."""
-    return FileResponse("dist/favicon.ico")
 
 
 @app.delete("/api/acronym/{id}")
@@ -68,6 +35,7 @@ async def delete_acronym(
 
 
 @app.get("/api/acronym")
+@decorator.cache(expire=60)
 async def get_acronym(
     response: Response,
     id: Optional[int] = None,
@@ -137,3 +105,21 @@ async def put_acronym(
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")
     return {"ok": True}
+
+
+@app.get("/")
+def read_index() -> FileResponse:
+    """Fetch frontend Vue entrypoint as site root."""
+    return FileResponse("dist/index.html")
+
+
+@app.get("/favicon.ico")
+def read_favicon() -> FileResponse:
+    """Fetch site favicon."""
+    return FileResponse("dist/favicon.ico")
+
+
+@app.on_event("startup")
+async def startup() -> None:
+    """Initialize configuration for web application."""
+    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
