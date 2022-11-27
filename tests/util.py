@@ -3,13 +3,18 @@
 
 import json
 import logging
+import os
 from pathlib import Path
+import secrets
 import socket
-from typing import cast
+from typing import cast, Dict
 
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
+
+
+DATA_PATH = Path(__file__).parent / "data"
 
 
 def clear_acronyms(server: str) -> None:
@@ -30,9 +35,17 @@ def find_port() -> int:
     return cast(int, sock.getsockname()[1])
 
 
+def mock_environment() -> Dict[str, str]:
+    """Generate mock environment variables for testing."""
+    return {
+        "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
+        "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
+    }
+
+
 def upload_acronyms(endpoint: str) -> None:
     """Import acronyms to backend for easier manual frontend interaction."""
-    data_path = Path(__file__).parents[1] / "tests/data/acronyms.json"
+    data_path = DATA_PATH / "acronyms.json"
     acronyms = json.loads(data_path.read_text())
 
     for acronym in acronyms:

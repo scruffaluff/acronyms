@@ -8,7 +8,7 @@ import uvicorn
 
 def main() -> None:
     """Pass command line arguments to uvicorn."""
-    uvicorn.main(["acronyms.site:app", *sys.argv[1:]])
+    uvicorn.main(["acronyms.main:app", *sys.argv[1:]])
 
 
 if __name__ == "__main__":

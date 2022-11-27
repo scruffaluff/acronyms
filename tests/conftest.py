@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 from subprocess import Popen
 from typing import Iterator
+from unittest import mock
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
@@ -20,9 +21,6 @@ from sqlalchemy.orm import Session
 
 from acronyms.models import Acronym, Base, get_db
 from tests import util
-
-
-DATA_PATH = Path(__file__).parent / "data"
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -38,14 +36,16 @@ def build(request: SubRequest) -> None:
 
 
 @pytest.fixture
+@mock.patch.dict(os.environ, util.mock_environment())
 def client(database: Session) -> TestClient:
     """Fast API test client."""
     # App import placed here since it depends on prebuilt Node assets, which are
     # not required for end to end tests.
-    from acronyms.site import app
+    from acronyms.main import app
 
     app.dependency_overrides[get_db] = lambda: database
-    return TestClient(app)
+    with TestClient(app) as client:
+        return client
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def connection(postgresql: Connection) -> str:
 @pytest.fixture
 def database(session: Session) -> Session:
     """Connection URI for temporary PostgreSQL database."""
-    acronyms = json.loads((DATA_PATH / "acronyms.json").read_text())
+    acronyms = json.loads((util.DATA_PATH / "acronyms.json").read_text())
     for acronym in acronyms:
         session.add(Acronym(**acronym))
     session.commit()
@@ -101,15 +101,14 @@ def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
         database = tmp_path / "acronyms_test.db"
         port = util.find_port()
         url = f"http://localhost:{port}"
+        env_vars = {"ACRONYMS_DATABASE": f"sqlite:///{database}"}
 
         # Running the server via uvicorn directly as a Python function throws
         # "RuntimeError: asyncio.run() cannot be called from a running event
         # loop".
         process = Popen(
             ["acronyms", "--port", str(port)],
-            env=dict(
-                **os.environ, **{"ACRONYMS_DATABASE": f"sqlite:///{database}"}
-            ),
+            env={**os.environ, **env_vars, **util.mock_environment()},
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )
@@ -117,6 +116,7 @@ def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
         util.wait_for_server(url)
         yield url
         process.terminate()
+        database.unlink()
 
 
 @pytest.fixture

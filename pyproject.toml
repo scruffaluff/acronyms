@@ -42,16 +42,13 @@ exclude = [
     "tmp/",
 ]
 ignore = [
+    "B008",
     "E203",
     "W503",
 ]
 import-order-style = "google"
 max-complexity = 10
 max-line-length = 80
-per-file-ignores = [
-    "backend/acronyms/__main__.py:B008",
-    "backend/acronyms/site.py:B008",
-]
 
 [tool.mypy]
 check_untyped_defs = true

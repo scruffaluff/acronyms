@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 from typing import Any, cast, Dict, Optional, Tuple
 
-from pydantic import AnyUrl, BaseSettings
+from pydantic import AnyUrl, BaseSettings, SecretStr
 from pydantic.env_settings import SettingsSourceCallable
 import yaml
 
@@ -45,6 +45,8 @@ class Settings(BaseSettings):
         "sqlite:///./acronyms.db", scheme="sqlite"
     )
     page_size: int = 10
+    reset_token: SecretStr
+    verification_token: SecretStr
 
     class Config:
         """Pydantic specific configuration."""

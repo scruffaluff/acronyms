@@ -1,29 +1,23 @@
-"""Website main module."""
+"""Acronyms REST API endpoints."""
 
 
+from fastapi import APIRouter
 from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi_cache import decorator, FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from acronyms import models
-from acronyms.schemas import AcronymBody
+from acronyms import models, settings
 from acronyms.models import Acronym, AcronymColumn
-from acronyms.settings import Settings
+from acronyms.schemas import AcronymBody
 
 
-settings = Settings()
-app = FastAPI(redoc_url=None)
-app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
+router = APIRouter()
 
 
-@app.delete("/api/acronym/{id}")
+@router.delete("/acronym/{id}")
 async def delete_acronym(
     id: int = Path(description="Identifier of acronym to remove", ge=0),
     session: Session = Depends(models.get_db),
@@ -34,16 +28,14 @@ async def delete_acronym(
     return {"ok": True}
 
 
-@app.get("/api/acronym")
-@decorator.cache(expire=60)
+@router.get("/acronym")
 async def get_acronym(
     response: Response,
     id: Optional[int] = None,
-    # TODO: Allow searching by partial match.
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
     limit: int = Query(
-        default=settings.page_size,
+        default=settings.settings().page_size,
         description="Maximum number of acronyms to return",
         gt=0,
         le=50,
@@ -75,7 +67,7 @@ async def get_acronym(
     return query_.order_by(order).offset(offset).limit(limit).all()
 
 
-@app.post("/api/acronym")
+@router.post("/acronym")
 async def post_acronym(
     acronym: AcronymBody, session: Session = Depends(models.get_db)
 ) -> int:
@@ -90,7 +82,7 @@ async def post_acronym(
     return acronym_.id
 
 
-@app.put("/api/acronym/{id}")
+@router.put("/acronym/{id}")
 async def put_acronym(
     id: int,
     body: AcronymBody,
@@ -105,21 +97,3 @@ async def put_acronym(
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")
     return {"ok": True}
-
-
-@app.get("/")
-def read_index() -> FileResponse:
-    """Fetch frontend Vue entrypoint as site root."""
-    return FileResponse("dist/index.html")
-
-
-@app.get("/favicon.ico")
-def read_favicon() -> FileResponse:
-    """Fetch site favicon."""
-    return FileResponse("dist/favicon.ico")
-
-
-@app.on_event("startup")
-async def startup() -> None:
-    """Initialize configuration for web application."""
-    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
