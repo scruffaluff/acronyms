@@ -1,7 +1,6 @@
 """Acronyms REST API endpoints."""
 
 
-from fastapi import APIRouter
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response

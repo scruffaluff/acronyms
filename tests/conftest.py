@@ -36,16 +36,16 @@ def build(request: SubRequest) -> None:
 
 
 @pytest.fixture
-@mock.patch.dict(os.environ, util.mock_environment())
-def client(database: Session) -> TestClient:
+def client(database: Session) -> Iterator[TestClient]:
     """Fast API test client."""
-    # App import placed here since it depends on prebuilt Node assets, which are
-    # not required for end to end tests.
-    from acronyms.main import app
+    with mock.patch.dict(os.environ, util.mock_environment()):
+        # App import placed here since it depends on prebuilt Node assets, which
+        # are not required for end to end tests.
+        from acronyms.main import app
 
     app.dependency_overrides[get_db] = lambda: database
     with TestClient(app) as client:
-        return client
+        yield client
 
 
 @pytest.fixture
@@ -127,4 +127,7 @@ def session(engine: Engine) -> Iterator[Session]:
     # shown at
     # https://github.com/sqlalchemy/sqlalchemy/blob/52e8545b2df312898d46f6a5b119675e8d0aa956/lib/sqlalchemy/orm/session.py#L1156.
     with Session(engine) as session:  # type: ignore
+        # Do not use "return" instead of "yield". Using "return" will close the
+        # connection early. Pytest fixtures have special behavior for "yield",
+        # https://docs.pytest.org/en/latest/explanation/fixtures.html#yield-fixtures-recommended.
         yield session
