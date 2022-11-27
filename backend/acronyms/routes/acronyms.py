@@ -4,6 +4,7 @@
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
+from fastapi_cache import decorator, FastAPICache
 import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -24,10 +25,12 @@ async def delete_acronym(
     """Insert an acronym to database."""
     session.query(Acronym).filter(Acronym.id == id).delete()
     session.commit()
+    await FastAPICache.clear(namespace="acronyms")
     return {"ok": True}
 
 
 @router.get("/acronym")
+@decorator.cache(expire=60, namespace="acronyms")
 async def get_acronym(
     response: Response,
     id: Optional[int] = None,
@@ -76,6 +79,7 @@ async def post_acronym(
     try:
         session.add(acronym_)
         session.commit()
+        await FastAPICache.clear(namespace="acronyms")
     except IntegrityError as exception:
         raise HTTPException(status_code=400, detail=str(exception))
     return acronym_.id
@@ -93,6 +97,7 @@ async def put_acronym(
     try:
         acronym.update(body.dict())
         session.commit()
+        await FastAPICache.clear(namespace="acronyms")
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")
     return {"ok": True}
