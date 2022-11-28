@@ -6,8 +6,9 @@ import logging
 from pathlib import Path
 import secrets
 import socket
-from typing import cast, Dict
+from typing import cast, Dict, Optional
 
+from fastapi.testclient import TestClient
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -34,22 +35,32 @@ def find_port() -> int:
     return cast(int, sock.getsockname()[1])
 
 
-def mock_environment() -> Dict[str, str]:
+def mock_environment(variables: Dict[str, str]) -> Dict[str, str]:
     """Generate mock environment variables for testing."""
     return {
-        "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
-        "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
+        **{
+            "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
+            "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
+        },
+        **variables,
     }
 
 
-def upload_acronyms(endpoint: str) -> None:
+def upload_acronyms(
+    client: Optional[TestClient] = None, endpoint: Optional[str] = None
+) -> None:
     """Import acronyms to backend for easier manual frontend interaction."""
     data_path = DATA_PATH / "acronyms.json"
     acronyms = json.loads(data_path.read_text())
 
-    for acronym in acronyms:
-        response = requests.post(f"{endpoint}/api/acronym", json=acronym)
-        response.raise_for_status()
+    if client is None:
+        for acronym in acronyms:
+            response = requests.post(f"{endpoint}/api/acronym", json=acronym)
+            response.raise_for_status()
+    else:
+        for acronym in acronyms:
+            response = client.post("/api/acronym", json=acronym)
+            response.raise_for_status()
 
 
 def wait_for_server(url: str) -> None:

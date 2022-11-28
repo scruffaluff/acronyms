@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
+from acronyms import models
 from acronyms.routes import acronyms
 
 
@@ -28,6 +29,7 @@ def read_favicon() -> FileResponse:
 
 
 @app.on_event("startup")
-def startup() -> None:
+async def startup() -> None:
     """Initialize configuration for web application."""
     FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
+    await models.initialize_database()

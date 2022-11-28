@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     """Application settings."""
 
     database: DatabaseUrl = DatabaseUrl(
-        "sqlite:///./acronyms.db", scheme="sqlite"
+        "sqlite+aiosqlite:///./acronyms.db", scheme="sqlite"
     )
     page_size: int = 10
     reset_token: SecretStr

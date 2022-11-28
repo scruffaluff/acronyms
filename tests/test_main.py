@@ -2,16 +2,13 @@
 
 
 import re
-from typing import cast
 
 from fastapi.testclient import TestClient
 from playwright.sync_api import expect, Page
 import pytest
 import requests
 from requests.exceptions import HTTPError
-from sqlalchemy.orm import Session
 
-from acronyms.models import Acronym
 from tests import util
 
 
@@ -167,16 +164,21 @@ def test_get_home(client: TestClient) -> None:
     response.raise_for_status()
 
 
-def test_post_acronym(client: TestClient, session: Session) -> None:
+def test_post_acronym(client: TestClient) -> None:
     """Add a new acronym to database."""
-    query = session.query(Acronym)
-    count = query.count()
-
     body = {"abbreviation": "ROI", "phrase": "Return On Investment"}
+    params = "&".join(f"{key}={value}" for key, value in body.items())
+
+    get_response_1 = client.get(f"/api/acronym?{params}")
+    get_response_1.raise_for_status()
+    count = len(get_response_1.json())
+
     post_response = client.post("/api/acronym", json=body)
     post_response.raise_for_status()
 
-    assert query.count() == count + 1
+    get_response_2 = client.get(f"/api/acronym?{params}")
+    get_response_2.raise_for_status()
+    assert len(get_response_2.json()) == count + 1
 
 
 def test_post_duplicate(client: TestClient) -> None:
@@ -188,15 +190,6 @@ def test_post_duplicate(client: TestClient) -> None:
     response_2 = client.post("/api/acronym", json=body)
     with pytest.raises(HTTPError):
         response_2.raise_for_status()
-
-
-def test_query_acronym(database: Session) -> None:
-    """Fetch acronym from database by abbreviation."""
-    result = cast(
-        Acronym,
-        database.query(Acronym).filter(Acronym.abbreviation == "AM").first(),
-    )
-    assert result.phrase == "Ante Meridiem"
 
 
 def test_put_acronym(client: TestClient) -> None:
@@ -238,7 +231,7 @@ def test_site_available(server: str, page: Page) -> None:
 def test_search_acronyms(server: str, page: Page) -> None:
     """Search finds results from all pages and changes page count."""
     phrase = "Physical Therapist"
-    util.upload_acronyms(server)
+    util.upload_acronyms(endpoint=server)
 
     page.goto(server)
     table_body = page.locator("data-testid=table-body")

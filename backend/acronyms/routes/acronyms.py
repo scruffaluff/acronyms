@@ -1,13 +1,13 @@
 """Acronyms REST API endpoints."""
 
 
-from typing import Dict, List, Optional, Union
+from typing import cast, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from fastapi_cache import decorator, FastAPICache
 import sqlalchemy
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from acronyms import models, settings
 from acronyms.models import Acronym, AcronymColumn
@@ -20,11 +20,14 @@ router = APIRouter()
 @router.delete("/acronym/{id}")
 async def delete_acronym(
     id: int = Path(description="Identifier of acronym to remove", ge=0),
-    session: Session = Depends(models.get_db),
+    session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
     """Insert an acronym to database."""
-    session.query(Acronym).filter(Acronym.id == id).delete()
-    session.commit()
+    statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
+    acronym = (await session.execute(statement)).scalar_one()
+
+    await session.delete(acronym)
+    await session.commit()
     await FastAPICache.clear(namespace="acronyms")
     return {"ok": True}
 
@@ -44,59 +47,71 @@ async def get_acronym(
     ),
     offset: int = Query(default=0, ge=0),
     order: Optional[AcronymColumn] = None,
-    session: Session = Depends(models.get_db),
+    session: AsyncSession = Depends(models.get_session),
 ) -> Union[Acronym, List[Acronym], None]:
     """Get all matching acronyms."""
-    query = session.query(Acronym)
     if id is not None:
-        return query.get(id)
+        return await session.get(Acronym, id)
 
+    table = sqlalchemy.select(Acronym)
     if abbreviation is None and phrase is None:
-        query_ = query
+        query = table
     elif abbreviation is None:
-        query_ = query.filter(Acronym.phrase.contains(phrase))
+        query = table.where(Acronym.phrase.contains(phrase))
     elif phrase is None:
-        query_ = query.filter(Acronym.abbreviation.contains(abbreviation))
+        query = table.where(Acronym.abbreviation.contains(abbreviation))
     else:
-        query_ = query.filter(
+        query = table.where(
             sqlalchemy.or_(
                 Acronym.abbreviation.contains(abbreviation),
                 Acronym.phrase.contains(phrase),
             )
         )
 
-    response.headers["X-Total-Count"] = str(query_.count())
-    return query_.order_by(order).offset(offset).limit(limit).all()
+    count = await session.execute(
+        query.with_only_columns(sqlalchemy.func.count(Acronym.id))
+    )
+    response.headers["X-Total-Count"] = str(count.scalar_one())
+    result = await session.execute(
+        query.order_by(order).offset(offset).limit(limit)
+    )
+    return result.scalars().all()
 
 
 @router.post("/acronym")
 async def post_acronym(
-    acronym: AcronymBody, session: Session = Depends(models.get_db)
+    acronym: AcronymBody, session: AsyncSession = Depends(models.get_session)
 ) -> int:
     """Insert an acronym to database."""
     acronym_ = Acronym(abbreviation=acronym.abbreviation, phrase=acronym.phrase)
 
     try:
         session.add(acronym_)
-        session.commit()
+        await session.commit()
         await FastAPICache.clear(namespace="acronyms")
+
+        # Id is not None since session committed the acronym.
+        return cast(int, acronym_.id)
     except IntegrityError as exception:
         raise HTTPException(status_code=400, detail=str(exception))
-    return acronym_.id
 
 
 @router.put("/acronym/{id}")
 async def put_acronym(
     id: int,
     body: AcronymBody,
-    session: Session = Depends(models.get_db),
+    session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
     """Get all matching acronyms."""
-    acronym = session.query(Acronym).filter(Acronym.id == id)
-
     try:
-        acronym.update(body.dict())
-        session.commit()
+        statement = (
+            sqlalchemy.update(Acronym)
+            .where(Acronym.id == id)
+            .values(**body.dict())
+        )
+        await session.execute(statement)
+
+        await session.commit()
         await FastAPICache.clear(namespace="acronyms")
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate acronym request")
