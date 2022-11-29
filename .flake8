@@ -1,0 +1,25 @@
+# Flake8 configuration file for linting Python code.
+#
+# For more information, visit
+# https://flake8.pycqa.org/en/latest/user/configuration.html.
+
+[flake8]
+application-import-names =
+    acronyms
+    tests
+exclude =
+    .mypy_cache/
+    .pytest_cache/
+    .venv/
+    backend/alembic/
+    dist/
+    node_modules/
+    template/
+    tmp/
+ignore =
+    B008
+    E203
+    W503
+import-order-style = google
+max-complexity = 10
+max-line-length = 80
