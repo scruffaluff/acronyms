@@ -7,13 +7,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
-from acronyms import models
+from acronyms import auth, models
 from acronyms.routes import acronyms
 
 
 app = FastAPI(redoc_url=None)
 app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 app.include_router(acronyms.router, prefix="/api")
+auth.include_routes(app)
 
 
 @app.get("/")

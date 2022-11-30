@@ -2,7 +2,9 @@
 
 
 from typing import Optional
+from uuid import UUID
 
+from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 from pydantic import BaseModel, Field
 
 
@@ -27,3 +29,21 @@ class AcronymBody(BaseModel):
                 "phrase": "Amplitude Modulation",
             }
         }
+
+
+class UserRead(BaseUser[UUID]):
+    """Readable user data."""
+
+    pass
+
+
+class UserCreate(BaseUserCreate):
+    """Data to create a new user."""
+
+    pass
+
+
+class UserUpdate(BaseUserUpdate):
+    """Data to update user information."""
+
+    pass

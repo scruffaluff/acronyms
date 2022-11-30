@@ -4,9 +4,10 @@
 from argparse import BooleanOptionalAction
 import os
 from pathlib import Path
+import secrets
 import subprocess
 from subprocess import Popen
-from typing import Iterator
+from typing import cast, Iterator, Tuple
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
@@ -17,6 +18,18 @@ from pytest_mock import MockerFixture
 from sqlalchemy.ext import asyncio
 
 from tests import util
+
+
+@pytest.fixture
+def access_token(client: TestClient, user: Tuple[str, str]) -> str:
+    """Get access token for new user."""
+    response = client.post(
+        "/auth/login",
+        data={"username": user[0], "password": user[1]},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    response.raise_for_status()
+    return cast(str, response.json()["access_token"])
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -101,3 +114,16 @@ def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
         yield url
         process.terminate()
         database.unlink()
+
+
+@pytest.fixture
+def user(client: TestClient) -> Tuple[str, str]:
+    """Create new user in application."""
+    email = "fake.user@mail.com"
+    password = secrets.token_urlsafe(16)
+
+    response = client.post(
+        "/auth/register", json={"email": email, "password": password}
+    )
+    response.raise_for_status()
+    return email, password
