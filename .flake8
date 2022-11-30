@@ -16,6 +16,7 @@ exclude =
     node_modules/
     template/
     tmp/
+    web/
 ignore =
     B008
     E203

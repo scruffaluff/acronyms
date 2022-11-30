@@ -38,6 +38,7 @@ exclude = [
     "dist/",
     "node_modules/",
     "tmp/",
+    "web/"
 ]
 ignore_missing_imports = true
 no_implicit_optional = true

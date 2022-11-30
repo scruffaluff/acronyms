@@ -42,3 +42,4 @@ requirements.lock
 requirements.txt
 setup.py
 site/
+web/

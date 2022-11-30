@@ -9,7 +9,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     emptyOutDir: true,
-    outDir: "../../dist",
+    outDir: "../../backend/acronyms/web",
   },
   // Rollup plugin visualizer should be the last plugin.
   plugins: [vue(), visualizer()],

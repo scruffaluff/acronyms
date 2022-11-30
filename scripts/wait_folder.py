@@ -10,7 +10,7 @@ import time
 # the dist folder. Sleeping for 1 second ensures the wait loop begins after
 # the dist folder has been cleared.
 time.sleep(1)
-assets = Path(__file__).parents[1] / "dist/assets"
+assets = Path(__file__).parents[1] / "backend/acronyms/web/assets"
 
 while not assets.exists():
     time.sleep(1)

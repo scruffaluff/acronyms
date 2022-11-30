@@ -20,8 +20,9 @@ ENV \
     HOME=/home/acronyms \
     PATH="/home/acronyms/.local/bin:${PATH}"
 
-COPY --chown=acronyms --from=frontend /repo/dist /app/dist
 COPY --chown=acronyms . "${HOME}/repo"
+COPY --chown=acronyms --from=frontend \
+    /repo/backend/acronyms/web "${HOME}/repo/backend/acronyms/web"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user "${HOME}/repo" \

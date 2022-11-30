@@ -21,4 +21,4 @@ package-lock.json
 poetry.lock
 site/
 stats.html
-templates/
+web/
