@@ -6,7 +6,7 @@ from typing import cast, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from fastapi_cache import decorator, FastAPICache
 import sqlalchemy
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from acronyms import models, settings
@@ -24,7 +24,10 @@ async def delete_acronym(
 ) -> Dict[str, bool]:
     """Insert an acronym to database."""
     statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
-    acronym = (await session.execute(statement)).scalar_one()
+    try:
+        acronym = (await session.execute(statement)).scalar_one()
+    except NoResultFound as exception:
+        raise HTTPException(status_code=400, detail=str(exception))
 
     await session.delete(acronym)
     await session.commit()

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import secrets
 import subprocess
-from subprocess import Popen
+import tempfile
 from typing import cast, Iterator, Tuple
 
 from _pytest.fixtures import SubRequest
@@ -15,6 +15,8 @@ from psycopg import Connection
 import pytest
 from pytest import Parser
 from pytest_mock import MockerFixture
+import schemathesis
+from schemathesis.specs.openapi.schemas import BaseOpenAPISchema
 from sqlalchemy.ext import asyncio
 
 from tests import util
@@ -70,6 +72,16 @@ def connection(postgresql: Connection) -> str:
     return f"postgresql+asyncpg://{user}:@{address}/{name}"
 
 
+@pytest.fixture(scope="session")
+def openapi_schema() -> Iterator[BaseOpenAPISchema]:
+    """Load OpenAPI schema from server into Schemathesis."""
+    database = Path(tempfile.mkdtemp()) / "acronyms_test.db"
+    process, url = util.start_server(database)
+    yield schemathesis.from_uri(f"{url}/openapi.json")
+    process.terminate()
+    database.unlink()
+
+
 def pytest_addoption(parser: Parser) -> None:
     """Select whether to run tests against Helm chart."""
     parser.addoption(
@@ -96,21 +108,7 @@ def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
         yield url
     else:
         database = tmp_path / "acronyms_test.db"
-        port = util.find_port()
-        url = f"http://localhost:{port}"
-        environment = {"ACRONYMS_DATABASE": f"sqlite+aiosqlite:///{database}"}
-
-        # Running the server via uvicorn directly as a Python function throws
-        # "RuntimeError: asyncio.run() cannot be called from a running event
-        # loop".
-        process = Popen(
-            ["acronyms", "--port", str(port)],
-            env={**os.environ, **util.mock_environment(environment)},
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-        )
-
-        util.wait_for_server(url)
+        process, url = util.start_server(database)
         yield url
         process.terminate()
         database.unlink()
