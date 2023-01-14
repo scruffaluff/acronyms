@@ -12,6 +12,7 @@ from subprocess import Popen
 from typing import cast, Dict, Optional, Tuple
 
 from fastapi.testclient import TestClient
+import httpx
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -78,7 +79,7 @@ def upload_acronyms(
 
     if client is None:
         for acronym in acronyms:
-            response = requests.post(f"{endpoint}/api/acronym", json=acronym)
+            response = httpx.post(f"{endpoint}/api/acronym", json=acronym)
             response.raise_for_status()
     else:
         for acronym in acronyms:

@@ -2,8 +2,8 @@
 
 
 from fastapi.testclient import TestClient
+from httpx import HTTPStatusError
 import pytest
-from requests.exceptions import HTTPError
 
 
 def test_delete_acronym(client: TestClient) -> None:
@@ -23,7 +23,7 @@ def test_delete_acronym(client: TestClient) -> None:
 def test_delete_missing_acronym(client: TestClient) -> None:
     """Deletion of a nonexistant acronym throws an HTTP 404 Error."""
     response = client.delete("/api/acronym/9999")
-    with pytest.raises(HTTPError):
+    with pytest.raises(HTTPStatusError):
         response.raise_for_status()
 
 
@@ -59,7 +59,7 @@ def test_get_pagination_default(client: TestClient) -> None:
 def test_get_acronym_error(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     response = client.get("/api/acronym?limit=100")
-    with pytest.raises(HTTPError):
+    with pytest.raises(HTTPStatusError):
         response.raise_for_status()
 
 
@@ -94,7 +94,7 @@ def test_post_duplicate(client: TestClient) -> None:
     response_1.raise_for_status()
 
     response_2 = client.post("/api/acronym", json=body)
-    with pytest.raises(HTTPError):
+    with pytest.raises(HTTPStatusError):
         response_2.raise_for_status()
 
 
@@ -122,5 +122,5 @@ def test_put_duplicate(client: TestClient) -> None:
         key: value for key, value in get_response.json().items() if key != "id"
     }
     put_response = client.put("/api/acronym/2", json=body)
-    with pytest.raises(HTTPError):
+    with pytest.raises(HTTPStatusError):
         put_response.raise_for_status()
