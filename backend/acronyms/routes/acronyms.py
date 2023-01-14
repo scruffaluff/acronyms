@@ -1,6 +1,7 @@
 """Acronyms REST API endpoints."""
 
 
+import sys
 from typing import cast, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
@@ -17,9 +18,13 @@ from acronyms.schemas import AcronymBody
 router = APIRouter()
 
 
-@router.delete("/acronym/{id}")
+@router.delete(
+    "/acronym/{id}", responses={404: {"description": "Acronym entry not found"}}
+)
 async def delete_acronym(
-    id: int = Path(description="Identifier of acronym to remove", ge=0),
+    id: int = Path(
+        description="Identifier of acronym to remove", ge=0, le=sys.maxsize
+    ),
     session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
     """Insert an acronym to database."""
@@ -27,7 +32,7 @@ async def delete_acronym(
     try:
         acronym = (await session.execute(statement)).scalar_one()
     except NoResultFound as exception:
-        raise HTTPException(status_code=400, detail=str(exception))
+        raise HTTPException(status_code=404, detail=str(exception))
 
     await session.delete(acronym)
     await session.commit()
@@ -39,7 +44,7 @@ async def delete_acronym(
 @decorator.cache(expire=60, namespace="acronyms")
 async def get_acronym(
     response: Response,
-    id: Optional[int] = None,
+    id: Optional[int] = Query(default=None, ge=0, le=sys.maxsize),
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
     limit: int = Query(
@@ -48,7 +53,7 @@ async def get_acronym(
         gt=0,
         le=50,
     ),
-    offset: int = Query(default=0, ge=0),
+    offset: int = Query(default=0, ge=0, le=sys.maxsize),
     order: Optional[AcronymColumn] = None,
     session: AsyncSession = Depends(models.get_session),
 ) -> Union[Acronym, List[Acronym], None]:
@@ -81,7 +86,9 @@ async def get_acronym(
     return result.scalars().all()
 
 
-@router.post("/acronym")
+@router.post(
+    "/acronym", responses={409: {"description": "Duplicate acronym request"}}
+)
 async def post_acronym(
     acronym: AcronymBody, session: AsyncSession = Depends(models.get_session)
 ) -> int:
@@ -96,13 +103,16 @@ async def post_acronym(
         # Id is not None since session committed the acronym.
         return cast(int, acronym_.id)
     except IntegrityError as exception:
-        raise HTTPException(status_code=400, detail=str(exception))
+        raise HTTPException(status_code=409, detail=str(exception))
 
 
-@router.put("/acronym/{id}")
+@router.put(
+    "/acronym/{id}",
+    responses={409: {"description": "Duplicate acronym request"}},
+)
 async def put_acronym(
-    id: int,
     body: AcronymBody,
+    id: int = Path(ge=0, le=sys.maxsize),
     session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
     """Get all matching acronyms."""
@@ -117,5 +127,5 @@ async def put_acronym(
         await session.commit()
         await FastAPICache.clear(namespace="acronyms")
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="Duplicate acronym request")
+        raise HTTPException(status_code=409, detail="Duplicate acronym request")
     return {"ok": True}

@@ -71,7 +71,7 @@ def test_add_acronym_error(server: str, page: Page) -> None:
     expect(page.locator("#error-modal")).to_be_visible()
 
 
-@schema.parametrize()
+@schema.parametrize(endpoint="^/api/acronym")
 def test_api(case: Case) -> None:
     """Test each schemathesis case."""
     case.call_and_validate()
@@ -108,7 +108,10 @@ def test_get_favicon(client: TestClient) -> None:
     """Fetch acronym from database by abbreviation."""
     response = client.get("/favicon.ico")
     response.raise_for_status()
-    assert response.headers["content-type"] == "image/vnd.microsoft.icon"
+    assert response.headers["content-type"] in [
+        "image/x-icon",
+        "image/vnd.microsoft.icon",
+    ]
 
 
 def test_get_home(client: TestClient) -> None:

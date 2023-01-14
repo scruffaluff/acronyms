@@ -23,7 +23,8 @@ def test_delete_acronym(client: TestClient) -> None:
 def test_delete_missing_acronym(client: TestClient) -> None:
     """Deletion of a nonexistant acronym throws an HTTP 404 Error."""
     response = client.delete("/api/acronym/9999")
-    response.raise_for_status()
+    with pytest.raises(HTTPError):
+        response.raise_for_status()
 
 
 def test_get_acronym(client: TestClient) -> None:
