@@ -23,6 +23,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-vue": "^9.4.0",
     "eslint-plugin-vuejs-accessibility": "^1.2.0",
+    "maildev": "^2.0.5",
     "rollup-plugin-visualizer": "^5.8.3",
     "sass": "^1.55.0",
     "taze": "^0.8.0",
@@ -33,7 +34,7 @@
   "private": true,
   "scripts": {
     "build": "vue-tsc --noEmit && vite build --emptyOutDir",
-    "dev": "concurrently --kill-others --names 'backend,frontend' 'poetry run python scripts/wait_folder.py && poetry run acronyms --reload --reload-dir backend/acronyms' 'vite build --watch --mode development'",
+    "dev": "./scripts/serve_devsite.sh",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
     "lint:fix": "eslint --fix --ext js,ts,vue frontend",

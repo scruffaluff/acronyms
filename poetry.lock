@@ -1294,6 +1294,24 @@ files = [
 ]
 
 [[package]]
+name = "jinja2"
+version = "3.1.2"
+description = "A very fast and expressive template engine."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
+    {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
+]
+
+[package.dependencies]
+MarkupSafe = ">=2.0"
+
+[package.extras]
+i18n = ["Babel (>=2.7)"]
+
+[[package]]
 name = "jsonschema"
 version = "4.17.3"
 description = "An implementation of JSON Schema validation for Python"
@@ -2349,6 +2367,25 @@ hiredis = ["hiredis (>=1.0.0)"]
 ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
 
 [[package]]
+name = "redmail"
+version = "0.5.0"
+description = "Email sending library"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "redmail-0.5.0-py3-none-any.whl", hash = "sha256:7803260b79ce2c54f8dfffd22fb5a655b5e54ba46e7f5fc38352597ca504fcf6"},
+    {file = "redmail-0.5.0.tar.gz", hash = "sha256:29f362a89ff03a561c2f7fccfc9cf583c0b8d53f2cb126b2a7d42092e72dc070"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+
+[package.extras]
+docs = ["pydata-sphinx-theme", "sphinx (>=1.7.5)", "sphinx-book-theme", "sphinx-copybutton", "sphinx-material"]
+test = ["Pillow", "jinja2", "matplotlib", "openpyxl", "pandas", "pytest"]
+
+[[package]]
 name = "requests"
 version = "2.28.1"
 description = "Python HTTP for Humans."
@@ -3102,4 +3139,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9.0"
-content-hash = "21c98c88d4cb895b9ae49d51644534a5e78178ff45b1967ea3b6aabab69c3338"
+content-hash = "63ec8e2c66478d09535b4135b6b28a8820002b2ff2e763efd960cfc084ba5a9d"
