@@ -4,3 +4,5 @@
 
 ---
 failure-threshold: none
+ignored:
+  - DL3018
