@@ -44,6 +44,8 @@
       <span
         class="icon mr-5 is-clickable"
         data-tooltip="Edit"
+        role="button"
+        tabindex="-1"
         @click="beginEdit()"
       >
         <i class="fas fa-pencil"></i>
@@ -51,6 +53,8 @@
       <span
         class="icon is-clickable"
         data-tooltip="Delete"
+        role="button"
+        tabindex="-1"
         @click="beginRemove()"
       >
         <i class="fas fa-trash-can"></i>
