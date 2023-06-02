@@ -2,7 +2,7 @@
 
 
 import sys
-from typing import cast, Dict, List, Optional, Union
+from typing import cast, Dict, Optional, Sequence, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from fastapi_cache import decorator, FastAPICache
@@ -56,7 +56,7 @@ async def get_acronym(
     offset: int = Query(default=0, ge=0, le=sys.maxsize),
     order: Optional[AcronymColumn] = None,
     session: AsyncSession = Depends(models.get_session),
-) -> Union[Acronym, List[Acronym], None]:
+) -> Union[Acronym, Sequence[Acronym], None]:
     """Get all matching acronyms."""
     if id is not None:
         return await session.get(Acronym, id)
