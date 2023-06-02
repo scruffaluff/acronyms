@@ -1,4 +1,4 @@
-FROM node:20.2.0-alpine3.18 as frontend
+FROM node:20.2.0-alpine3.17 as frontend
 ARG TARGETARCH
 
 WORKDIR /repo
@@ -7,12 +7,12 @@ COPY . .
 
 RUN npm ci && npm run build
 
-FROM python:3.11.3-alpine3.18 as backend
+FROM python:3.11.3-alpine3.17 as backend
 ARG TARGETARCH
 
 RUN apk add --no-cache gcc musl-dev postgresql-dev python3-dev
 
-RUN adduser --disabled-password --uid 1000 acronyms \
+RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \
     && chown acronyms:acronyms /app
 

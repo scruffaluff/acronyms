@@ -62,3 +62,4 @@ spec:
               drop:
                 - NET_RAW
             runAsNonRoot: true
+            runAsUser: 10000

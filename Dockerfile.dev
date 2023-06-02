@@ -1,9 +1,9 @@
-FROM python:3.11.3-alpine3.18
+FROM python:3.11.3-alpine3.17
 ARG TARGETARCH
 
 RUN apk add --no-cache curl gcc musl-dev nodejs npm poetry postgresql-dev python3-dev
 
-RUN adduser --disabled-password --uid 1000 acronyms \
+RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \
     && chown acronyms:acronyms /app
 
