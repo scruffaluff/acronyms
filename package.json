@@ -34,7 +34,7 @@
   "private": true,
   "scripts": {
     "build": "vue-tsc --noEmit && vite build --emptyOutDir",
-    "dev": "./scripts/serve_devsite.sh",
+    "dev": "node scripts/serve_devsite.js",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
     "lint:fix": "eslint --fix --ext js,ts,vue src/frontend",
