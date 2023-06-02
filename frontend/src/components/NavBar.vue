@@ -15,9 +15,12 @@
         </div>
         <div class="navbar-item">
           <span
+            :aria-checked="isDark"
             :class="isDark ? 'is-dark' : 'is-light'"
             class="has-tooltip-bottom"
             data-tooltip="Toggle Color Scheme"
+            role="switch"
+            tabindex="-1"
             @click="toggleDark()"
           >
             <i :class="isDark ? 'fa-moon' : 'fa-sun'" class="fas mr-2"></i>

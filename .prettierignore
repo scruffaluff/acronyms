@@ -22,3 +22,4 @@ poetry.lock
 site/
 stats.html
 templates/
+web/

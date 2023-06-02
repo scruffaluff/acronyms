@@ -2,16 +2,14 @@
 #
 # For more information, visit https://docs.tilt.dev.
 
-local_resource("setup", "./scripts/create_cluster.sh")
-
 docker_build(
     "scruffaluff/acronyms",
     ".",
-    dockerfile="Dockerfile",
-    # live_update=[
-    #     sync("./backend", "/repo/src"),
-    #     sync("./frontend", "/repo/src"),
-    # ],
+    dockerfile="Dockerfile.dev",
+    live_update=[
+        sync("./backend", "/app/backend"),
+        sync("./frontend", "/app/frontend"),
+    ],
 )
 
 yaml = helm(

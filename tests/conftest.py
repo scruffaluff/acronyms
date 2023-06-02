@@ -2,27 +2,36 @@
 
 
 from argparse import BooleanOptionalAction
-import json
 import os
 from pathlib import Path
+import secrets
 import subprocess
-from subprocess import Popen
-from typing import Iterator
+import tempfile
+from typing import cast, Iterator, Tuple
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
 from psycopg import Connection
 import pytest
 from pytest import Parser
-import sqlalchemy
-from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import Session
+from pytest_mock import MockerFixture
+import schemathesis
+from schemathesis.specs.openapi.schemas import BaseOpenAPISchema
+from sqlalchemy.ext import asyncio
 
-from acronyms.models import Acronym, Base, get_db
 from tests import util
 
 
-DATA_PATH = Path(__file__).parent / "data"
+@pytest.fixture
+def access_token(client: TestClient, user: Tuple[str, str]) -> str:
+    """Get access token for new user."""
+    response = client.post(
+        "/auth/login",
+        data={"username": user[0], "password": user[1]},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    response.raise_for_status()
+    return cast(str, response.json()["access_token"])
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -38,14 +47,20 @@ def build(request: SubRequest) -> None:
 
 
 @pytest.fixture
-def client(database: Session) -> TestClient:
+def client(connection: str, mocker: MockerFixture) -> Iterator[TestClient]:
     """Fast API test client."""
-    # App import placed here since it depends on prebuilt Node assets, which are
-    # not required for end to end tests.
-    from acronyms.site import app
+    environment = util.mock_environment({"ACRONYMS_DATABASE": connection})
+    mocker.patch.dict(os.environ, environment)
+    mocker.patch(
+        "acronyms.models.get_engine",
+        lambda: asyncio.create_async_engine(connection, future=True),
+    )
 
-    app.dependency_overrides[get_db] = lambda: database
-    return TestClient(app)
+    from acronyms.main import app
+
+    with TestClient(app) as client:
+        util.upload_acronyms(client=client)
+        yield client
 
 
 @pytest.fixture
@@ -54,23 +69,17 @@ def connection(postgresql: Connection) -> str:
     user = postgresql.info.user
     address = f"{postgresql.info.host}:{postgresql.info.port}"
     name = postgresql.info.dbname
-    return f"postgresql://{user}:@{address}/{name}"
+    return f"postgresql+asyncpg://{user}:@{address}/{name}"
 
 
-@pytest.fixture
-def database(session: Session) -> Session:
-    """Connection URI for temporary PostgreSQL database."""
-    acronyms = json.loads((DATA_PATH / "acronyms.json").read_text())
-    for acronym in acronyms:
-        session.add(Acronym(**acronym))
-    session.commit()
-    return session
-
-
-@pytest.fixture
-def engine(connection: str) -> Engine:
-    """Engine for temporary PostgreSQL database."""
-    return sqlalchemy.create_engine(connection)
+@pytest.fixture(scope="session")
+def openapi_schema() -> Iterator[BaseOpenAPISchema]:
+    """Load OpenAPI schema from server into Schemathesis."""
+    database = Path(tempfile.mkdtemp()) / "acronyms_test.db"
+    process, url = util.start_server(database)
+    yield schemathesis.from_uri(f"{url}/openapi.json")
+    process.terminate()
+    database.unlink()
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -94,37 +103,25 @@ def pytest_addoption(parser: Parser) -> None:
 def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
     """Compile frontend assets and starts backend server."""
     if request.config.getoption("--chart"):
-        server_ = "https://acronyms.127-0-0-1.nip.io"
-        util.clear_acronyms(server_)
-        yield server_
+        url = "https://acronyms.127-0-0-1.nip.io"
+        util.clear_acronyms(url)
+        yield url
     else:
         database = tmp_path / "acronyms_test.db"
-        port = util.find_port()
-        url = f"http://localhost:{port}"
-
-        # Running the server via uvicorn directly as a Python function throws
-        # "RuntimeError: asyncio.run() cannot be called from a running event
-        # loop".
-        process = Popen(
-            ["acronyms", "--port", str(port)],
-            env=dict(
-                **os.environ, **{"ACRONYMS_DATABASE": f"sqlite:///{database}"}
-            ),
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-        )
-
-        util.wait_for_server(url)
+        process, url = util.start_server(database)
         yield url
         process.terminate()
+        database.unlink()
 
 
 @pytest.fixture
-def session(engine: Engine) -> Iterator[Session]:
-    """Session for temporary PostgreSQL database."""
-    Base.metadata.create_all(engine)
-    # Mypy claims Session has no attribute __enter__, which is incorrect as
-    # shown at
-    # https://github.com/sqlalchemy/sqlalchemy/blob/52e8545b2df312898d46f6a5b119675e8d0aa956/lib/sqlalchemy/orm/session.py#L1156.
-    with Session(engine) as session:  # type: ignore
-        yield session
+def user(client: TestClient) -> Tuple[str, str]:
+    """Create new user in application."""
+    email = "fake.user@mail.com"
+    password = secrets.token_urlsafe(16)
+
+    response = client.post(
+        "/auth/register", json={"email": email, "password": password}
+    )
+    response.raise_for_status()
+    return email, password

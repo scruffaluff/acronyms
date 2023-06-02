@@ -1,0 +1,22 @@
+FROM python:3.11.3-alpine3.17
+ARG TARGETARCH
+
+RUN apk add --no-cache curl gcc musl-dev nodejs npm poetry postgresql-dev python3-dev
+
+RUN adduser --disabled-password --uid 10000 acronyms \
+    && mkdir /app \
+    && chown acronyms:acronyms /app
+
+USER acronyms
+WORKDIR /app
+ENV \
+    HOME=/home/acronyms \
+    PATH="/home/acronyms/.local/bin:${PATH}" \
+    POETRY_VIRTUALENVS_IN_PROJECT=true
+
+COPY --chown=acronyms . /app
+
+RUN npm ci && poetry install --only main
+
+EXPOSE 8000
+ENTRYPOINT ["npm", "run", "dev"]

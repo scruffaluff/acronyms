@@ -19,7 +19,13 @@
       </div>
     </div>
     <div class="container column">
-      <a id="add" class="button is-primary" @click="beginAdd()">
+      <a
+        id="add"
+        class="button is-primary"
+        role="button"
+        tabindex="-1"
+        @click="beginAdd()"
+      >
         <strong>Add</strong>
       </a>
     </div>
@@ -42,6 +48,8 @@
               :class="{ 'has-text-primary': lastSort == column.name }"
               class="icon is-clickable is-small has-tooltip-right"
               data-tooltip="Sort"
+              role="button"
+              tabindex="-1"
               @keyup.ctrl.a="beginAdd()"
               @click="switchSort(column.name)"
             >

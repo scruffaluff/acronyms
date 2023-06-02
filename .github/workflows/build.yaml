@@ -27,13 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Python interpreter
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - name: Cache Python packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: backend/.venv
           key: python-3.10_poetry-${{ hashFiles('poetry.lock') }}
@@ -45,7 +45,7 @@ jobs:
       - name: Lint code
         run: |
           poetry run black --check .
-          poetry run pflake8 .
+          poetry run flake8 .
           poetry run mypy .
 
   lint-chart:
@@ -56,9 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Lint Dockerfiles
-        uses: hadolint/hadolint-action@v2.1.0
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           recursive: true
       - name: Install Helm
@@ -75,16 +75,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Node interpreter
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: Cache Node packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-18_npm-${{ hashFiles('package-lock.json') }}
+          key: node-20_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
       - name: Build frontend assets
@@ -100,13 +100,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Python interpreter
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - name: Cache Python packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: python-3.10_poetry-${{ hashFiles('poetry.lock') }}
@@ -117,14 +117,14 @@ jobs:
           poetry install --verbose
           poetry run playwright install --with-deps chromium
       - name: Install Node interpreter
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: "18.10"
+          node-version: 20
       - name: Cache Node packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-18.10_npm-${{ hashFiles('package-lock.json') }}
+          key: node-20_npm-${{ hashFiles('package-lock.json') }}
       - name: Install Node packages
         run: npm ci
       - name: Run test suite

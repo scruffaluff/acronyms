@@ -1,4 +1,5 @@
-FROM node:18.10.0 as frontend
+FROM node:20.2.0-alpine3.17 as frontend
+ARG TARGETARCH
 
 WORKDIR /repo
 
@@ -6,11 +7,12 @@ COPY . .
 
 RUN npm ci && npm run build
 
-FROM python:3.10.8
-
+FROM python:3.11.3-alpine3.17 as backend
 ARG TARGETARCH
 
-RUN adduser --disabled-password --uid 1000 acronyms \
+RUN apk add --no-cache gcc musl-dev postgresql-dev python3-dev
+
+RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \
     && chown acronyms:acronyms /app
 
@@ -20,12 +22,17 @@ ENV \
     HOME=/home/acronyms \
     PATH="/home/acronyms/.local/bin:${PATH}"
 
-COPY --chown=acronyms --from=frontend /repo/dist /app/dist
 COPY --chown=acronyms . "${HOME}/repo"
+COPY --chown=acronyms --from=frontend \
+    /repo/backend/acronyms/web "${HOME}/repo/backend/acronyms/web"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user "${HOME}/repo" \
     && rm -fr "${HOME}/repo"
 
+USER root
+RUN apk del gcc musl-dev postgresql-dev python3-dev
+
+USER acronyms
 EXPOSE 8000
 ENTRYPOINT ["acronyms", "--host", "0.0.0.0"]

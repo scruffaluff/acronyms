@@ -3,13 +3,22 @@
 
 import json
 import logging
+import os
 from pathlib import Path
+import secrets
 import socket
-from typing import cast
+import subprocess
+from subprocess import Popen
+from typing import cast, Dict, Optional, Tuple
 
+from fastapi.testclient import TestClient
+import httpx
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
+
+
+DATA_PATH = Path(__file__).parent / "data"
 
 
 def clear_acronyms(server: str) -> None:
@@ -30,14 +39,52 @@ def find_port() -> int:
     return cast(int, sock.getsockname()[1])
 
 
-def upload_acronyms(endpoint: str) -> None:
+def mock_environment(variables: Dict[str, str]) -> Dict[str, str]:
+    """Generate mock environment variables for testing."""
+    return {
+        **{
+            "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
+            "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
+        },
+        **variables,
+    }
+
+
+def start_server(database: Path) -> Tuple[Popen, str]:
+    """Start server for testing."""
+    port = find_port()
+    url = f"http://localhost:{port}"
+    environment = {"ACRONYMS_DATABASE": f"sqlite+aiosqlite:///{database}"}
+
+    # Running the server via uvicorn directly as a Python function throws
+    # "RuntimeError: asyncio.run() cannot be called from a running event
+    # loop".
+    process = Popen(
+        ["acronyms", "--port", str(port)],
+        env={**os.environ, **mock_environment(environment)},
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+
+    wait_for_server(url)
+    return process, url
+
+
+def upload_acronyms(
+    client: Optional[TestClient] = None, endpoint: Optional[str] = None
+) -> None:
     """Import acronyms to backend for easier manual frontend interaction."""
-    data_path = Path(__file__).parents[1] / "tests/data/acronyms.json"
+    data_path = DATA_PATH / "acronyms.json"
     acronyms = json.loads(data_path.read_text())
 
-    for acronym in acronyms:
-        response = requests.post(f"{endpoint}/api/acronym", json=acronym)
-        response.raise_for_status()
+    if client is None:
+        for acronym in acronyms:
+            response = httpx.post(f"{endpoint}/api/acronym", json=acronym)
+            response.raise_for_status()
+    else:
+        for acronym in acronyms:
+            response = client.post("/api/acronym", json=acronym)
+            response.raise_for_status()
 
 
 def wait_for_server(url: str) -> None:
