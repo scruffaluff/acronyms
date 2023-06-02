@@ -52,7 +52,7 @@ jobs:
     name: Check chart code with linters
     defaults:
       run:
-        working-directory: chart
+        working-directory: src/chart
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository

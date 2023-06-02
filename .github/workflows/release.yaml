@@ -46,7 +46,7 @@ jobs:
         uses: azure/setup-helm@v3
       - name: Package Helm chart
         run: |
-          helm package chart
+          helm package src/chart
           helm repo index .
 
   image:

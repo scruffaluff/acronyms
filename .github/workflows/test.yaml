@@ -62,8 +62,8 @@ jobs:
       - name: Deploy Helm release and wait for pods to become ready
         run: |
           helm --namespace acronyms install \
-            --values chart/values_ci.yaml \
-            acronyms ./chart
+            --values src/chart/values_ci.yaml \
+            acronyms ./src/chart
           kubectl --namespace acronyms wait \
             --for=condition=ready pods \
             --selector=app.kubernetes.io/name=acronyms \
