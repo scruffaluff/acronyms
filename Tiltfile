@@ -7,15 +7,15 @@ docker_build(
     ".",
     dockerfile="Dockerfile.dev",
     live_update=[
-        sync("./backend", "/app/backend"),
-        sync("./frontend", "/app/frontend"),
+        sync("./src/acronyms", "/app/src/acronyms"),
+        sync("./src/frontend", "/app/src/frontend"),
     ],
 )
 
 yaml = helm(
-    "./chart",
+    "./src/chart",
     name="acronyms",
     namespace="acronyms",
-    values=["./chart/values_local.yaml"],
+    values=["./src/chart/values_local.yaml"],
 )
 k8s_yaml(yaml)

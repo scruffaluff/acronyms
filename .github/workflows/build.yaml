@@ -35,7 +35,7 @@ jobs:
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
-          path: backend/.venv
+          path: .venv
           key: python-3.10_poetry-${{ hashFiles('poetry.lock') }}
       - name: Install Python packages
         run: |

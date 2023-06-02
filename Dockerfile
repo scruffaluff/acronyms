@@ -24,7 +24,7 @@ ENV \
 
 COPY --chown=acronyms . "${HOME}/repo"
 COPY --chown=acronyms --from=frontend \
-    /repo/backend/acronyms/web "${HOME}/repo/backend/acronyms/web"
+    /repo/src/acronyms/web "${HOME}/repo/src/acronyms/web"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user "${HOME}/repo" \

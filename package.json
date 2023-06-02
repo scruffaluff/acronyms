@@ -37,8 +37,8 @@
     "dev": "./scripts/serve_devsite.sh",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
-    "lint:fix": "eslint --fix --ext js,ts,vue frontend",
-    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 frontend",
+    "lint:fix": "eslint --fix --ext js,ts,vue src/frontend",
+    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 src/frontend",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"
   },

@@ -37,7 +37,7 @@ node_modules/
 nohup.out
 Pipfile
 Pipfile.lock
-public/
+assets/
 requirements.lock
 requirements.txt
 setup.py

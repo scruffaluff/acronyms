@@ -9,15 +9,15 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     emptyOutDir: false,
-    outDir: "../../backend/acronyms/web",
+    outDir: "../acronyms/web",
   },
   // Rollup plugin visualizer should be the last plugin.
   plugins: [vue(), visualizer()],
-  publicDir: "../public",
+  publicDir: "../../assets",
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("frontend/src", import.meta.url)),
+      "@": fileURLToPath(new URL("src/frontend", import.meta.url)),
     },
   },
-  root: "frontend/src",
+  root: "src/frontend",
 });

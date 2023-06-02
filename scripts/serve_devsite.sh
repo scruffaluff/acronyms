@@ -25,6 +25,6 @@ export ACRONYMS_VERIFICATION_TOKEN
 npx vite build --mode development
 
 npx concurrently --kill-others --names 'backend,email,frontend' \
-  'poetry run acronyms --reload --reload-dir backend/acronyms' \
+  'poetry run acronyms --reload --reload-dir src/acronyms' \
   "maildev --incoming-user ${ACRONYMS_SMTP_USERNAME} --incoming-pass ${ACRONYMS_SMTP_PASSWORD}" \
   'vite build --watch --mode development'

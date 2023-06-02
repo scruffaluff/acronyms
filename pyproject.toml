@@ -34,9 +34,9 @@ exclude = [
     ".hypothesis/",
     ".pytest_cache/",
     ".venv/",
-    "backend/alembic",
     "dist/",
     "node_modules/",
+    "src/migration/",
     "tmp/",
     "web/"
 ]
@@ -59,9 +59,6 @@ homepage = "https://gitlab.com/scruffaluff/acronyms"
 keywords = []
 license = "MIT"
 name = "acronyms"
-packages = [
-    { from = "backend", include = "acronyms" }
-]
 version = "0.1.0"
 
 [tool.poetry.dependencies]

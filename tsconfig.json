@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "paths": {
-      "@/*": ["./frontend/src/*"]
+      "@/*": ["./src/frontend/*"]
     },
     "resolveJsonModule": true,
     "sourceMap": true,
@@ -23,9 +23,9 @@
     "useDefineForClassFields": true
   },
   "include": [
-    "frontend/src/**/*.d.ts",
-    "frontend/src/**/*.ts",
-    "frontend/src/**/*.tsx",
-    "frontend/src/**/*.vue"
+    "src/frontend/**/*.d.ts",
+    "src/frontend/**/*.ts",
+    "src/frontend/**/*.tsx",
+    "src/frontend/**/*.vue"
   ]
 }

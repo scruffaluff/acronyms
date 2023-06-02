@@ -11,9 +11,9 @@ exclude =
     .mypy_cache/
     .pytest_cache/
     .venv/
-    backend/alembic/
     dist/
     node_modules/
+    src/migration/
     template/
     tmp/
     web/
