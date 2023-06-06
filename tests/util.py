@@ -44,22 +44,42 @@ def mock_environment(variables: Dict[str, str]) -> Dict[str, str]:
     return {
         **{
             "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
+            "ACRONYMS_SMTP_HOST": "127.0.0.1",
+            "ACRONYMS_SMTP_PASSWORD": secrets.token_urlsafe(32),
+            "ACRONYMS_SMTP_PORT": "1025",
+            "ACRONYMS_SMTP_TLS": "false",
+            "ACRONYMS_SMTP_USERNAME": "user@smtp.test",
             "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
         },
         **variables,
     }
 
 
-def start_server(database: Path) -> Tuple[Popen, str]:
+def start_server(database: Path) -> Tuple[Popen, Popen, str]:
     """Start server for testing."""
     port = find_port()
     url = f"http://localhost:{port}"
-    environment = {"ACRONYMS_DATABASE": f"sqlite+aiosqlite:///{database}"}
+    environment = mock_environment(
+        {"ACRONYMS_DATABASE": f"sqlite+aiosqlite:///{database}"}
+    )
+
+    mail = Popen(
+        [
+            "npx",
+            "maildev",
+            "--incoming-user",
+            environment["ACRONYMS_SMTP_USERNAME"],
+            "--incoming-pass",
+            environment["ACRONYMS_SMTP_PASSWORD"],
+        ],
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
 
     # Running the server via uvicorn directly as a Python function throws
     # "RuntimeError: asyncio.run() cannot be called from a running event
     # loop".
-    process = Popen(
+    backend = Popen(
         ["acronyms", "--port", str(port)],
         env={**os.environ, **mock_environment(environment)},
         stderr=subprocess.PIPE,
@@ -67,7 +87,7 @@ def start_server(database: Path) -> Tuple[Popen, str]:
     )
 
     wait_for_server(url)
-    return process, url
+    return backend, mail, url
 
 
 def upload_acronyms(

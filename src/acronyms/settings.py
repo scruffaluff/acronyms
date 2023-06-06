@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     )
     page_size: int = 10
     reset_token: SecretStr
+    smtp_host: str
+    smtp_password: SecretStr
+    smtp_port: int = 25
+    smtp_tls: bool = True
+    smtp_username: str
     verification_token: SecretStr
 
     class Config:

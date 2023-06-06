@@ -4,7 +4,6 @@
 from argparse import BooleanOptionalAction
 import os
 from pathlib import Path
-import secrets
 import subprocess
 import tempfile
 from typing import cast, Iterator, Tuple
@@ -76,9 +75,10 @@ def connection(postgresql: Connection) -> str:
 def openapi_schema() -> Iterator[BaseOpenAPISchema]:
     """Load OpenAPI schema from server into Schemathesis."""
     database = Path(tempfile.mkdtemp()) / "acronyms_test.db"
-    process, url = util.start_server(database)
+    backend, mail, url = util.start_server(database)
     yield schemathesis.from_uri(f"{url}/openapi.json")
-    process.terminate()
+    backend.terminate()
+    mail.terminate()
     database.unlink()
 
 
@@ -108,17 +108,19 @@ def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
         yield url
     else:
         database = tmp_path / "acronyms_test.db"
-        process, url = util.start_server(database)
+        backend, mail, url = util.start_server(database)
         yield url
-        process.terminate()
+        backend.terminate()
+        mail.terminate()
         database.unlink()
 
 
 @pytest.fixture
 def user(client: TestClient) -> Tuple[str, str]:
     """Create new user in application."""
-    email = "fake.user@mail.com"
-    password = secrets.token_urlsafe(16)
+    environment = util.mock_environment({})
+    email = environment["ACRONYMS_SMTP_USERNAME"]
+    password = environment["ACRONYMS_SMTP_PASSWORD"]
 
     response = client.post(
         "/auth/register", json={"email": email, "password": password}
