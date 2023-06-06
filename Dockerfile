@@ -10,7 +10,7 @@ RUN npm ci && npm run build
 FROM python:3.11.3-alpine3.17 as backend
 ARG TARGETARCH
 
-RUN apk add --no-cache gcc musl-dev postgresql-dev python3-dev
+RUN apk add --no-cache gcc libffi-dev musl-dev postgresql-dev python3-dev
 
 RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \

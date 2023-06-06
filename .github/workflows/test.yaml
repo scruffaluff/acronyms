@@ -54,21 +54,9 @@ jobs:
           bash scripts/install_dependencies.sh
           mkcert -install
       - name: Create K3d Kubernetes cluster
-        run: bash scripts/create_cluster.sh
-      - name: Build and push Docker images
-        run: |
-          image='registry.localhost:5001/scruffaluff/acronyms:latest'
-          docker build -t "${image}" .
-          docker push "${image}"
+        run: bash scripts/cluster.sh create
       - name: Deploy Helm release and wait for pods to become ready
-        run: |
-          helm --namespace acronyms install \
-            --values src/chart/values_ci.yaml \
-            acronyms ./src/chart
-          kubectl --namespace acronyms wait \
-            --for=condition=ready pods \
-            --selector=app.kubernetes.io/name=acronyms \
-            --timeout=300s
+        run: bash scripts/cluster.sh deploy
       - name: Run Helm chart test suite
         run: |
           export REQUESTS_CA_BUNDLE="$(mkcert -CAROOT)/rootCA.pem"
