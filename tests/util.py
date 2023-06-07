@@ -9,6 +9,7 @@ import secrets
 import socket
 import subprocess
 from subprocess import Popen
+import tempfile
 from typing import cast, Dict, Optional, Tuple
 
 from fastapi.testclient import TestClient
@@ -16,6 +17,8 @@ import httpx
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
+
+from acronyms.settings import DatabaseUrl, Settings
 
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -39,38 +42,49 @@ def find_port() -> int:
     return cast(int, sock.getsockname()[1])
 
 
-def mock_environment(variables: Dict[str, str]) -> Dict[str, str]:
-    """Generate mock environment variables for testing."""
+def mock_settings() -> Settings:
+    """Generate application settings for test suite."""
+    sqlite_path = Path(tempfile.mkdtemp()) / "acronyms_test.db"
+    database = DatabaseUrl(
+        f"sqlite+aiosqlite:///{sqlite_path}", scheme="sqlite"
+    )
+    server_port = find_port()
+    smtp_port = find_port()
+
+    return Settings(
+        database=database,
+        port=server_port,
+        reset_token=secrets.token_urlsafe(64),
+        smtp_host="127.0.0.1",
+        smtp_password=secrets.token_urlsafe(32),
+        smtp_port=smtp_port,
+        smtp_tls=False,
+        smtp_username="admin.user@smtp.test",
+        verification_token=secrets.token_urlsafe(64),
+    )
+
+
+def settings_variables(settings: Settings) -> Dict[str, str]:
+    """Convert settings to equivalent environment variables."""
+    prefix = settings.Config.env_prefix
     return {
-        **{
-            "ACRONYMS_RESET_TOKEN": secrets.token_urlsafe(64),
-            "ACRONYMS_SMTP_HOST": "127.0.0.1",
-            "ACRONYMS_SMTP_PASSWORD": secrets.token_urlsafe(32),
-            "ACRONYMS_SMTP_PORT": "1025",
-            "ACRONYMS_SMTP_TLS": "false",
-            "ACRONYMS_SMTP_USERNAME": "user@smtp.test",
-            "ACRONYMS_VERIFICATION_TOKEN": secrets.token_urlsafe(64),
-        },
-        **variables,
+        f"{prefix}{key}".upper(): str(value)
+        for key, value in settings.dict().items()
     }
 
 
-def start_server(database: Path) -> Tuple[Popen, Popen, str]:
+def start_server(settings: Settings) -> Tuple[Popen, Popen]:
     """Start server for testing."""
-    port = find_port()
-    url = f"http://localhost:{port}"
-    environment = mock_environment(
-        {"ACRONYMS_DATABASE": f"sqlite+aiosqlite:///{database}"}
-    )
-
     mail = Popen(
         [
             "npx",
             "maildev",
             "--incoming-user",
-            environment["ACRONYMS_SMTP_USERNAME"],
+            settings.smtp_username,
             "--incoming-pass",
-            environment["ACRONYMS_SMTP_PASSWORD"],
+            settings.smtp_password.get_secret_value(),
+            "--port",
+            str(settings.smtp_port),
         ],
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -80,14 +94,14 @@ def start_server(database: Path) -> Tuple[Popen, Popen, str]:
     # "RuntimeError: asyncio.run() cannot be called from a running event
     # loop".
     backend = Popen(
-        ["acronyms", "--port", str(port)],
-        env={**os.environ, **mock_environment(environment)},
+        ["acronyms", "--port", str(settings.port)],
+        env={**os.environ, **settings_variables(settings)},
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
 
-    wait_for_server(url)
-    return backend, mail, url
+    wait_for_server(f"http://localhost:{settings.port}")
+    return backend, mail
 
 
 def upload_acronyms(

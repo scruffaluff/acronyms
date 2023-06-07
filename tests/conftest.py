@@ -2,10 +2,8 @@
 
 
 from argparse import BooleanOptionalAction
-import os
-from pathlib import Path
+import secrets
 import subprocess
-import tempfile
 from typing import cast, Iterator, Tuple
 
 from _pytest.fixtures import SubRequest
@@ -46,13 +44,15 @@ def build(request: SubRequest) -> None:
 
 
 @pytest.fixture
-def client(connection: str, mocker: MockerFixture) -> Iterator[TestClient]:
+def client(mocker: MockerFixture) -> Iterator[TestClient]:
     """Fast API test client."""
-    environment = util.mock_environment({"ACRONYMS_DATABASE": connection})
-    mocker.patch.dict(os.environ, environment)
+    settings = util.mock_settings()
+    mocker.patch("acronyms.settings.settings", lambda: settings)
+    # TODO: Figure out better method to prevent get_engine from being cached
+    # between test functions.
     mocker.patch(
         "acronyms.models.get_engine",
-        lambda: asyncio.create_async_engine(connection, future=True),
+        lambda: asyncio.create_async_engine(settings.database, future=True),
     )
 
     from acronyms.main import app
@@ -74,16 +74,18 @@ def connection(postgresql: Connection) -> str:
 @pytest.fixture(scope="session")
 def openapi_schema() -> Iterator[BaseOpenAPISchema]:
     """Load OpenAPI schema from server into Schemathesis."""
-    database = Path(tempfile.mkdtemp()) / "acronyms_test.db"
-    backend, mail, url = util.start_server(database)
-    yield schemathesis.from_uri(f"{url}/openapi.json")
+    settings = util.mock_settings()
+    backend, mail = util.start_server(settings)
+
+    yield schemathesis.from_uri(
+        f"http://localhost:{settings.port}/openapi.json"
+    )
     backend.terminate()
     mail.terminate()
-    database.unlink()
 
 
 def pytest_addoption(parser: Parser) -> None:
-    """Select whether to run tests against Helm chart."""
+    """Add CLI flag options to test suite."""
     parser.addoption(
         "--build",
         action=BooleanOptionalAction,
@@ -100,27 +102,27 @@ def pytest_addoption(parser: Parser) -> None:
 
 
 @pytest.fixture
-def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
-    """Compile frontend assets and starts backend server."""
+def server(request: SubRequest, mocker: MockerFixture) -> Iterator[str]:
+    """Compile frontend assets and start backend and mail servers."""
     if request.config.getoption("--chart"):
         url = "https://acronyms.127-0-0-1.nip.io"
         util.clear_acronyms(url)
         yield url
     else:
-        database = tmp_path / "acronyms_test.db"
-        backend, mail, url = util.start_server(database)
-        yield url
+        settings = util.mock_settings()
+        mocker.patch("acronyms.settings.settings", lambda: settings)
+        backend, mail = util.start_server(settings)
+
+        yield f"http://localhost:{settings.port}"
         backend.terminate()
         mail.terminate()
-        database.unlink()
 
 
 @pytest.fixture
 def user(client: TestClient) -> Tuple[str, str]:
     """Create new user in application."""
-    environment = util.mock_environment({})
-    email = environment["ACRONYMS_SMTP_USERNAME"]
-    password = environment["ACRONYMS_SMTP_PASSWORD"]
+    email = "basic.user@smtp.test"
+    password = secrets.token_urlsafe(32)
 
     response = client.post(
         "/auth/register", json={"email": email, "password": password}

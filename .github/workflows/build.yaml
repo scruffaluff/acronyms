@@ -47,6 +47,7 @@ jobs:
           poetry run black --check .
           poetry run flake8 .
           poetry run mypy .
+          poetry build
 
   lint-chart:
     name: Check chart code with linters

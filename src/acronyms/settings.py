@@ -45,6 +45,7 @@ class Settings(BaseSettings):
         "sqlite+aiosqlite:///./acronyms.db", scheme="sqlite"
     )
     page_size: int = 10
+    port: int = 8000
     reset_token: SecretStr
     smtp_host: str
     smtp_password: SecretStr
