@@ -3,22 +3,35 @@
 # For more information, visit
 # https://docs.github.com/actions/learn-github-actions.
 
+---
 name: test
 
-# Trigger workflow on push or pull request to the main branche.
+# Makes workflow run on pull request or push to the main or develop branches.
 on:
   pull_request:
     branches:
+      - develop
       - main
   push:
     branches:
+      - develop
       - main
   workflow_dispatch:
     inputs:
       debug:
-        default: "false"
-        description: Use TMate session for debugging on failure
-        required: false
+        default: false
+        description: Use Tmate session for debugging
+        type: boolean
+
+env:
+  NPM_CONFIG_CACHE: "${{ github.workspace }}/.cache/npm"
+  PIP_CACHE_DIR: "${{ github.workspace }}/.cache/pip"
+  PIP_DISABLE_PIP_VERSION_CHECK: "true"
+  PIP_ROOT_USER_ACTION: ignore
+  PLAYWRIGHT_BROWSERS_PATH: "${{ github.workspace }}/.cache/ms-playwright"
+  POETRY_CACHE_DIR: "${{ github.workspace }}/.cache/pypoetry"
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
 
 jobs:
   chart:
@@ -27,25 +40,40 @@ jobs:
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v3
+      - name: Cache packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            .cache
+            .venv
+            node_modules
+          key: >-
+            node-20_python-3.10_${{ runner.os }}_npm-${{
+            hashFiles('package-lock.json') }}_poetry-${{
+            hashFiles('poetry.lock') }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+      - name: Install Node interpreter
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Install Node packages
+        run: |
+          node --version
+          npm --version
+          npm ci
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - name: Cache Python packages
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: >-
-            python-3.10_poetry-${{ hashFiles('poetry.lock') }}
       - name: Install Python packages
         run: |
-          python -m pip install --upgrade pip poetry setuptools wheel
-          poetry config virtualenvs.in-project true
+          python --version
+          python -m pip --version
+          python -m pip install poetry
           poetry lock --check
           poetry install --verbose
-      - name: Install browser and open to create security database
+      - name: Install browser and initialize its security database
         run: |
           poetry run playwright install --with-deps chromium
           poetry run python scripts/open_browser.py
@@ -69,9 +97,9 @@ jobs:
           name: playwright-captures
           path: tests/results
           retention-days: 30
-      - name: Setup tmate session if job failed
+      - name: Setup Tmate session if debug enabled
         if: >-
-          ${{ failure() && github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.debug == 'true' }}
+          ${{ always() && github.event_name == 'workflow_dispatch' &&
+          inputs.debug }}
         timeout-minutes: 60
         uses: mxschmitt/action-tmate@v3
