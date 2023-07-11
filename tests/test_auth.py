@@ -12,8 +12,6 @@ def test_login(
     client: TestClient, user: Tuple[str, str], mocker: MockerFixture
 ) -> None:
     """New regular user is able to login."""
-    mocker.patch("redmail.EmailSender.send")
-
     response = client.post(
         "/auth/login",
         data={"username": user[0], "password": user[1]},
@@ -29,8 +27,6 @@ def test_profile(
     client: TestClient, access_token: str, mocker: MockerFixture
 ) -> None:
     """Access token allows for querying of user information."""
-    mocker.patch("redmail.EmailSender.send")
-
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {access_token}"}
     )

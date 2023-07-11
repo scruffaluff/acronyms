@@ -54,6 +54,7 @@ def client(mocker: MockerFixture) -> Iterator[TestClient]:
         "acronyms.models.get_engine",
         lambda: asyncio.create_async_engine(settings.database, future=True),
     )
+    mocker.patch("redmail.EmailSender.send")
 
     from acronyms.main import app
 
@@ -121,11 +122,12 @@ def server(request: SubRequest, mocker: MockerFixture) -> Iterator[str]:
 @pytest.fixture
 def user(client: TestClient) -> Tuple[str, str]:
     """Create new user in application."""
-    email = "basic.user@smtp.test"
+    email = "fake.user@mail.com"
     password = secrets.token_urlsafe(32)
 
     response = client.post(
-        "/auth/register", json={"email": email, "password": password}
+        "/auth/register",
+        json={"email": email, "password": password},
     )
     response.raise_for_status()
     return email, password
