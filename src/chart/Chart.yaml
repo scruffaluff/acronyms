@@ -2,7 +2,7 @@
 name: acronyms
 apiVersion: v2
 appVersion: "0.1.0"
-description: A Helm chart for Kubernetes
+description: Application for saving acronyms
 icon: https://img.icons8.com/cute-clipart/344/a.png
 type: application
 version: "0.1.0"
