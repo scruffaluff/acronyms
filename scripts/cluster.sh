@@ -84,8 +84,7 @@ deploy_cluster() {
   docker build --tag "${image}" .
   docker push "${image}"
 
-  helm --namespace acronyms upgrade --install \
-    --values scripts/values.yaml \
+  helm --namespace acronyms upgrade --install --values scripts/acronyms.yaml \
     acronyms ./src/chart
 
   kubectl --namespace acronyms wait \
@@ -107,6 +106,10 @@ create_cluster() {
     k3d cluster create --wait --config scripts/k3d.yaml
   fi
 
+  if ! kubectl get namespace acronyms 2> /dev/null; then
+    kubectl create namespace acronyms
+  fi
+
   mkdir -p certs
   if [[ ! (-f certs/wildcard_nip_io.crt && -f certs/wildcard_nip_io.key) ]]; then
     mkcert \
@@ -115,12 +118,17 @@ create_cluster() {
       '*.127-0-0-1.nip.io'
   fi
 
-  if ! kubectl --namespace kube-system get secret ingress-tls-certs &> /dev/null 
+  if ! kubectl --namespace acronyms get secret ingress-tls-certificate &> /dev/null 
   then
     kubectl --namespace kube-system create secret  \
       --cert certs/wildcard_nip_io.crt \
       --key certs/wildcard_nip_io.key \
-      tls ingress-tls-certs
+      tls ingress-tls-certificate
+
+    kubectl --namespace acronyms create secret  \
+      --cert certs/wildcard_nip_io.crt \
+      --key certs/wildcard_nip_io.key \
+      tls ingress-tls-certificate
   fi
 
   # Kubectl wait does not work if the resource has not yet been created. Visit
@@ -132,9 +140,9 @@ create_cluster() {
 
   kubectl apply --filename scripts/traefik.yaml
 
-  if ! kubectl get namespace acronyms 2> /dev/null; then
-    kubectl create namespace acronyms
-  fi
+  helm repo add mailu https://mailu.github.io/helm-charts
+  helm --namespace kube-system upgrade --install --values scripts/mailu.yaml \
+    mailu mailu/mailu
 
   message='Local Kubernetes cluster is ready'
   printf "\n\033[1;32m%s\033[0m\n" "${message}"

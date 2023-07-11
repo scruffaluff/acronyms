@@ -3,7 +3,7 @@
 # For more information, visit https://k3d.io/v5.3.0/usage/configfile/.
 
 ---
-apiVersion: k3d.io/v1alpha4
+apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
   name: acronyms

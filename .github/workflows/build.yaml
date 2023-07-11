@@ -108,7 +108,7 @@ jobs:
           hadolint Dockerfile scripts/develop.dockerfile
           helm lint --strict src/chart
           helm datree test --no-record --verbose src/chart -- \
-            --values scripts/values.yaml
+            --values scripts/acronyms.yaml
       - name: Setup Tmate session if debug enabled
         if: >-
           ${{ always() && github.event_name == 'workflow_dispatch' &&

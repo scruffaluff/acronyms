@@ -40,6 +40,9 @@ spec:
               value: "{{ .Values.tokens.reset | default (randAlphaNum 64) }}"
             - name: ACRONYMS_VERIFICATION_TOKEN
               value: "{{ .Values.tokens.verification | default (randAlphaNum 64) }}"
+            {{- if gt (len .Values.extraEnv) 0 }}
+            {{- .Values.extraEnv | toYaml | nindent 12 }}
+            {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
