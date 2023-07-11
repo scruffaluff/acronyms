@@ -4,7 +4,7 @@
 import functools
 from pathlib import Path
 import sys
-from typing import Any, cast, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 
 from pydantic import AnyUrl, BaseSettings, SecretStr
 from pydantic.env_settings import SettingsSourceCallable

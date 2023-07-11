@@ -75,7 +75,7 @@ jobs:
         run: |
           node --version
           npm --version
-          npm ci
+          pnpm install --frozen-lockfile
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
@@ -89,7 +89,7 @@ jobs:
           poetry install --verbose --only main
       - name: Build package
         run: |
-          npm run build
+          pnpm build
           poetry build
       - name: Install Helm
         run: |

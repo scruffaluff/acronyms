@@ -4,7 +4,7 @@
 from argparse import BooleanOptionalAction
 import secrets
 import subprocess
-from typing import cast, Iterator, Tuple
+from typing import Iterator, Tuple, cast
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
@@ -65,7 +65,7 @@ def client(mocker: MockerFixture) -> Iterator[TestClient]:
 
 @pytest.fixture
 def connection(postgresql: Connection) -> str:
-    """Connection URI for temporary PostgreSQL database."""
+    """Parse connection URI for temporary PostgreSQL database."""
     user = postgresql.info.user
     address = f"{postgresql.info.host}:{postgresql.info.port}"
     name = postgresql.info.dbname

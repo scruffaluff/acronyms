@@ -18,12 +18,12 @@ main() {
   cd "$(dirname "$(dirname "$(realpath "$0")")")"
 
   poetry run black --check .
-  poetry run flake8 .
+  poetry run ruff check .
   poetry run mypy .
 
-  npm run format:test
-  npm run lint:test
-  npm run typecheck
+  pnpm format:test
+  pnpm lint:test
+  pnpm typecheck
 
   helm lint --strict src/chart
   helm datree test --no-record --verbose src/chart -- \

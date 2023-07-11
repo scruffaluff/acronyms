@@ -10,6 +10,7 @@ from acronyms import settings
 
 @functools.lru_cache(maxsize=1)
 def sender() -> EmailSender:
+    """Load email configuration once."""
     settings_ = settings.settings()
     return EmailSender(
         host=settings_.smtp_host,

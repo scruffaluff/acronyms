@@ -14,9 +14,9 @@ from sqlalchemy import (
     CheckConstraint,
     Column,
     Integer,
-    orm,
     Unicode,
     UniqueConstraint,
+    orm,
 )
 from sqlalchemy.ext import asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
@@ -42,7 +42,7 @@ class Acronym:
     __tablename__ = "acronyms"
     __table_args__ = (UniqueConstraint("abbreviation", "phrase"),)
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)  # noqa: A003
     abbreviation = Column(
         Unicode,
         CheckConstraint("LENGTH(abbreviation) > 0"),

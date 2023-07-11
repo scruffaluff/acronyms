@@ -36,7 +36,7 @@ class AcronymResponse(BaseModel):
         title="Acronym abbreviation", max_length=30, min_length=1
     )
     description: Optional[str]
-    id: int
+    id: int  # noqa: A003
     phrase: str = Field(title="Acronym phrase", max_length=300, min_length=1)
 
     class Config:

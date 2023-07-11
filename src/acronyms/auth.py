@@ -30,6 +30,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
     async def on_after_register(
         self, user: User, request: Optional[Request] = None
     ) -> None:
+        """Send confirmation email after registering user."""
         text = f"""
         Dear {user.email},
 

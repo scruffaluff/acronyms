@@ -9,13 +9,12 @@ import socket
 import subprocess
 from subprocess import Popen
 import tempfile
-from typing import cast, Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, cast
 
+from acronyms.settings import DatabaseUrl, Settings
 from fastapi.testclient import TestClient
 import httpx
 from httpx import Client, HTTPTransport
-
-from acronyms.settings import DatabaseUrl, Settings
 
 
 DATA_PATH = Path(__file__).parent / "data"
