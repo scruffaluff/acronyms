@@ -25,6 +25,7 @@ on:
 
 env:
   NPM_CONFIG_CACHE: "${{ github.workspace }}/.cache/npm"
+  NPM_CONFIG_STORE_DIR: "${{ github.workspace }}/.cache/pnpm/store"
   PIP_CACHE_DIR: "${{ github.workspace }}/.cache/pip"
   PIP_DISABLE_PIP_VERSION_CHECK: "true"
   PIP_ROOT_USER_ACTION: ignore

@@ -12,6 +12,7 @@
 .pdbrc
 .pytest_cache/
 .python-version
+.ruff_cache/
 .tox/
 .venv/
 .vscode/settings.json

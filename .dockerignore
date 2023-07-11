@@ -16,6 +16,7 @@
 .pre-commit-config.yaml
 .pytest_cache/
 .python-version
+.ruff_cache/
 .tox/
 .venv/
 .vscode/settings.json
@@ -27,6 +28,7 @@
 **/__pycache__/
 **/.ipynb_checkpoints/
 **/*.egg-info/
+assets/
 dist/
 Dockerfile
 Dockerfile.dev
@@ -37,7 +39,6 @@ node_modules/
 nohup.out
 Pipfile
 Pipfile.lock
-assets/
 requirements.lock
 requirements.txt
 setup.py

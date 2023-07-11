@@ -39,11 +39,10 @@
     "dev": "node scripts/serve_devsite.js",
     "format:fix": "prettier --write .",
     "format:test": "prettier --check .",
-    "lint:fix": "eslint --fix",
-    "lint:test": "eslint --no-fix --max-warnings 0",
+    "lint:fix": "eslint --fix --ext js,ts,vue src/frontend",
+    "lint:test": "eslint --no-fix --ext js,ts,vue --max-warnings 0 src/frontend",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"
   },
-  "type": "module",
   "version": "0.1.0"
 }
