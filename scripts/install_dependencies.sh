@@ -32,22 +32,23 @@ setup_linux() {
     ${1:+sudo} apk update
     ${1:+sudo} apk add  curl git nss-tools tar zip
   elif [[ -x "$(command -v apt-get)" ]]; then
-    DEBIAN_FRONTEND=noninteractive ${1:+sudo} apt-get -qq update
-    DEBIAN_FRONTEND=noninteractive ${1:+sudo} apt-get -qq install -y \
+    DEBIAN_FRONTEND=noninteractive ${1:+sudo} apt-get --quiet update
+    DEBIAN_FRONTEND=noninteractive ${1:+sudo} apt-get --quiet install --yes \
       curl git libnss3-tools tar zip
   elif [[ -x "$(command -v dnf)" ]]; then
     ${1:+sudo} dnf check-update || true
-    ${1:+sudo} dnf install -y curl git nss-tools tar zip
+    ${1:+sudo} dnf install --assumeyes curl git nss-tools tar zip
   elif [[ -x "$(command -v pacman)" ]]; then
-    ${1:+sudo} pacman -Suy --noconfirm
-    ${1:+sudo} pacman -S --noconfirm curl git nss tar zip
+    ${1:+sudo} pacman --noconfirm --refresh --sync --sysupgrade
+    ${1:+sudo} pacman --noconfirm --sync curl git nss tar zip
   else
     error "Unable to find supported package manager"
   fi
 
   if [[ ! -x "$(command -v helm)" ]]; then
     echo "Installing Helm"
-    curl -LSfs "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -o /tmp/helm.tar.gz
+    curl --fail --location --show-error --silent --output /tmp/helm.tar.gz \
+      "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz"
     tar fvx /tmp/helm.tar.gz -C /tmp
     sudo install "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/
     rm -fr /tmp/helm*
@@ -55,19 +56,24 @@ setup_linux() {
 
   if [[ ! -x "$(command -v k3d)" ]]; then
     echo "Installing K3d"
-    curl -LSfs "https://github.com/k3d-io/k3d/releases/download/v${K3D_VERSION}/k3d-linux-${TARGETARCH}" -o /usr/local/bin/k3d
+    curl --fail --location --show-error --silent --output /usr/local/bin/k3d \
+      "https://github.com/k3d-io/k3d/releases/download/v${K3D_VERSION}/k3d-linux-${TARGETARCH}"
     sudo chmod 755 /usr/local/bin/k3d
   fi
 
   if [[ ! -x "$(command -v kubectl)" ]]; then
     echo "Installing Kubectl"
-    curl -LSfs "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" -o /usr/local/bin/kubectl
+    curl --fail --location --show-error --silent \
+      --output /usr/local/bin/kubectl \
+      "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl"
     sudo chmod 755 /usr/local/bin/kubectl
   fi
 
   if [[ ! -x "$(command -v mkcert)" ]]; then
     echo "Installing Mkcert"
-    curl -LSfs "https://github.com/FiloSottile/mkcert/releases/download/v${MKCERT_VERSION}/mkcert-v${MKCERT_VERSION}-linux-${TARGETARCH}" -o /usr/local/bin/mkcert
+    curl --fail --location --show-error --silent \
+      --output /usr/local/bin/mkcert \
+      "https://github.com/FiloSottile/mkcert/releases/download/v${MKCERT_VERSION}/mkcert-v${MKCERT_VERSION}-linux-${TARGETARCH}"
     sudo chmod 755 /usr/local/bin/mkcert
   fi
 
@@ -112,7 +118,9 @@ setup_macos() {
   #   -x: Check if file exists and execute permission is granted.
   if [[ ! -x "$(command -v brew)" ]]; then
     log "Installing Homebrew"
-    curl -LSfs "https://raw.githubusercontent.com/Homebrew/install/master/install.sh" | bash
+    curl --fail --location --show-error --silent \
+      "https://raw.githubusercontent.com/Homebrew/install/master/install.sh" \
+      | bash
   fi
 
   brew install git helm k3d kubectl mkcert nss

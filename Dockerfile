@@ -17,10 +17,10 @@ RUN adduser --disabled-password --uid 10000 acronyms \
     && chown acronyms:acronyms /app
 
 USER acronyms
-WORKDIR /app
 ENV \
-    HOME=/home/acronyms \
+    HOME='/home/acronyms' \
     PATH="/home/acronyms/.local/bin:${PATH}"
+WORKDIR /app
 
 COPY --chown=acronyms . "${HOME}/repo"
 COPY --chown=acronyms --from=frontend \

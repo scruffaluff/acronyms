@@ -1,7 +1,7 @@
 FROM python:3.11.4-alpine3.18
 ARG TARGETARCH
 
-RUN apk add --no-cache curl gcc musl-dev nodejs npm poetry postgresql-dev \
+RUN apk add --no-cache bash curl gcc musl-dev nodejs npm poetry postgresql-dev \
     python3-dev
 
 RUN adduser --disabled-password --uid 10000 acronyms \
@@ -9,15 +9,21 @@ RUN adduser --disabled-password --uid 10000 acronyms \
     && chown acronyms:acronyms /app
 
 USER acronyms
-WORKDIR /app
 ENV \
-    HOME=/home/acronyms \
+    HOME='/home/acronyms' \
     PATH="/home/acronyms/.local/bin:${PATH}" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true
+    POETRY_VIRTUALENVS_IN_PROJECT='true' \
+    SHELL='/bin/sh'
+WORKDIR /app
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN curl --fail --location --show-error --silent \
+    https://get.pnpm.io/install.sh | ENV="${HOME}/.bashrc" bash
 
 COPY --chown=acronyms . /app
 
-RUN corepack enable pnpm && pnpm install --frozen-lockfile \
+# hadolint ignore=SC1091
+RUN source "${HOME}/.bashrc" && pnpm install --frozen-lockfile \
     && poetry install --only main
 
 EXPOSE 8000
