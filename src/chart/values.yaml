@@ -37,8 +37,7 @@ nameOverride: ""
 
 nodeSelector: {}
 
-podAnnotations:
-  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+podAnnotations: {}
 
 podSecurityContext: {}
 
