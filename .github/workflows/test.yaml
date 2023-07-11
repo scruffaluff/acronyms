@@ -87,7 +87,6 @@ jobs:
         run: bash scripts/cluster.sh deploy
       - name: Run Helm chart test suite
         run: |
-          export REQUESTS_CA_BUNDLE="$(mkcert -CAROOT)/rootCA.pem"
           export SSL_CERT_FILE="$(mkcert -CAROOT)/rootCA.pem"
           poetry run pytest --chart -m e2e
       - name: Upload Playwright screenshots and videos if tests fail

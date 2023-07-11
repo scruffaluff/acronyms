@@ -92,7 +92,5 @@ backend = AuthenticationBackend(
     transport=transport,
     get_strategy=get_database_strategy,
 )
-# Typing for FastAPIUsers clearly incorrect. It wants a UserManager callable not
-# an instance.
-users = FastAPIUsers[User, UUID](get_user_manager, [backend])  # type: ignore
+users = FastAPIUsers[User, UUID](get_user_manager, [backend])
 current_user = users.current_user(active=True)

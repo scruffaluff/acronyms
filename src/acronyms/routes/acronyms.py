@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from acronyms import models, settings
 from acronyms.models import Acronym, AcronymColumn
-from acronyms.schemas import AcronymBody
+from acronyms.schemas import AcronymBody, AcronymResponse
 
 
 router = APIRouter()
@@ -27,7 +27,7 @@ async def delete_acronym(
     ),
     session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
-    """Insert an acronym to database."""
+    """Remove an acronym to database."""
     statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
     try:
         acronym = (await session.execute(statement)).scalar_one()
@@ -40,7 +40,11 @@ async def delete_acronym(
     return {"ok": True}
 
 
-@router.get("/acronym")
+@router.get(
+    "/acronym",
+    response_model=Union[AcronymResponse, Sequence[AcronymResponse], None],
+    responses={404: {"description": "Acronym entry not found"}},
+)
 @decorator.cache(expire=60, namespace="acronyms")
 async def get_acronym(
     response: Response,
@@ -59,7 +63,11 @@ async def get_acronym(
 ) -> Union[Acronym, Sequence[Acronym], None]:
     """Get all matching acronyms."""
     if id is not None:
-        return await session.get(Acronym, id)
+        statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
+        try:
+            return (await session.execute(statement)).scalar_one()
+        except NoResultFound as exception:
+            raise HTTPException(status_code=404, detail=str(exception))
 
     table = sqlalchemy.select(Acronym)
     if abbreviation is None and phrase is None:

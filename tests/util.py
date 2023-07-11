@@ -2,7 +2,6 @@
 
 
 import json
-import logging
 import os
 from pathlib import Path
 import secrets
@@ -14,9 +13,7 @@ from typing import cast, Dict, Optional, Tuple
 
 from fastapi.testclient import TestClient
 import httpx
-import requests
-from requests import Session
-from requests.adapters import HTTPAdapter, Retry
+from httpx import Client, HTTPTransport
 
 from acronyms.settings import DatabaseUrl, Settings
 
@@ -26,12 +23,12 @@ DATA_PATH = Path(__file__).parent / "data"
 
 def clear_acronyms(server: str) -> None:
     """Remove all acronyms from server."""
-    response = requests.get(f"{server}/api/acronym")
+    response = httpx.get(f"{server}/api/acronym")
     response.raise_for_status()
 
     for acronym in response.json():
         id_ = acronym["id"]
-        response_ = requests.delete(f"{server}/api/acronym/{id_}")
+        response_ = httpx.delete(f"{server}/api/acronym/{id_}")
         response_.raise_for_status()
 
 
@@ -123,11 +120,6 @@ def upload_acronyms(
 
 def wait_for_server(url: str) -> None:
     """Retry requesting server until it is available."""
-    logging.getLogger(
-        requests.packages.urllib3.__package__  # type: ignore
-    ).setLevel(logging.ERROR)
-
-    with Session() as session:
-        retries = Retry(total=4, backoff_factor=1)
-        session.mount("http://", HTTPAdapter(max_retries=retries))
-        session.get(url)
+    transport = HTTPTransport(retries=4)
+    with Client(transport=transport) as client:
+        client.get(url)

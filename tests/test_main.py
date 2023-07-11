@@ -4,9 +4,9 @@
 import re
 
 from fastapi.testclient import TestClient
+import httpx
 from playwright.sync_api import expect, Page
 import pytest
-import requests
 import schemathesis
 from schemathesis import Case
 
@@ -58,7 +58,7 @@ def test_add_acronym_invalid(server: str, page: Page) -> None:
 def test_add_acronym_error(server: str, page: Page) -> None:
     """Error modal pops up upon duplicate acronym submission."""
     acronym = {"abbreviation": "ECC", "phrase": "Error Correction Code"}
-    response = requests.post(f"{server}/api/acronym", json=acronym)
+    response = httpx.post(f"{server}/api/acronym", json=acronym)
     response.raise_for_status()
 
     page.goto(server)
@@ -151,7 +151,7 @@ def test_sort_acronyms(server: str, page: Page) -> None:
         {"abbreviation": "DM", "phrase": "Direct Message"},
     ]
     for acronym in acronyms:
-        response = requests.post(f"{server}/api/acronym", json=acronym)
+        response = httpx.post(f"{server}/api/acronym", json=acronym)
         response.raise_for_status()
 
     page.goto(server)

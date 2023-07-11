@@ -15,9 +15,7 @@ class AcronymBody(BaseModel):
         title="Acronym abbreviation", max_length=30, min_length=1
     )
     description: Optional[str]
-    phrase: str = Field(
-        description="Acronym phrase", max_length=300, min_length=1
-    )
+    phrase: str = Field(title="Acronym phrase", max_length=300, min_length=1)
 
     class Config:
         """Metadata for model."""
@@ -29,6 +27,22 @@ class AcronymBody(BaseModel):
                 "phrase": "Amplitude Modulation",
             }
         }
+
+
+class AcronymResponse(BaseModel):
+    """Response validator for Acronym type."""
+
+    abbreviation: str = Field(
+        title="Acronym abbreviation", max_length=30, min_length=1
+    )
+    description: Optional[str]
+    id: int
+    phrase: str = Field(title="Acronym phrase", max_length=300, min_length=1)
+
+    class Config:
+        """Metadata for model."""
+
+        orm_mode = True
 
 
 class UserRead(BaseUser[UUID]):
