@@ -20,6 +20,7 @@
 .tox/
 .venv/
 .vscode/settings.json
+*.dockerfile
 *.ipynb
 *.pyc
 *.swp
@@ -31,7 +32,6 @@
 assets/
 dist/
 Dockerfile
-Dockerfile.dev
 environment.yml
 f1
 flit.ini

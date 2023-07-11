@@ -85,7 +85,7 @@ deploy_cluster() {
   docker push "${image}"
 
   helm --namespace acronyms upgrade --install \
-    --values tests/data/values.yaml \
+    --values scripts/values.yaml \
     acronyms ./src/chart
 
   kubectl --namespace acronyms wait \

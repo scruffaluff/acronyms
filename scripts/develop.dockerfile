@@ -1,7 +1,8 @@
 FROM python:3.11.4-alpine3.18
 ARG TARGETARCH
 
-RUN apk add --no-cache curl gcc musl-dev nodejs npm poetry postgresql-dev python3-dev
+RUN apk add --no-cache curl gcc musl-dev nodejs npm poetry postgresql-dev \
+    python3-dev
 
 RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \
@@ -16,7 +17,8 @@ ENV \
 
 COPY --chown=acronyms . /app
 
-RUN pnpm install --frozen-lockfile && poetry install --only main
+RUN corepack enable pnpm && pnpm install --frozen-lockfile \
+    && poetry install --only main
 
 EXPOSE 8000
 ENTRYPOINT ["npm", "run", "dev"]

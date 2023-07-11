@@ -27,7 +27,7 @@ main() {
 
   helm lint --strict src/chart
   helm datree test --no-record --verbose src/chart -- \
-    --values tests/data/values.yaml
+    --values scripts/values.yaml
 }
 
 main

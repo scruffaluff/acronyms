@@ -105,10 +105,10 @@ jobs:
           helm datree version
       - name: Run linter checks
         run: |
-          hadolint Dockerfile Dockerfile.dev
+          hadolint Dockerfile scripts/develop.dockerfile
           helm lint --strict src/chart
           helm datree test --no-record --verbose src/chart -- \
-            --values tests/data/values.yaml
+            --values scripts/values.yaml
       - name: Setup Tmate session if debug enabled
         if: >-
           ${{ always() && github.event_name == 'workflow_dispatch' &&

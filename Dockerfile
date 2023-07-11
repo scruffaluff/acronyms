@@ -5,7 +5,7 @@ WORKDIR /repo
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile && pnpm build
+RUN corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
 
 FROM python:3.11.4-alpine3.18 as backend
 ARG TARGETARCH
