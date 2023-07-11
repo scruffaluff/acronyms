@@ -16,7 +16,7 @@ ENV \
 
 COPY --chown=acronyms . /app
 
-RUN npm ci && poetry install --only main
+RUN pnpm install --frozen-lockfile && poetry install --only main
 
 EXPOSE 8000
 ENTRYPOINT ["npm", "run", "dev"]
