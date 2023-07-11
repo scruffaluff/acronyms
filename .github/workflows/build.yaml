@@ -105,9 +105,9 @@ jobs:
       - name: Run linter checks
         run: |
           hadolint Dockerfile Dockerfile.dev
-          cd src/chart
-          helm lint --strict
-          helm datree test --no-record --verbose . -- --values values_local.yaml
+          helm lint --strict src/chart
+          helm datree test --no-record --verbose src/chart -- \
+            --values tests/data/values.yaml
       - name: Setup Tmate session if debug enabled
         if: >-
           ${{ always() && github.event_name == 'workflow_dispatch' &&

@@ -1,6 +1,7 @@
-# Default values for acronyms.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Helm chart default deployment values.
+#
+# For more information, visit
+# https://helm.sh/docs/chart_template_guide/values_files.
 
 ---
 affinity: {}

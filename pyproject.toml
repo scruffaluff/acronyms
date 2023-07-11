@@ -1,7 +1,7 @@
 # Python configuration file for building, dependencies, and tooling.
 #
 # For more information, visit
-# https://snarky.ca/what-the-heck-is-pyproject-toml/.
+# https://snarky.ca/what-the-heck-is-pyproject-toml.
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

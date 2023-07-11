@@ -16,6 +16,6 @@ yaml = helm(
     "./src/chart",
     name="acronyms",
     namespace="acronyms",
-    values=["./src/chart/values_local.yaml"],
+    values=["./tests/data/values.yaml"],
 )
 k8s_yaml(yaml)

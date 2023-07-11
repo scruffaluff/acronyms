@@ -1,8 +1,12 @@
-# Default values for acronyms.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Helm chart configuration to override default values.
+#
+# For more information, visit
+# https://helm.sh/docs/chart_template_guide/values_files.
 
 ---
+image:
+  repository: registry.localhost:5001/scruffaluff/acronyms
+
 ingress:
   className: ""
   enabled: true

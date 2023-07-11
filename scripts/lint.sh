@@ -25,9 +25,9 @@ main() {
   npm run lint:test
   npm run typecheck
 
-  cd src/chart
-  helm lint --strict
-  helm datree test --no-record --verbose . -- --values values_local.yaml
+  helm lint --strict src/chart
+  helm datree test --no-record --verbose src/chart -- \
+    --values tests/data/values.yaml
 }
 
 main

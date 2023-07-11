@@ -80,12 +80,12 @@ EOF
 # Deploy Helm chart to local K3D Kubernetes cluster.
 #######################################
 deploy_cluster() {
-  image='registry.localhost:5001/scruffaluff/acronyms:latest'
+  image='registry.localhost:5001/scruffaluff/acronyms:0.1.0'
   docker build --tag "${image}" .
   docker push "${image}"
 
   helm --namespace acronyms upgrade --install \
-    --values src/chart/values_ci.yaml \
+    --values tests/data/values.yaml \
     acronyms ./src/chart
 
   kubectl --namespace acronyms wait \
