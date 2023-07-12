@@ -1,0 +1,29 @@
+# Helm chart configuration to override default values.
+#
+# For more information, visit
+# https://helm.sh/docs/chart_template_guide/values_files.
+
+---
+domain: mail.127-0-0-1.nip.io
+
+hostnames:
+  - mail.127-0-0-1.nip.io
+
+ingress:
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-https@kubernetescrd
+  enabled: true
+  ingressClassName: traefik
+  existingSecret: ingress-tls-certificate
+  tls: true
+
+initialAccount:
+  domain: mail.127-0-0-1.nip.io
+  enabled: true
+
+logLevel: INFO
+
+mailuVersion: "2.0.16"
+
+persistence:
+  size: 2G

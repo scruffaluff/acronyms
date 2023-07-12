@@ -25,4 +25,5 @@ poetry.lock
 site/
 stats.html
 templates/
+tmp/
 web/

@@ -39,12 +39,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
 
         https://notareallink.com/verify?user=fjdskj
         """
-        email.sender().send(
-            subject="Welcome to Acronyms",
-            sender=settings.settings().smtp_username,
-            receivers=[user.email],
-            text=text,
-        )
+        if settings.settings().smtp_enabled:
+            email.sender().send(
+                subject="Welcome to Acronyms",
+                sender=settings.settings().smtp_username,
+                receivers=[user.email],
+                text=text,
+            )
 
 
 def get_database_strategy(

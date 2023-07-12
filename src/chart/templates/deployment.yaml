@@ -38,6 +38,16 @@ spec:
           env:
             - name: ACRONYMS_RESET_TOKEN
               value: "{{ .Values.tokens.reset | default (randAlphaNum 64) }}"
+            - name: ACRONYMS_SMTP_ENABLED
+              value: "{{ .Values.smtp.enabled }}"
+            - name: ACRONYMS_SMTP_HOST
+              value: "{{ .Values.smtp.host }}"
+            - name: ACRONYMS_SMTP_PASSWORD
+              value: "{{ .Values.smtp.password }}"
+            - name: ACRONYMS_SMTP_TLS
+              value: "{{ .Values.smtp.tls }}"
+            - name: ACRONYMS_SMTP_USERNAME
+              value: "{{ .Values.smtp.username }}"
             - name: ACRONYMS_VERIFICATION_TOKEN
               value: "{{ .Values.tokens.verification | default (randAlphaNum 64) }}"
             {{- if gt (len .Values.extraEnv) 0 }}

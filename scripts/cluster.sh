@@ -80,11 +80,16 @@ EOF
 # Deploy Helm chart to local K3D Kubernetes cluster.
 #######################################
 deploy_cluster() {
+  local message
+
   image='registry.localhost:5001/scruffaluff/acronyms:0.1.0'
   docker build --tag "${image}" .
   docker push "${image}"
 
-  helm --namespace acronyms upgrade --install --values scripts/acronyms.yaml \
+  helm --namespace acronyms upgrade --install \
+    --set smtp.password="$(cat tmp/smtp_password)" \
+    --set smtp.username="$(cat tmp/smtp_username)" \
+    --values scripts/acronyms.yaml \
     acronyms ./src/chart
 
   kubectl --namespace acronyms wait \
@@ -110,24 +115,19 @@ create_cluster() {
     kubectl create namespace acronyms
   fi
 
-  mkdir -p certs
-  if [[ ! (-f certs/wildcard_nip_io.crt && -f certs/wildcard_nip_io.key) ]]; then
-    mkcert \
-      -cert-file certs/wildcard_nip_io.crt \
-      -key-file certs/wildcard_nip_io.key \
-      '*.127-0-0-1.nip.io'
+  if ! kubectl --namespace kube-system get secret ingress-tls-certificate &> /dev/null 
+  then
+    kubectl --namespace kube-system create secret  \
+      --cert tmp/wildcard_nip_io.crt \
+      --key tmp/wildcard_nip_io.key \
+      tls ingress-tls-certificate
   fi
 
   if ! kubectl --namespace acronyms get secret ingress-tls-certificate &> /dev/null 
   then
-    kubectl --namespace kube-system create secret  \
-      --cert certs/wildcard_nip_io.crt \
-      --key certs/wildcard_nip_io.key \
-      tls ingress-tls-certificate
-
     kubectl --namespace acronyms create secret  \
-      --cert certs/wildcard_nip_io.crt \
-      --key certs/wildcard_nip_io.key \
+      --cert tmp/wildcard_nip_io.crt \
+      --key tmp/wildcard_nip_io.key \
       tls ingress-tls-certificate
   fi
 
@@ -141,7 +141,10 @@ create_cluster() {
   kubectl apply --filename scripts/traefik.yaml
 
   helm repo add mailu https://mailu.github.io/helm-charts
-  helm --namespace kube-system upgrade --install --values scripts/mailu.yaml \
+  helm --namespace kube-system upgrade --install \
+    --set initialAccount.password="$(cat tmp/smtp_password)" \
+    --set initialAccount.username="$(cat tmp/smtp_username)" \
+    --values scripts/mailu.yaml \
     mailu mailu/mailu
 
   message='Local Kubernetes cluster is ready'
@@ -160,6 +163,32 @@ delete_cluster() {
 
   message='Local K3D Kubernetes cluster is destroyed'
   printf "\n\033[1;32m%s\033[0m\n" "${message}"
+}
+
+generate_secrets() {
+  mkdir -p tmp
+  if [[ ! (-f tmp/wildcard_nip_io.crt && -f tmp/wildcard_nip_io.key) ]]; then
+    mkcert \
+      -cert-file tmp/wildcard_nip_io.crt \
+      -key-file tmp/wildcard_nip_io.key \
+      '*.127-0-0-1.nip.io'
+  fi
+
+  if [[ ! -f tmp/smtp_password ]]; then
+    if [[ -n "${ACRONYMS_SMTP_PASSWORD:-}" ]]; then
+      echo "${ACRONYMS_SMTP_PASSWORD}" > tmp/smtp_password
+    else
+      openssl rand --hex 16 > tmp/smtp_password
+    fi
+  fi
+
+  if [[ ! -f tmp/smtp_username ]]; then
+    if [[ -n "${ACRONYMS_SMTP_USERNAME:-}" ]]; then
+      echo "${ACRONYMS_SMTP_USERNAME}" > tmp/smtp_username
+    else
+      openssl rand --hex 8 > tmp/smtp_username
+    fi
+  fi
 }
 
 #######################################
@@ -181,6 +210,7 @@ main() {
     command="${1?Subcommand is required}"
   fi
 
+  generate_secrets
   "${command}_cluster"
 }
 

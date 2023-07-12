@@ -3,6 +3,7 @@
 
 import functools
 from pathlib import Path
+import secrets
 import sys
 from typing import Any, Dict, Optional, Tuple, cast
 
@@ -46,19 +47,20 @@ class Settings(BaseSettings):
     )
     page_size: int = 10
     port: int = 8000
-    reset_token: SecretStr
-    smtp_host: str
-    smtp_password: SecretStr
+    reset_token: SecretStr = SecretStr(secrets.token_urlsafe(32))
+    smtp_enabled: bool = False
+    smtp_host: str = ""
+    smtp_password: SecretStr = SecretStr(secrets.token_urlsafe(32))
     smtp_port: int = 25
     smtp_tls: bool = True
-    smtp_username: str
-    verification_token: SecretStr
+    smtp_username: str = ""
+    verification_token: SecretStr = SecretStr(secrets.token_urlsafe(64))
 
     class Config:
         """Pydantic specific configuration."""
 
         env_nested_delimiter = "__"
-        env_prefix = "acronyms_"
+        env_prefix = "ACRONYMS_"
         secrets_dir = secrets_directory()
 
         @classmethod
