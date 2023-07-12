@@ -10,9 +10,9 @@
 #   -u: Throw an error when an unset variable is encountered.
 set -eou pipefail
 
-HELM_VERSION='3.9.2'
-K3D_VERSION='5.4.6'
-KUBECTL_VERSION='1.25.1'
+HELM_VERSION='3.12.1'
+K3D_VERSION='5.5.1'
+KUBECTL_VERSION='1.27.3'
 MKCERT_VERSION='1.4.4'
 TARGETARCH='amd64'
 
