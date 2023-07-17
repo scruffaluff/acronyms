@@ -121,6 +121,21 @@ def test_get_home(client: TestClient) -> None:
 
 
 @pytest.mark.e2e
+def test_pagination_buttons(server: str, page: Page) -> None:
+    """Navigation buttons are enabled only when there are more acronyms."""
+    util.upload_acronyms(endpoint=server)
+
+    page.goto(server)
+    navigation = page.locator('nav[aria-label="pagination"]')
+    previous = navigation.locator('button:has-text("Previous")')
+    next_ = navigation.locator('button:has-text("Next")')
+
+    expect(previous).to_be_disabled()
+    next_.click()
+    expect(previous).to_be_enabled()
+
+
+@pytest.mark.e2e
 def test_site_available(server: str, page: Page) -> None:
     """Website is available for external traffic."""
     page.goto(server)
