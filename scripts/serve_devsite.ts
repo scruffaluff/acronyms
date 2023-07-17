@@ -1,13 +1,13 @@
-"use strict";
-
 /**
  * Spin up development server.
  */
 
-const childProcess = require("child_process");
-const concurrently = require("concurrently");
-const crypto = require("crypto");
-const path = require("path");
+import childProcess from "child_process";
+import concurrently from "concurrently";
+import getPort from "get-port";
+import crypto from "crypto";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const resetToken = crypto.randomBytes(32).toString("hex");
 const smtpPassword = crypto.randomBytes(16).toString("hex");
@@ -19,6 +19,9 @@ childProcess.execSync("npx vite build --mode development", {
   stdio: "inherit",
 });
 
+const smtpPort = await getPort();
+const smtpWebPort = await getPort();
+
 concurrently(
   [
     {
@@ -27,7 +30,7 @@ concurrently(
         ACRONYMS_RESET_TOKEN: resetToken,
         ACRONYMS_SMTP_HOST: "localhost",
         ACRONYMS_SMTP_PASSWORD: smtpPassword,
-        ACRONYMS_SMTP_PORT: "1025",
+        ACRONYMS_SMTP_PORT: String(smtpPort),
         ACRONYMS_SMTP_TLS: "false",
         ACRONYMS_SMTP_USERNAME: smtpUsername,
         ACRONYMS_VERIFICATION_TOKEN: verificationToken,
@@ -35,13 +38,13 @@ concurrently(
       name: "backend",
     },
     {
-      command: `maildev --incoming-user ${smtpUsername} --incoming-pass ${smtpPassword}`,
+      command: `maildev --incoming-user ${smtpUsername} --incoming-pass ${smtpPassword} --smtp ${smtpPort} --web ${smtpWebPort}`,
       name: "email",
     },
     { command: "vite build --watch --mode development", name: "frontend" },
   ],
   {
-    cwd: path.resolve(__dirname, ".."),
+    cwd: path.resolve(fileURLToPath(import.meta.url), "../.."),
     killOthers: ["failure", "success"],
     restartTries: 3,
   }
