@@ -120,6 +120,7 @@ def server(
         yield {
             "backend": f"http://localhost:{settings.port}",
             "email": f"http://localhost:{smtp_web_port}",
+            "process": [backend, mail],  # type: ignore
         }
         backend.terminate()
         mail.terminate()

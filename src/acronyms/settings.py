@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     reset_token: SecretStr = SecretStr(secrets.token_urlsafe(32))
     smtp_enabled: bool = False
     smtp_host: str = ""
-    smtp_password: SecretStr = SecretStr(secrets.token_urlsafe(32))
+    smtp_password: SecretStr = SecretStr("")
     smtp_port: int = 25
     smtp_tls: bool = True
     smtp_username: str = ""

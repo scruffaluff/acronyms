@@ -2,6 +2,7 @@
 
 
 import re
+import secrets
 from typing import Dict
 
 from fastapi.testclient import TestClient
@@ -134,6 +135,25 @@ def test_pagination_buttons(server: Dict[str, str], page: Page) -> None:
     expect(previous).to_be_disabled()
     next_.click()
     expect(previous).to_be_enabled()
+
+
+@pytest.mark.e2e
+def test_register_user(server: Dict[str, str], page: Page) -> None:
+    """New user receives a welcome email."""
+    page.goto(server["email"])
+    email_list = page.locator("ul.email-list")
+    list_item = email_list.locator('li:has-text("Welcome to Acronyms")')
+    expect(list_item).to_have_count(0)
+
+    response = httpx.post(
+        f'{server["backend"]}/auth/register',
+        json={
+            "email": "register.user@mail.com",
+            "password": secrets.token_urlsafe(32),
+        },
+    )
+    response.raise_for_status()
+    expect(list_item).to_have_count(1)
 
 
 @pytest.mark.e2e

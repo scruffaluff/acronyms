@@ -11,7 +11,7 @@ import { fileURLToPath } from "url";
 
 const resetToken = crypto.randomBytes(32).toString("hex");
 const smtpPassword = crypto.randomBytes(16).toString("hex");
-const smtpUsername = "admin@acronyms.127-0-0-1.nip.io";
+const smtpUsername = "admin@acronyms.com";
 const verificationToken = crypto.randomBytes(32).toString("hex");
 
 // Ensure that Javascript assests are available when backend first starts.
@@ -28,6 +28,7 @@ concurrently(
       command: "poetry run acronyms --reload --reload-dir src/acronyms",
       env: {
         ACRONYMS_RESET_TOKEN: resetToken,
+        ACRONYMS_SMTP_ENABLED: "true",
         ACRONYMS_SMTP_HOST: "localhost",
         ACRONYMS_SMTP_PASSWORD: smtpPassword,
         ACRONYMS_SMTP_PORT: String(smtpPort),

@@ -53,7 +53,7 @@ def mock_settings() -> Settings:
         port=server_port,
         reset_token=secrets.token_urlsafe(64),
         smtp_enabled=True,
-        smtp_host="127.0.0.1",
+        smtp_host="localhost",
         smtp_password=secrets.token_urlsafe(32),
         smtp_port=smtp_port,
         smtp_tls=False,
@@ -62,13 +62,24 @@ def mock_settings() -> Settings:
     )
 
 
+def popen_stdio(process: Popen, file: str = "stdout") -> str:
+    """Terminate process and get its IO."""
+    process.terminate()
+    stdio = getattr(process, file)
+    return "\n".join(line.decode("utf-8") for line in stdio)
+
+
 def settings_variables(settings: Settings) -> Dict[str, str]:
     """Convert settings to equivalent environment variables."""
     prefix = settings.Config.env_prefix
-    return {
-        f"{prefix}{key}".upper(): str(value)
-        for key, value in settings.dict().items()
-    }
+    config = {}
+    for key, value in settings.dict().items():
+        try:
+            value_ = str(value.get_secret_value())
+        except AttributeError:
+            value_ = str(value)
+        config[f"{prefix}{key}".upper()] = value_
+    return config
 
 
 def start_server(
@@ -91,6 +102,8 @@ def start_server(
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
+    mail.stdout_text = lambda: popen_stdio(mail, "stdout")  # type: ignore
+    mail.stderr_text = lambda: popen_stdio(mail, "stderr")  # type: ignore
 
     # Running the server via uvicorn directly as a Python function throws
     # "RuntimeError: asyncio.run() cannot be called from a running event
@@ -101,6 +114,8 @@ def start_server(
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
+    backend.stdout_text = lambda: popen_stdio(backend, "stdout")  # type: ignore
+    backend.stderr_text = lambda: popen_stdio(backend, "stderr")  # type: ignore
 
     wait_for_server(f"http://localhost:{settings.port}")
     return backend, mail
