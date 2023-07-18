@@ -4,7 +4,7 @@
 from argparse import BooleanOptionalAction
 import secrets
 import subprocess
-from typing import Iterator, Tuple, cast
+from typing import Dict, Iterator, Tuple, cast
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
@@ -103,18 +103,24 @@ def pytest_addoption(parser: Parser) -> None:
 
 
 @pytest.fixture
-def server(request: SubRequest, mocker: MockerFixture) -> Iterator[str]:
+def server(
+    request: SubRequest, mocker: MockerFixture
+) -> Iterator[Dict[str, str]]:
     """Compile frontend assets and start backend and mail servers."""
     if request.config.getoption("--chart"):
         url = "https://acronyms.127-0-0-1.nip.io"
         util.clear_acronyms(url)
-        yield url
+        yield {"backend": url, "email": "https://mail.127-0-0-1.nip.io"}
     else:
         settings = util.mock_settings()
         mocker.patch("acronyms.settings.settings", lambda: settings)
-        backend, mail = util.start_server(settings)
+        smtp_web_port = util.find_port()
+        backend, mail = util.start_server(settings, smtp_web_port)
 
-        yield f"http://localhost:{settings.port}"
+        yield {
+            "backend": f"http://localhost:{settings.port}",
+            "email": f"http://localhost:{smtp_web_port}",
+        }
         backend.terminate()
         mail.terminate()
 
@@ -122,7 +128,7 @@ def server(request: SubRequest, mocker: MockerFixture) -> Iterator[str]:
 @pytest.fixture
 def user(client: TestClient) -> Tuple[str, str]:
     """Create new user in application."""
-    email = "fake.user@mail.com"
+    email = "basic.user@mail.com"
     password = secrets.token_urlsafe(32)
 
     response = client.post(

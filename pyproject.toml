@@ -141,4 +141,5 @@ select = ["A", "B", "D", "C90", "E", "F", "I", "N", "Q", "W"]
 
 [tool.ruff.isort]
 force-sort-within-sections = true
+known-first-party = ["acronyms", "tests"]
 lines-after-imports = 2

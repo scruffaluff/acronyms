@@ -33,7 +33,7 @@ def test_profile(
     response.raise_for_status()
     result = response.json()
 
-    assert result["email"] == "fake.user@mail.com"
+    assert result["email"] == "basic.user@mail.com"
     assert result["is_active"]
     assert not result["is_superuser"]
 
@@ -43,7 +43,7 @@ def test_register(client: TestClient, mocker: MockerFixture) -> None:
     mocker.patch("redmail.EmailSender.send")
 
     password = secrets.token_urlsafe(16)
-    body = {"email": "fake.user@mail.com", "password": password}
+    body = {"email": "basic.user@mail.com", "password": password}
     response = client.post("/auth/register", json=body)
     response.raise_for_status()
     result = response.json()

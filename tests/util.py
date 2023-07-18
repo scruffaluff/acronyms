@@ -11,10 +11,11 @@ from subprocess import Popen
 import tempfile
 from typing import Dict, Optional, Tuple, cast
 
-from acronyms.settings import DatabaseUrl, Settings
 from fastapi.testclient import TestClient
 import httpx
 from httpx import Client, HTTPTransport
+
+from acronyms.settings import DatabaseUrl, Settings
 
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -51,11 +52,12 @@ def mock_settings() -> Settings:
         database=database,
         port=server_port,
         reset_token=secrets.token_urlsafe(64),
+        smtp_enabled=True,
         smtp_host="127.0.0.1",
         smtp_password=secrets.token_urlsafe(32),
         smtp_port=smtp_port,
         smtp_tls=False,
-        smtp_username="admin.user@smtp.test",
+        smtp_username="admin.user@mail.com",
         verification_token=secrets.token_urlsafe(64),
     )
 
@@ -69,7 +71,9 @@ def settings_variables(settings: Settings) -> Dict[str, str]:
     }
 
 
-def start_server(settings: Settings) -> Tuple[Popen, Popen]:
+def start_server(
+    settings: Settings, smtp_web_port: int = 1080
+) -> Tuple[Popen, Popen]:
     """Start server for testing."""
     mail = Popen(
         [
@@ -79,8 +83,10 @@ def start_server(settings: Settings) -> Tuple[Popen, Popen]:
             settings.smtp_username,
             "--incoming-pass",
             settings.smtp_password.get_secret_value(),
-            "--port",
+            "--smtp",
             str(settings.smtp_port),
+            "--web",
+            str(smtp_web_port),
         ],
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
