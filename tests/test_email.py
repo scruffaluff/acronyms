@@ -17,6 +17,7 @@ def test_send_email(server: Dict[str, str], page: Page) -> None:
     list_item = email_list.locator('li:has-text("Test Email")')
     expect(list_item).to_have_count(0)
 
+    email.sender.cache_clear()
     email.sender().send(
         subject="Test Email",
         sender="sender@mail.com",
