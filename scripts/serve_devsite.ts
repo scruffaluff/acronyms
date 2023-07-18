@@ -19,14 +19,17 @@ childProcess.execSync("npx vite build --mode development", {
   stdio: "inherit",
 });
 
-const smtpPort = await getPort();
-const smtpWebPort = await getPort();
+const backendPort = await getPort({port: 8000});
+const smtpPort = await getPort({port: 1025});
+const smtpWebPort = await getPort({port: 1080});
 
 concurrently(
   [
     {
       command: "poetry run acronyms --reload --reload-dir src/acronyms",
       env: {
+        ACRONYMS_LOG_LEVEL: "debug",
+        ACRONYMS_PORT: String(backendPort),
         ACRONYMS_RESET_TOKEN: resetToken,
         ACRONYMS_SMTP_ENABLED: "true",
         ACRONYMS_SMTP_HOST: "localhost",

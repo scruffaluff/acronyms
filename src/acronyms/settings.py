@@ -5,7 +5,7 @@ import functools
 from pathlib import Path
 import secrets
 import sys
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, Dict, Literal, Optional, Tuple, cast
 
 from pydantic import AnyUrl, BaseSettings, SecretStr
 from pydantic.env_settings import SettingsSourceCallable
@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     database: DatabaseUrl = DatabaseUrl(
         "sqlite+aiosqlite:///./acronyms.db", scheme="sqlite"
     )
+    host: str = "127.0.0.1"
+    log_level: Literal[
+        "critical", "error", "warning", "info", "debug", "trace"
+    ] = "warning"
     page_size: int = 10
     port: int = 8000
     reset_token: SecretStr = SecretStr(secrets.token_urlsafe(32))
@@ -54,6 +58,8 @@ class Settings(BaseSettings):
     smtp_port: int = 25
     smtp_tls: bool = True
     smtp_username: str = ""
+    ssl_certfile: Optional[Path] = None
+    ssl_keyfile: Optional[Path] = None
     verification_token: SecretStr = SecretStr(secrets.token_urlsafe(64))
 
     class Config:

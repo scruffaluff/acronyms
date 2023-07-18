@@ -16,7 +16,7 @@ from fastapi_users.authentication.strategy.db import (
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 
-from acronyms import email, models, settings
+from acronyms import mail, models, settings
 from acronyms.models import AccessToken, User
 from acronyms.schemas import UserCreate, UserRead, UserUpdate
 
@@ -40,7 +40,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
         https://notareallink.com/verify?user=fjdskj
         """
         if settings.settings().smtp_enabled:
-            email.sender().send(
+            mail.sender().send(
                 subject="Welcome to Acronyms",
                 sender=settings.settings().smtp_username,
                 receivers=[user.email],

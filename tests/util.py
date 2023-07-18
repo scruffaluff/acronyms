@@ -50,6 +50,8 @@ def mock_settings() -> Settings:
 
     return Settings(
         database=database,
+        host="localhost",
+        log_level="debug",
         port=server_port,
         reset_token=secrets.token_urlsafe(64),
         smtp_enabled=True,
@@ -74,6 +76,9 @@ def settings_variables(settings: Settings) -> Dict[str, str]:
     prefix = settings.Config.env_prefix
     config = {}
     for key, value in settings.dict().items():
+        if value is None:
+            continue
+
         try:
             value_ = str(value.get_secret_value())
         except AttributeError:
@@ -109,7 +114,7 @@ def start_server(
     # "RuntimeError: asyncio.run() cannot be called from a running event
     # loop".
     backend = Popen(
-        ["acronyms", "--port", str(settings.port)],
+        ["acronyms"],
         env={**os.environ, **settings_variables(settings)},
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
