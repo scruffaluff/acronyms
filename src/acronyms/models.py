@@ -22,7 +22,6 @@ from sqlalchemy.ext import asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from acronyms import settings
-from acronyms.typing import SqliteDsn
 
 
 AcronymColumn = Literal["id", "abbreviation", "description", "phrase"]

@@ -19,9 +19,9 @@ childProcess.execSync("npx vite build --mode development", {
   stdio: "inherit",
 });
 
-const backendPort = await getPort({port: 8000});
-const smtpPort = await getPort({port: 1025});
-const smtpWebPort = await getPort({port: 1080});
+const backendPort = await getPort({ port: 8000 });
+const smtpPort = await getPort({ port: 1025 });
+const smtpWebPort = await getPort({ port: 1080 });
 
 concurrently(
   [
