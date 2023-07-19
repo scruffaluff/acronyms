@@ -15,7 +15,8 @@ from fastapi.testclient import TestClient
 import httpx
 from httpx import Client, HTTPTransport
 
-from acronyms.settings import DatabaseUrl, Settings
+from acronyms.settings import Settings
+from acronyms.typing import SqliteDsn
 
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -42,9 +43,7 @@ def find_port() -> int:
 def mock_settings() -> Settings:
     """Generate application settings for test suite."""
     sqlite_path = Path(tempfile.mkdtemp()) / "acronyms_test.db"
-    database = DatabaseUrl(
-        f"sqlite+aiosqlite:///{sqlite_path}", scheme="sqlite"
-    )
+    database = SqliteDsn(f"sqlite+aiosqlite:///{sqlite_path}")
     server_port = find_port()
     smtp_port = find_port()
 
@@ -73,7 +72,7 @@ def popen_stdio(process: Popen, file: str = "stdout") -> str:
 
 def settings_variables(settings: Settings) -> Dict[str, str]:
     """Convert settings to equivalent environment variables."""
-    prefix = settings.Config.env_prefix
+    prefix = settings.model_config["env_prefix"]
     config = {}
     for key, value in settings.dict().items():
         if value is None:

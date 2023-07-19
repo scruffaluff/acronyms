@@ -22,6 +22,7 @@ from sqlalchemy.ext import asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from acronyms import settings
+from acronyms.typing import SqliteDsn
 
 
 AcronymColumn = Literal["id", "abbreviation", "description", "phrase"]
@@ -69,12 +70,12 @@ class User(SQLAlchemyBaseUserTableUUID):
 def get_engine() -> AsyncEngine:
     """Create engine for database connection."""
     uri = settings.settings().database
-    if uri.scheme == "sqlite":
+    if "sqlite" in uri.scheme:
         return asyncio.create_async_engine(
-            uri, connect_args={"check_same_thread": False}, future=True
+            str(uri), connect_args={"check_same_thread": False}, future=True
         )
     else:
-        return asyncio.create_async_engine(uri, future=True)
+        return asyncio.create_async_engine(str(uri), future=True)
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

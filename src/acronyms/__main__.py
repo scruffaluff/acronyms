@@ -3,7 +3,7 @@
 
 import sys
 
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 import uvicorn
 
 import acronyms
@@ -14,7 +14,7 @@ def main() -> None:
     """Pass command line arguments to uvicorn."""
     arguments = sys.argv[1:]
     if "--help" in arguments:
-        uvicorn.main(["acronyms.main:app", *arguments])  # type: ignore
+        uvicorn.main(["acronyms.main:app", *arguments])
     elif "--version" in arguments:
         print(f"Acronyms {acronyms.__version__}")
         sys.exit(0)
@@ -37,9 +37,7 @@ def main() -> None:
     if "--ssl-keyfile" not in arguments and settings_.ssl_keyfile is not None:
         arguments += ["--ssl-keyfile", str(settings_.ssl_keyfile)]
 
-    # Mypy thinks that uvicorn is a <nothing> type. This is nonsense, and so
-    # is likely a bug.
-    uvicorn.main(["acronyms.main:app", *arguments])  # type: ignore
+    uvicorn.main(["acronyms.main:app", *arguments])
 
 
 if __name__ == "__main__":

@@ -52,7 +52,9 @@ def client(mocker: MockerFixture) -> Iterator[TestClient]:
     # between test functions.
     mocker.patch(
         "acronyms.models.get_engine",
-        lambda: asyncio.create_async_engine(settings.database, future=True),
+        lambda: asyncio.create_async_engine(
+            str(settings.database), future=True
+        ),
     )
     mocker.patch("redmail.EmailSender.send")
 
