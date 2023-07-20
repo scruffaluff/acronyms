@@ -2,12 +2,9 @@
 
 
 from argparse import BooleanOptionalAction
-import os
-from pathlib import Path
 import secrets
 import subprocess
-import tempfile
-from typing import cast, Iterator, Tuple
+from typing import Dict, Iterator, Tuple, cast
 
 from _pytest.fixtures import SubRequest
 from fastapi.testclient import TestClient
@@ -47,14 +44,19 @@ def build(request: SubRequest) -> None:
 
 
 @pytest.fixture
-def client(connection: str, mocker: MockerFixture) -> Iterator[TestClient]:
+def client(mocker: MockerFixture) -> Iterator[TestClient]:
     """Fast API test client."""
-    environment = util.mock_environment({"ACRONYMS_DATABASE": connection})
-    mocker.patch.dict(os.environ, environment)
+    settings = util.mock_settings()
+    mocker.patch("acronyms.settings.settings", lambda: settings)
+    # TODO: Figure out better method to prevent get_engine from being cached
+    # between test functions.
     mocker.patch(
         "acronyms.models.get_engine",
-        lambda: asyncio.create_async_engine(connection, future=True),
+        lambda: asyncio.create_async_engine(
+            str(settings.database), future=True
+        ),
     )
+    mocker.patch("redmail.EmailSender.send")
 
     from acronyms.main import app
 
@@ -65,7 +67,7 @@ def client(connection: str, mocker: MockerFixture) -> Iterator[TestClient]:
 
 @pytest.fixture
 def connection(postgresql: Connection) -> str:
-    """Connection URI for temporary PostgreSQL database."""
+    """Parse connection URI for temporary PostgreSQL database."""
     user = postgresql.info.user
     address = f"{postgresql.info.host}:{postgresql.info.port}"
     name = postgresql.info.dbname
@@ -75,15 +77,18 @@ def connection(postgresql: Connection) -> str:
 @pytest.fixture(scope="session")
 def openapi_schema() -> Iterator[BaseOpenAPISchema]:
     """Load OpenAPI schema from server into Schemathesis."""
-    database = Path(tempfile.mkdtemp()) / "acronyms_test.db"
-    process, url = util.start_server(database)
-    yield schemathesis.from_uri(f"{url}/openapi.json")
-    process.terminate()
-    database.unlink()
+    settings = util.mock_settings()
+    backend, mail = util.start_server(settings)
+
+    yield schemathesis.from_uri(
+        f"http://localhost:{settings.port}/openapi.json"
+    )
+    backend.terminate()
+    mail.terminate()
 
 
 def pytest_addoption(parser: Parser) -> None:
-    """Select whether to run tests against Helm chart."""
+    """Add CLI flag options to test suite."""
     parser.addoption(
         "--build",
         action=BooleanOptionalAction,
@@ -100,28 +105,38 @@ def pytest_addoption(parser: Parser) -> None:
 
 
 @pytest.fixture
-def server(request: SubRequest, tmp_path: Path) -> Iterator[str]:
-    """Compile frontend assets and starts backend server."""
+def server(
+    request: SubRequest, mocker: MockerFixture
+) -> Iterator[Dict[str, str]]:
+    """Compile frontend assets and start backend and mail servers."""
     if request.config.getoption("--chart"):
         url = "https://acronyms.127-0-0-1.nip.io"
         util.clear_acronyms(url)
-        yield url
+        yield {"backend": url, "email": "https://mail.127-0-0-1.nip.io"}
     else:
-        database = tmp_path / "acronyms_test.db"
-        process, url = util.start_server(database)
-        yield url
-        process.terminate()
-        database.unlink()
+        settings = util.mock_settings()
+        mocker.patch("acronyms.settings.settings", lambda: settings)
+        smtp_web_port = util.find_port()
+        backend, mail = util.start_server(settings, smtp_web_port)
+
+        yield {
+            "backend": f"http://localhost:{settings.port}",
+            "email": f"http://localhost:{smtp_web_port}",
+            "process": [backend, mail],  # type: ignore
+        }
+        backend.terminate()
+        mail.terminate()
 
 
 @pytest.fixture
 def user(client: TestClient) -> Tuple[str, str]:
     """Create new user in application."""
-    email = "fake.user@mail.com"
-    password = secrets.token_urlsafe(16)
+    email = "basic.user@mail.com"
+    password = secrets.token_urlsafe(32)
 
     response = client.post(
-        "/auth/register", json={"email": email, "password": password}
+        "/auth/register",
+        json={"email": email, "password": password},
     )
     response.raise_for_status()
     return email, password

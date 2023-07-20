@@ -49,6 +49,13 @@ def test_get_acronym(client: TestClient) -> None:
     assert response.json() == expected
 
 
+def test_get_acronym_id_error(client: TestClient) -> None:
+    """Error response if Id is not in database."""
+    response = client.get("/api/acronym?id=0")
+    with pytest.raises(HTTPStatusError):
+        response.raise_for_status()
+
+
 def test_get_pagination_default(client: TestClient) -> None:
     """Acronym fetches are paginated."""
     response = client.get("/api/acronym")
@@ -57,7 +64,7 @@ def test_get_pagination_default(client: TestClient) -> None:
 
 
 def test_get_acronym_error(client: TestClient) -> None:
-    """Fetch acronym from database by abbreviation."""
+    """Invalid query parameters are rejected."""
     response = client.get("/api/acronym?limit=100")
     with pytest.raises(HTTPStatusError):
         response.raise_for_status()

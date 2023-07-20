@@ -12,6 +12,7 @@
 .pdbrc
 .pytest_cache/
 .python-version
+.ruff_cache/
 .tox/
 .venv/
 .vscode/settings.json
@@ -25,8 +26,6 @@
 **/__pycache__/
 **/.ipynb_checkpoints/
 **/*.egg-info/
-/tmp/
-certs/
 dist/
 environment.yml
 f1
@@ -42,4 +41,5 @@ setup.py
 stats.html
 test-results/
 tests/results
+tmp/
 web/

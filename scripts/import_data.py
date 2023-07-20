@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import secrets
 
-from requests import Session
+from httpx import Client
 
 
 parser = ArgumentParser()
@@ -21,19 +21,19 @@ users = [
     {"email": "scruffaluff@mail.com", "password": secrets.token_urlsafe(16)},
 ]
 
-with Session() as session:
+with Client() as client:
     for acronym in acronyms:
-        response = session.post(
+        response = client.post(
             f"{arguments.endpoint}/api/acronym", json=acronym
         )
         response.raise_for_status()
 
     for user in users:
-        register_response = session.post(
+        register_response = client.post(
             f"{arguments.endpoint}/auth/register", json=user
         )
         register_response.raise_for_status()
-        login_response = session.post(
+        login_response = client.post(
             f"{arguments.endpoint}/auth/login",
             data={"username": user["email"], "password": user["password"]},
             headers={"Content-Type": "application/x-www-form-urlencoded"},

@@ -2,17 +2,17 @@
 
 
 import sys
-from typing import cast, Dict, Optional, Sequence, Union
+from typing import Dict, Optional, Sequence, Union, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
-from fastapi_cache import decorator, FastAPICache
+from fastapi_cache import FastAPICache, decorator
 import sqlalchemy
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from acronyms import models, settings
 from acronyms.models import Acronym, AcronymColumn
-from acronyms.schemas import AcronymBody
+from acronyms.schemas import AcronymBody, AcronymResponse
 
 
 router = APIRouter()
@@ -22,17 +22,19 @@ router = APIRouter()
     "/acronym/{id}", responses={404: {"description": "Acronym entry not found"}}
 )
 async def delete_acronym(
-    id: int = Path(
+    id: int = Path(  # noqa: A002
         description="Identifier of acronym to remove", ge=0, le=sys.maxsize
     ),
     session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
-    """Insert an acronym to database."""
+    """Remove an acronym to database."""
     statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
     try:
         acronym = (await session.execute(statement)).scalar_one()
     except NoResultFound as exception:
-        raise HTTPException(status_code=404, detail=str(exception))
+        raise HTTPException(
+            status_code=404, detail=str(exception)
+        ) from exception
 
     await session.delete(acronym)
     await session.commit()
@@ -40,11 +42,15 @@ async def delete_acronym(
     return {"ok": True}
 
 
-@router.get("/acronym")
+@router.get(
+    "/acronym",
+    response_model=Union[AcronymResponse, Sequence[AcronymResponse], None],
+    responses={404: {"description": "Acronym entry not found"}},
+)
 @decorator.cache(expire=60, namespace="acronyms")
 async def get_acronym(
     response: Response,
-    id: Optional[int] = Query(default=None, ge=0, le=sys.maxsize),
+    id: Optional[int] = Query(default=None, ge=0, le=sys.maxsize),  # noqa: A002
     abbreviation: Optional[str] = None,
     phrase: Optional[str] = None,
     limit: int = Query(
@@ -59,7 +65,13 @@ async def get_acronym(
 ) -> Union[Acronym, Sequence[Acronym], None]:
     """Get all matching acronyms."""
     if id is not None:
-        return await session.get(Acronym, id)
+        statement = sqlalchemy.select(Acronym).where(Acronym.id == id)
+        try:
+            return (await session.execute(statement)).scalar_one()
+        except NoResultFound as exception:
+            raise HTTPException(
+                status_code=404, detail=str(exception)
+            ) from exception
 
     table = sqlalchemy.select(Acronym)
     if abbreviation is None and phrase is None:
@@ -103,7 +115,9 @@ async def post_acronym(
         # Id is not None since session committed the acronym.
         return cast(int, acronym_.id)
     except IntegrityError as exception:
-        raise HTTPException(status_code=409, detail=str(exception))
+        raise HTTPException(
+            status_code=409, detail=str(exception)
+        ) from exception
 
 
 @router.put(
@@ -112,7 +126,7 @@ async def post_acronym(
 )
 async def put_acronym(
     body: AcronymBody,
-    id: int = Path(ge=0, le=sys.maxsize),
+    id: int = Path(ge=0, le=sys.maxsize),  # noqa: A002
     session: AsyncSession = Depends(models.get_session),
 ) -> Dict[str, bool]:
     """Get all matching acronyms."""
@@ -126,6 +140,8 @@ async def put_acronym(
 
         await session.commit()
         await FastAPICache.clear(namespace="acronyms")
-    except IntegrityError:
-        raise HTTPException(status_code=409, detail="Duplicate acronym request")
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=409, detail="Duplicate acronym request"
+        ) from exception
     return {"ok": True}

@@ -14,9 +14,9 @@ from sqlalchemy import (
     CheckConstraint,
     Column,
     Integer,
-    orm,
     Unicode,
     UniqueConstraint,
+    orm,
 )
 from sqlalchemy.ext import asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
@@ -42,7 +42,7 @@ class Acronym:
     __tablename__ = "acronyms"
     __table_args__ = (UniqueConstraint("abbreviation", "phrase"),)
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)  # noqa: A003
     abbreviation = Column(
         Unicode,
         CheckConstraint("LENGTH(abbreviation) > 0"),
@@ -69,12 +69,12 @@ class User(SQLAlchemyBaseUserTableUUID):
 def get_engine() -> AsyncEngine:
     """Create engine for database connection."""
     uri = settings.settings().database
-    if uri.scheme == "sqlite":
+    if "sqlite" in uri.scheme:
         return asyncio.create_async_engine(
-            uri, connect_args={"check_same_thread": False}, future=True
+            str(uri), connect_args={"check_same_thread": False}, future=True
         )
     else:
-        return asyncio.create_async_engine(uri, future=True)
+        return asyncio.create_async_engine(str(uri), future=True)
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

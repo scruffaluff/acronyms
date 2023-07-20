@@ -1,0 +1,49 @@
+# Helm chart configuration to override default values.
+#
+# For more information, visit
+# https://helm.sh/docs/chart_template_guide/values_files.
+
+---
+extraEnv:
+  - name: ACRONYMS_LOG_LEVEL
+    value: debug
+
+image:
+  repository: registry.localhost:5001/scruffaluff/acronyms
+
+ingress:
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-https@kubernetescrd
+  className: traefik
+  enabled: true
+  hosts:
+    - host: acronyms.127-0-0-1.nip.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - acronyms.127-0-0-1.nip.io
+
+podAnnotations: {}
+
+# TODO: Raise after adding Postgres and Redis support to Helm chart.
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 0.5
+    memory: 4G
+  requests:
+    cpu: 0.25
+    memory: 1G
+
+service:
+  type: ClusterIP
+  port: 8000
+
+smtp:
+  enabled: true
+  host: mailu-postfix.kube-system.svc.cluster.local
+  port: 10025
+  tls: false

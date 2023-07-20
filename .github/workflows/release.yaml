@@ -6,50 +6,28 @@
 ---
 name: release
 
-# Trigger workflow on SemVer compatible tags.
+# Makes workflow run on Git tag.
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "**"
+  workflow_dispatch:
+    inputs:
+      debug:
+        default: false
+        description: Use Tmate session for debugging
+        type: boolean
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "true"
+  PIP_ROOT_USER_ACTION: ignore
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+  PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
 
 jobs:
-  release:
-    name: Get Git tag and make GitHub release
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.extract_tag.outputs.tag }}
-    steps:
-      - name: Extract Git tag
-        id: extract_tag
-        shell: bash
-        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
-      - name: Create GitHub release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Acronyms ${{ steps.extract_tag.outputs.tag }}
-          body: >-
-            See the [changelog](https://github.com/scruffaluff/acronyms/blob/${{
-            steps.extract_tag.outputs.tag }}/CHANGELOG.md) for more information.
-
-  chart:
-    name: Package and upload Helm chart
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v3
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-      - name: Package Helm chart
-        run: |
-          helm package chart
-          helm repo index .
-
   image:
+    if: >-
+      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'image' }}
     name: Build and push Docker image
     needs: release
     runs-on: ubuntu-latest
@@ -70,5 +48,75 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            scruffaluff/acronyms:${{ needs.release.outputs.tag }}
+            scruffaluff/acronyms:${{ github.ref_name }}
             scruffaluff/acronyms:latest
+      - name: Setup Tmate session if debug enabled
+        if: >-
+          ${{ always() && github.event_name == 'workflow_dispatch' &&
+          inputs.debug }}
+        timeout-minutes: 60
+        uses: mxschmitt/action-tmate@v3
+
+  release:
+    if: >-
+      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'release' }}
+    name: Make GitHub release and publish Python package
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v3
+      - name: Install Node interpreter
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Install Node packages
+        run: |
+          node --version
+          corepack enable pnpm
+          pnpm --version
+          pnpm install --frozen-lockfile
+      - name: Install Python interpreter
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Python packages
+        run: |
+          python --version
+          python -m pip --version
+          python -m pip install poetry
+          poetry lock --check
+          poetry install --verbose --only main
+      - name: Build package
+        run: |
+          pnpm build
+          poetry build
+      - name: Install Helm
+        run: |
+          curl --fail --location --show-error --silent \
+            https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+      - name: Package Helm chart
+        run: |
+          helm package src/chart
+          helm repo index .
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: >-
+            See the
+            [changelog](https://github.com/scruffaluff/acronyms/blob/blob/${{
+            github.ref_name }}/CHANGELOG.md) for more information.
+          files: |
+            acronyms-${{ github.ref_name }}.tgz
+            dist/acronyms-${{ github.ref_name }}-py3-none-any.whl
+            dist/acronyms-${{ github.ref_name }}.tar.gz
+          name: Acronyms ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+      - name: Setup Tmate session if debug enabled
+        if: >-
+          ${{ always() && github.event_name == 'workflow_dispatch' &&
+          inputs.debug }}
+        timeout-minutes: 60
+        uses: mxschmitt/action-tmate@v3

@@ -1,37 +1,34 @@
-FROM node:20.2.0-alpine3.17 as frontend
+FROM node:20.4.0-alpine3.18 as frontend
 ARG TARGETARCH
 
 WORKDIR /repo
 
 COPY . .
 
-RUN npm ci && npm run build
+RUN corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
 
-FROM python:3.11.3-alpine3.17 as backend
+FROM python:3.11.4-alpine3.18 as backend
 ARG TARGETARCH
 
-RUN apk add --no-cache gcc musl-dev postgresql-dev python3-dev
+RUN apk add --no-cache gcc libffi-dev musl-dev postgresql-dev python3-dev
 
 RUN adduser --disabled-password --uid 10000 acronyms \
     && mkdir /app \
     && chown acronyms:acronyms /app
 
 USER acronyms
-WORKDIR /app
 ENV \
-    HOME=/home/acronyms \
+    HOME='/home/acronyms' \
     PATH="/home/acronyms/.local/bin:${PATH}"
+WORKDIR /app
 
 COPY --chown=acronyms . "${HOME}/repo"
 COPY --chown=acronyms --from=frontend \
-    /repo/backend/acronyms/web "${HOME}/repo/backend/acronyms/web"
+    /repo/src/acronyms/web "${HOME}/repo/src/acronyms/web"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user "${HOME}/repo" \
     && rm -fr "${HOME}/repo"
-
-USER root
-RUN apk del gcc musl-dev postgresql-dev python3-dev
 
 USER acronyms
 EXPOSE 8000

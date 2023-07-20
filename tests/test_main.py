@@ -2,11 +2,13 @@
 
 
 import re
+import secrets
+from typing import Dict
 
 from fastapi.testclient import TestClient
-from playwright.sync_api import expect, Page
+import httpx
+from playwright.sync_api import Page, expect
 import pytest
-import requests
 import schemathesis
 from schemathesis import Case
 
@@ -16,12 +18,13 @@ from tests import util
 schema = schemathesis.from_pytest_fixture("openapi_schema")
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_add_acronym_valid(server: str, page: Page) -> None:
+def test_add_acronym_valid(server: Dict[str, str], page: Page) -> None:
     """Add acronym process completes for valid acronym."""
     acronym = {"abbreviation": "AFK", "phrase": "Away From Keyboard"}
     table_text = re.compile(acronym["abbreviation"] + acronym["phrase"])
-    page.goto(server)
+    page.goto(server["backend"])
 
     table_body = page.locator("data-testid=table-body")
     submit = page.locator(
@@ -40,10 +43,11 @@ def test_add_acronym_valid(server: str, page: Page) -> None:
     expect(table_body).to_have_text(table_text)
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_add_acronym_invalid(server: str, page: Page) -> None:
+def test_add_acronym_invalid(server: Dict[str, str], page: Page) -> None:
     """Add acronym process is unable to complete for invalid acronym."""
-    page.goto(server)
+    page.goto(server["backend"])
     page.locator("#add").click()
     submit = page.locator(
         '[data-testid="table-body"] button:has-text("Submit")'
@@ -54,14 +58,15 @@ def test_add_acronym_invalid(server: str, page: Page) -> None:
     expect(submit).to_be_visible()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_add_acronym_error(server: str, page: Page) -> None:
+def test_add_acronym_error(server: Dict[str, str], page: Page) -> None:
     """Error modal pops up upon duplicate acronym submission."""
     acronym = {"abbreviation": "ECC", "phrase": "Error Correction Code"}
-    response = requests.post(f"{server}/api/acronym", json=acronym)
+    response = httpx.post(f'{server["backend"]}/api/acronym', json=acronym)
     response.raise_for_status()
 
-    page.goto(server)
+    page.goto(server["backend"])
     page.locator("#search").fill(acronym["phrase"])
     page.locator("#add").click()
 
@@ -77,10 +82,11 @@ def test_api(case: Case) -> None:
     case.call_and_validate()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_begin_add_acronym_button(server: str, page: Page) -> None:
+def test_begin_add_acronym_button(server: Dict[str, str], page: Page) -> None:
     """Clicking add button begins new acronym process."""
-    page.goto(server)
+    page.goto(server["backend"])
     submit = page.locator(
         '[data-testid="table-body"] button:has-text("Submit")'
     )
@@ -90,10 +96,11 @@ def test_begin_add_acronym_button(server: str, page: Page) -> None:
     expect(submit).to_be_visible()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_begin_add_acronym_keypress(server: str, page: Page) -> None:
+def test_begin_add_acronym_keypress(server: Dict[str, str], page: Page) -> None:
     """Pressing keys while in search focus begins new acronym process."""
-    page.goto(server)
+    page.goto(server["backend"])
     submit = page.locator(
         '[data-testid="table-body"] button:has-text("Submit")'
     )
@@ -120,20 +127,57 @@ def test_get_home(client: TestClient) -> None:
     response.raise_for_status()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_site_available(server: str, page: Page) -> None:
+def test_pagination_buttons(server: Dict[str, str], page: Page) -> None:
+    """Navigation buttons are enabled only when there are more acronyms."""
+    util.upload_acronyms(endpoint=server["backend"])
+
+    page.goto(server["backend"])
+    navigation = page.locator('nav[aria-label="pagination"]')
+    previous = navigation.locator('button:has-text("Previous")')
+    next_ = navigation.locator('button:has-text("Next")')
+
+    expect(previous).to_be_disabled()
+    next_.click()
+    expect(previous).to_be_enabled()
+
+
+@pytest.mark.e2e
+def test_register_user(server: Dict[str, str], page: Page) -> None:
+    """New user receives a welcome email."""
+    page.goto(server["email"])
+    email_list = page.locator("ul.email-list")
+    list_item = email_list.locator('li:has-text("Welcome to Acronyms")')
+    expect(list_item).to_have_count(0)
+
+    response = httpx.post(
+        f'{server["backend"]}/auth/register',
+        json={
+            "email": "register.user@mail.com",
+            "password": secrets.token_urlsafe(32),
+        },
+    )
+    response.raise_for_status()
+    expect(list_item).to_have_count(1)
+
+
+@pytest.mark.chart
+@pytest.mark.e2e
+def test_site_available(server: Dict[str, str], page: Page) -> None:
     """Website is available for external traffic."""
-    page.goto(server)
+    page.goto(server["backend"])
     expect(page).to_have_title(re.compile("Acronyms"))
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_search_acronyms(server: str, page: Page) -> None:
+def test_search_acronyms(server: Dict[str, str], page: Page) -> None:
     """Search finds results from all pages and changes page count."""
     phrase = "Physical Therapist"
-    util.upload_acronyms(endpoint=server)
+    util.upload_acronyms(endpoint=server["backend"])
 
-    page.goto(server)
+    page.goto(server["backend"])
     table_body = page.locator("data-testid=table-body")
 
     page.locator("#search").fill(phrase.split(" ")[0])
@@ -143,18 +187,19 @@ def test_search_acronyms(server: str, page: Page) -> None:
     expect(pages).to_have_count(1)
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
-def test_sort_acronyms(server: str, page: Page) -> None:
+def test_sort_acronyms(server: Dict[str, str], page: Page) -> None:
     """Sort icon changes acronym order."""
     acronyms = [
         {"abbreviation": "DM", "phrase": "Data Mining"},
         {"abbreviation": "DM", "phrase": "Direct Message"},
     ]
     for acronym in acronyms:
-        response = requests.post(f"{server}/api/acronym", json=acronym)
+        response = httpx.post(f'{server["backend"]}/api/acronym', json=acronym)
         response.raise_for_status()
 
-    page.goto(server)
+    page.goto(server["backend"])
     table_body = page.locator("data-testid=table-body")
     expect(table_body).to_have_text(re.compile("DMData MiningDMDirect Message"))
 

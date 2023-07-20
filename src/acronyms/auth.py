@@ -1,10 +1,10 @@
 """Authentication management."""
 
 
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 from uuid import UUID
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -16,7 +16,7 @@ from fastapi_users.authentication.strategy.db import (
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 
-from acronyms import models, settings
+from acronyms import mail, models, settings
 from acronyms.models import AccessToken, User
 from acronyms.schemas import UserCreate, UserRead, UserUpdate
 
@@ -26,6 +26,26 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
 
     reset_password_token_secret = settings.settings().reset_token
     verification_token_secret = settings.settings().verification_token
+
+    async def on_after_register(
+        self, user: User, request: Optional[Request] = None
+    ) -> None:
+        """Send confirmation email after registering user."""
+        text = f"""
+        Dear {user.email},
+
+        You have created or updated your Acronyms account. Please confirm this
+        email by clicking the link below:
+
+        https://notareallink.com/verify?user=fjdskj
+        """
+        if settings.settings().smtp_enabled:
+            mail.sender().send(
+                subject="Welcome to Acronyms",
+                sender=settings.settings().smtp_username,
+                receivers=[user.email],
+                text=text,
+            )
 
 
 def get_database_strategy(
@@ -74,7 +94,5 @@ backend = AuthenticationBackend(
     transport=transport,
     get_strategy=get_database_strategy,
 )
-# Typing for FastAPIUsers clearly incorrect. It wants a UserManager callable not
-# an instance.
-users = FastAPIUsers[User, UUID](get_user_manager, [backend])  # type: ignore
+users = FastAPIUsers[User, UUID](get_user_manager, [backend])
 current_user = users.current_user(active=True)

@@ -1,15 +1,5 @@
 ---
 apiVersion: traefik.containo.us/v1alpha1
-kind: TLSStore
-metadata:
-  name: default
-  namespace: kube-system
-spec:
-  defaultCertificate:
-    secretName: ingress-tls-certs
-
----
-apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: dashboard
@@ -25,4 +15,26 @@ spec:
         - name: api@internal
           kind: TraefikService
   tls:
-    secretName: default-tls-certs
+    secretName: ingress-tls-certificate
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: kube-system
+spec:
+  redirectScheme:
+    permanent: true
+    port: "443"
+    scheme: https
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: kube-system
+spec:
+  defaultCertificate:
+    secretName: ingress-tls-certificate

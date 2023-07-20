@@ -1,6 +1,7 @@
-# Default values for acronyms.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Helm chart default deployment values.
+#
+# For more information, visit
+# https://helm.sh/docs/chart_template_guide/values_files.
 
 ---
 affinity: {}
@@ -11,6 +12,8 @@ autoscaling:
   minReplicas: 1
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
+
+extraEnv: []
 
 fullnameOverride: ""
 
@@ -37,8 +40,7 @@ nameOverride: ""
 
 nodeSelector: {}
 
-podAnnotations:
-  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+podAnnotations: {}
 
 podSecurityContext: {}
 
@@ -60,6 +62,14 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+
+smtp:
+  enabled: false
+  host: ""
+  password: ""
+  port: 1025
+  tls: true
+  username: ""
 
 tokens:
   reset: ""

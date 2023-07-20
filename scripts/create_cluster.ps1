@@ -15,19 +15,19 @@ Function Main() {
         k3d cluster create --wait --config scripts/k3d.yaml
     }
 
-    mkdir -Force "$RepoPath/certs"
+    mkdir -Force "$RepoPath/tmp"
     mkcert -install
     mkcert `
-        -cert-file certs/wildcard_nip_io.crt `
-        -key-file certs/wildcard_nip_io.key `
+        -cert-file tmp/wildcard_nip_io.crt `
+        -key-file tmp/wildcard_nip_io.key `
         '*.127-0-0-1.nip.io'
 
-    kubectl --namespace kube-system get secret ingress-tls-certs 2>&1 | Out-Null
+    kubectl --namespace kube-system get secret ingress-tls-certificate 2>&1 | Out-Null
     If ($LastExitCode) {
         kubectl --namespace kube-system create secret `
-            --cert certs/wildcard_nip_io.crt `
-            --key certs/wildcard_nip_io.key `
-            tls ingress-tls-certs
+            --cert tmp/wildcard_nip_io.crt `
+            --key tmp/wildcard_nip_io.key `
+            tls ingress-tls-certificate
     }
 
     # Kubectl wait does not work if the resource has not yet been created. Visit
