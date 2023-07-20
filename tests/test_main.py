@@ -18,6 +18,7 @@ from tests import util
 schema = schemathesis.from_pytest_fixture("openapi_schema")
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_add_acronym_valid(server: Dict[str, str], page: Page) -> None:
     """Add acronym process completes for valid acronym."""
@@ -42,6 +43,7 @@ def test_add_acronym_valid(server: Dict[str, str], page: Page) -> None:
     expect(table_body).to_have_text(table_text)
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_add_acronym_invalid(server: Dict[str, str], page: Page) -> None:
     """Add acronym process is unable to complete for invalid acronym."""
@@ -56,6 +58,7 @@ def test_add_acronym_invalid(server: Dict[str, str], page: Page) -> None:
     expect(submit).to_be_visible()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_add_acronym_error(server: Dict[str, str], page: Page) -> None:
     """Error modal pops up upon duplicate acronym submission."""
@@ -79,6 +82,7 @@ def test_api(case: Case) -> None:
     case.call_and_validate()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_begin_add_acronym_button(server: Dict[str, str], page: Page) -> None:
     """Clicking add button begins new acronym process."""
@@ -92,6 +96,7 @@ def test_begin_add_acronym_button(server: Dict[str, str], page: Page) -> None:
     expect(submit).to_be_visible()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_begin_add_acronym_keypress(server: Dict[str, str], page: Page) -> None:
     """Pressing keys while in search focus begins new acronym process."""
@@ -122,6 +127,7 @@ def test_get_home(client: TestClient) -> None:
     response.raise_for_status()
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_pagination_buttons(server: Dict[str, str], page: Page) -> None:
     """Navigation buttons are enabled only when there are more acronyms."""
@@ -156,6 +162,7 @@ def test_register_user(server: Dict[str, str], page: Page) -> None:
     expect(list_item).to_have_count(1)
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_site_available(server: Dict[str, str], page: Page) -> None:
     """Website is available for external traffic."""
@@ -163,6 +170,7 @@ def test_site_available(server: Dict[str, str], page: Page) -> None:
     expect(page).to_have_title(re.compile("Acronyms"))
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_search_acronyms(server: Dict[str, str], page: Page) -> None:
     """Search finds results from all pages and changes page count."""
@@ -179,6 +187,7 @@ def test_search_acronyms(server: Dict[str, str], page: Page) -> None:
     expect(pages).to_have_count(1)
 
 
+@pytest.mark.chart
 @pytest.mark.e2e
 def test_sort_acronyms(server: Dict[str, str], page: Page) -> None:
     """Sort icon changes acronym order."""

@@ -44,6 +44,8 @@ spec:
               value: "{{ .Values.smtp.host }}"
             - name: ACRONYMS_SMTP_PASSWORD
               value: "{{ .Values.smtp.password }}"
+            - name: ACRONYMS_SMTP_PORT
+              value: "{{ .Values.smtp.port }}"
             - name: ACRONYMS_SMTP_TLS
               value: "{{ .Values.smtp.tls }}"
             - name: ACRONYMS_SMTP_USERNAME

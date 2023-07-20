@@ -4,6 +4,10 @@
 # https://helm.sh/docs/chart_template_guide/values_files.
 
 ---
+extraEnv:
+  - name: ACRONYMS_LOG_LEVEL
+    value: debug
+
 image:
   repository: registry.localhost:5001/scruffaluff/acronyms
 
@@ -23,7 +27,8 @@ ingress:
 
 podAnnotations: {}
 
-replicaCount: 2
+# TODO: Raise after adding Postgres and Redis support to Helm chart.
+replicaCount: 1
 
 resources:
   limits:
@@ -39,5 +44,6 @@ service:
 
 smtp:
   enabled: true
-  host: mailu-postfix.mailu.svc.cluster.local
+  host: mailu-postfix.kube-system.svc.cluster.local
+  port: 10025
   tls: false

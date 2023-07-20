@@ -108,6 +108,7 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
+    "chart: Helm chart tests",
     "e2e: End to end tests",
 ]
 python_classes = "Test*"

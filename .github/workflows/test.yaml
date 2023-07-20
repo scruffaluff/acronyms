@@ -90,7 +90,7 @@ jobs:
       - name: Run Helm chart test suite
         run: |
           export SSL_CERT_FILE="$(mkcert -CAROOT)/rootCA.pem"
-          poetry run pytest --chart -m e2e
+          poetry run pytest --chart -m chart
       - name: Upload Playwright screenshots and videos if tests fail
         if: failure()
         uses: actions/upload-artifact@v3

@@ -67,6 +67,7 @@ smtp:
   enabled: false
   host: ""
   password: ""
+  port: 1025
   tls: true
   username: ""
 

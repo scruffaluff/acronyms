@@ -88,7 +88,7 @@ deploy_cluster() {
 
   helm --namespace acronyms upgrade --install \
     --set smtp.password="$(cat tmp/smtp_password)" \
-    --set smtp.username="$(cat tmp/smtp_username)" \
+    --set smtp.username="$(cat tmp/smtp_username)@mail.127-0-0-1.nip.io" \
     --values scripts/acronyms.yaml \
     acronyms ./src/chart
 
