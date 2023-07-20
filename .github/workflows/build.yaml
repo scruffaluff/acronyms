@@ -101,14 +101,10 @@ jobs:
           curl --fail --location --show-error --silent \
             https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
           helm version
-          helm plugin install https://github.com/datreeio/helm-datree
-          helm datree version
       - name: Run linter checks
         run: |
           hadolint Dockerfile scripts/develop.dockerfile
           helm lint --strict src/chart
-          helm datree test --no-record --verbose src/chart -- \
-            --values scripts/acronyms.yaml
       - name: Setup Tmate session if debug enabled
         if: >-
           ${{ always() && github.event_name == 'workflow_dispatch' &&

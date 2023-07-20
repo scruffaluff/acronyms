@@ -76,9 +76,6 @@ setup_linux() {
       "https://github.com/FiloSottile/mkcert/releases/download/v${MKCERT_VERSION}/mkcert-v${MKCERT_VERSION}-linux-${TARGETARCH}"
     sudo chmod 755 /usr/local/bin/mkcert
   fi
-
-  echo "Installing Helm plugins"
-  helm plugin install https://github.com/datreeio/helm-datree
 }
 
 #######################################

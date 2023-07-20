@@ -26,8 +26,6 @@ main() {
   pnpm typecheck
 
   helm lint --strict src/chart
-  helm datree test --no-record --verbose src/chart -- \
-    --values scripts/acronyms.yaml
 }
 
 main

@@ -2,9 +2,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    datree.skip/CONTAINERS_INCORRECT_READONLYROOTFILESYSTEM_VALUE: >-
-      Rule is inaccurate for interpreted languages
   name: {{ include "acronyms.fullname" . }}
   labels:
     {{- include "acronyms.labels" . | nindent 4 }}
