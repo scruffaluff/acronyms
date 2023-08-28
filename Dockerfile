@@ -1,13 +1,13 @@
-FROM node:20.4.0-alpine3.18 as frontend
+FROM node:20.5.1-alpine3.18 as frontend
 ARG TARGETARCH
 
 WORKDIR /repo
 
 COPY . .
 
-RUN corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
+RUN corepack enable pnpm && pnpm install --frozen-lockfile && npx vite build
 
-FROM python:3.11.4-alpine3.18 as backend
+FROM python:3.11.5-alpine3.18 as backend
 ARG TARGETARCH
 
 RUN apk add --no-cache gcc libffi-dev musl-dev postgresql-dev python3-dev

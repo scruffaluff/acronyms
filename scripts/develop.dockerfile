@@ -1,4 +1,4 @@
-FROM python:3.11.4-alpine3.18
+FROM python:3.11.5-alpine3.18
 ARG TARGETARCH
 
 RUN apk add --no-cache bash curl gcc musl-dev nodejs npm poetry postgresql-dev \
