@@ -2,12 +2,12 @@
  * Spin up development server.
  */
 
-import childProcess from "child_process";
 import concurrently from "concurrently";
 import getPort from "get-port";
-import crypto from "crypto";
-import path from "path";
-import { fileURLToPath } from "url";
+import childProcess from "node:child_process";
+import crypto from "node:crypto";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const resetToken = crypto.randomBytes(32).toString("hex");
 const smtpPassword = crypto.randomBytes(16).toString("hex");

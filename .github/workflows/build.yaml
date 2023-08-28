@@ -21,12 +21,11 @@ on:
         description: Use Tmate session for debugging
         type: boolean
       job:
-        default: test
+        default: build
         description: CI job to run
         options:
-          - backend
+          - build
           - chart
-          - frontend
           - test
         type: choice
 
@@ -42,26 +41,39 @@ env:
   PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
 
 jobs:
-  backend:
+  build:
     if: >-
-      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'backend' }}
+      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'build' }}
     name: Check backend code with linters
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v3
-      - name: Cache Python packages
+      - name: Cache packages
         uses: actions/cache@v3
         with:
           path: |
             .cache
             .venv
+            node_modules
           key: >-
-            python-3.10_${{ runner.os }}_poetry-${{ hashFiles('poetry.lock') }}
+            node-20_python-3.11_${{ runner.os }}_pnpm-${{
+            hashFiles('pnpm-lock.yaml') }}_poetry-${{ hashFiles('poetry.lock')
+            }}
+      - name: Install Node interpreter
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Install Node packages
+        run: |
+          node --version
+          corepack enable pnpm
+          pnpm --version
+          pnpm install --frozen-lockfile
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Install Python packages
         run: |
           python --version
@@ -69,13 +81,12 @@ jobs:
           python -m pip install poetry
           poetry lock --check
           poetry install --verbose
+          poetry run playwright install --with-deps chromium
       - name: Run linter checks
         run: |
-          poetry run bandit -ilr src
-          poetry run black --check .
-          poetry run ruff check .
-          poetry run mypy .
-          poetry build
+          pnpm format
+          pnpm lint
+          pnpm build
       - name: Setup Tmate session if debug enabled
         if: >-
           ${{ always() && github.event_name == 'workflow_dispatch' &&
@@ -112,48 +123,9 @@ jobs:
         timeout-minutes: 60
         uses: mxschmitt/action-tmate@v3
 
-  frontend:
-    if: >-
-      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'frontend'
-      }}
-    name: Check frontend code with linters
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code repository
-        uses: actions/checkout@v3
-      - name: Cache Node packages
-        uses: actions/cache@v3
-        with:
-          path: |
-            .cache
-            node_modules
-          key: >-
-            node-20_${{ runner.os }}_pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Install Node interpreter
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-      - name: Install Node packages
-        run: |
-          node --version
-          corepack enable pnpm
-          pnpm --version
-          pnpm install --frozen-lockfile
-      - name: Run linter checks
-        run: |
-          pnpm format:test
-          pnpm lint:test
-          pnpm build
-      - name: Setup Tmate session if debug enabled
-        if: >-
-          ${{ always() && github.event_name == 'workflow_dispatch' &&
-          inputs.debug }}
-        timeout-minutes: 60
-        uses: mxschmitt/action-tmate@v3
-
   test:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'test' }}
-    name: Run unit test suite for Node 20 and Python 3.10
+    name: Run unit test suite for Node 20 and Python 3.11
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -166,7 +138,7 @@ jobs:
             .venv
             node_modules
           key: >-
-            node-20_python-3.10_${{ runner.os }}_pnpm-${{
+            node-20_python-3.11_${{ runner.os }}_pnpm-${{
             hashFiles('pnpm-lock.yaml') }}_poetry-${{ hashFiles('poetry.lock')
             }}
       - name: Install Node interpreter
@@ -182,7 +154,7 @@ jobs:
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Install Python packages
         run: |
           python --version
@@ -192,7 +164,7 @@ jobs:
           poetry install --verbose
           poetry run playwright install --with-deps chromium
       - name: Run test suite
-        run: poetry run pytest --build --cov
+        run: pnpm test
       - name: Upload Playwright screenshots and videos if tests fail
         if: failure()
         uses: actions/upload-artifact@v3

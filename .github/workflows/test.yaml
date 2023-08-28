@@ -49,7 +49,7 @@ jobs:
             .venv
             node_modules
           key: >-
-            node-20_python-3.10_${{ runner.os }}_pnpm-${{
+            node-20_python-3.11_${{ runner.os }}_pnpm-${{
             hashFiles('pnpm-lock.yaml') }}_poetry-${{ hashFiles('poetry.lock')
             }}
       - name: Set up Docker Buildx
@@ -67,7 +67,7 @@ jobs:
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Install Python packages
         run: |
           python --version

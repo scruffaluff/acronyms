@@ -17,6 +17,13 @@ on:
         default: false
         description: Use Tmate session for debugging
         type: boolean
+    job:
+      default: container
+      description: CI job to run
+      options:
+        - container
+        - release
+      type: choice
 
 env:
   PIP_DISABLE_PIP_VERSION_CHECK: "true"
@@ -25,9 +32,10 @@ env:
   PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
 
 jobs:
-  image:
+  container:
     if: >-
-      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'image' }}
+      ${{ github.event_name != 'workflow_dispatch' || inputs.job == 'container'
+      }}
     name: Build and push Docker image
     needs: release
     runs-on: ubuntu-latest
@@ -80,7 +88,7 @@ jobs:
       - name: Install Python interpreter
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Install Python packages
         run: |
           python --version
@@ -105,8 +113,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: >-
-            See the
-            [changelog](https://github.com/scruffaluff/acronyms/blob/blob/${{
+            See the [changelog](https://github.com/scruffaluff/acronyms/blob/${{
             github.ref_name }}/CHANGELOG.md) for more information.
           files: |
             acronyms-${{ github.ref_name }}.tgz

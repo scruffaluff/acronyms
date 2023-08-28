@@ -38,14 +38,11 @@ exclude = [
     "node_modules/",
     "src/migration/",
     "tmp/",
-    "web/"
+    "web/",
 ]
 ignore_missing_imports = true
 no_implicit_optional = true
-plugins = [
-    "pydantic.mypy",
-    "sqlalchemy.ext.mypy.plugin",
-]
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
 strict_optional = true
 warn_redundant_casts = true
 warn_return_any = true
@@ -65,7 +62,7 @@ version = "0.1.0"
 aioredis = "^2.0.0"
 aiosqlite = "^0.19.0"
 asyncpg = "^0.28.0"
-fastapi = "^0.100.0"
+fastapi = "^0.103.0"
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.0" }
 fastapi-users = { extras = ["oauth", "sqlalchemy"], version = "^12.0.0" }
 psycopg = { extras = ["binary", "pool"], version = "^3.1.0" }
@@ -75,22 +72,21 @@ python = "^3.9.0"
 pyyaml = "^6.0.0"
 redmail = "^0.6.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.0" }
-uvicorn = { extras = ["standard"], version = "^0.22.0" }
+uvicorn = { extras = ["standard"], version = "^0.23.0" }
 
 [tool.poetry.group.dev.dependencies]
 alembic = "^1.11.0"
 bandit = "^1.7.0"
 black = "^23.7.0"
-coverage = { extras = ["toml"], version = "^7.2.0" }
-mypy = "^1.4.0"
-playwright = "^1.35.0"
+coverage = { extras = ["toml"], version = "^7.3.0" }
+mypy = "^1.5.0"
 py-spy = "^0.3.0"
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.11.0"
-pytest-playwright = "^0.3.0"
+pytest-playwright = "^0.4.0"
 pytest-postgresql = "^5.0.0"
-ruff = ">=0.0.277,<0.1.0"
+ruff = ">=0.0.286,<0.1.0"
 schemathesis = "^3.19.0"
 toml = "^0.10.0"
 types-pyyaml = "^6.0.0"
@@ -104,18 +100,10 @@ addopts = """
     --verbose --browser chromium --capture no --output tests/results \
     --screenshot only-on-failure --video retain-on-failure
 """
-filterwarnings = [
-    "ignore::DeprecationWarning",
-]
-markers = [
-    "chart: Helm chart tests",
-    "e2e: End to end tests",
-]
+filterwarnings = ["ignore::DeprecationWarning"]
+markers = ["chart: Helm chart tests", "e2e: End to end tests"]
 python_classes = "Test*"
-python_files = [
-    "__init__.py",
-    "test_*.py",
-]
+python_files = ["__init__.py", "test_*.py"]
 python_functions = ["test_*"]
 testpaths = ["tests"]
 
@@ -131,12 +119,7 @@ exclude = [
     "tmp/",
     "web/",
 ]
-ignore = [
-    "B008",
-    "D203",
-    "D212",
-    "E203",
-]
+ignore = ["B008", "D203", "D212", "E203"]
 line-length = 80
 # TODO: Integrate the following rules ["S", "UP"].
 select = ["A", "B", "D", "C90", "E", "F", "I", "N", "Q", "RUF100", "W"]
