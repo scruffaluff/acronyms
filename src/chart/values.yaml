@@ -44,6 +44,9 @@ podAnnotations: {}
 
 podSecurityContext: {}
 
+postgresql:
+  enabled: true
+
 replicaCount: 1
 
 resources: {}

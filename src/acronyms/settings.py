@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     )
     page_size: int = 10
     port: int = 8000
-    reset_token: SecretStr = SecretStr(secrets.token_urlsafe(32))
+    reset_token: SecretStr = SecretStr(secrets.token_urlsafe(64))
     smtp_enabled: bool = False
     smtp_host: str = ""
     smtp_password: SecretStr = SecretStr("")

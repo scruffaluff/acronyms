@@ -2,6 +2,11 @@
 name: acronyms
 apiVersion: v2
 appVersion: "0.1.0"
+dependencies:
+  - condition: postgresql.enabled
+    name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: "^12.0.0"
 description: Application for saving acronyms
 icon: https://img.icons8.com/cute-clipart/344/a.png
 type: application

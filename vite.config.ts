@@ -3,7 +3,6 @@
 // For more information, visit https://vitejs.dev/config.
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
-import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -12,8 +11,7 @@ export default defineConfig({
     emptyOutDir: false,
     outDir: "../acronyms/web",
   },
-  // Rollup plugin visualizer should be the last plugin.
-  plugins: [vue(), visualizer()],
+  plugins: [vue()],
   publicDir: "../../assets",
   resolve: {
     alias: {

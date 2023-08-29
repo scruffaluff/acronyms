@@ -27,8 +27,10 @@ ingress:
 
 podAnnotations: {}
 
-# TODO: Raise after adding Postgres and Redis support to Helm chart.
-replicaCount: 1
+postgresql:
+  enabled: true
+
+replicaCount: 2
 
 resources:
   limits:
